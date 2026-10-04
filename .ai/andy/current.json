@@ -4,30 +4,30 @@
   "workstream": "watchup-poc",
   "goal": "Build the approved WatchUp single-family POC with a strictly read-only WhatsApp connection.",
   "status": "active",
-  "current_phase": "WP-3.5 Git baseline and POC deployment readiness",
-  "current_task": "GitHub baseline completed; WP-3.5 synthetic VPS deployment awaits separate Owner approval.",
+  "current_phase": "WP-3.5 synthetic-only VPS deployment complete",
+  "current_task": "WP-3.5 is live and validated with synthetic data; awaiting Owner visual review.",
   "last_completed": [
-    "WP-3.5 approved Stitch-aligned MVP screens implemented and validated locally.",
-    "Secret-safe initial Git baseline created and pushed to https://github.com/eldadi9/WatchUp.git at commit 4b87ecf.",
-    "Read-only VPS check confirmed HTTPS 200 and isolated watchup-web, watchup-api and watchup-postgres containers, network and volume running."
+    "WP-3.5 static frontend deployed to https://watchup.srv1282987.hstgr.cloud/ with a server-side rollback copy.",
+    "Mobile and desktop browser validation passed for dashboard, alerts, groups and contacts, event details and settings.",
+    "Misleading live-connection labels were corrected to clearly state that Yuli's phone is not connected."
   ],
   "open_tasks": [
-    "Deploy WP-3.5 synthetic-only build to the existing isolated VPS environment after Owner approval.",
+    "Owner visual review of the live WP-3.5 demo.",
     "Implement and validate parent authentication before any real child data.",
     "Validate retention/deletion and complete the final live-data security gate.",
     "Separately approved read-only WhatsApp integration and Yuli phone pairing."
   ],
-  "next_action": "Ask Owner for explicit approval to deploy WP-3.5 to the existing WatchUp VPS using synthetic data only; do not pair Yuli's phone yet.",
+  "next_action": "Owner reviews the live synthetic WP-3.5 demo; phone pairing remains blocked until parent authentication, retention/deletion validation and the final security gate pass.",
   "decisions": [
-    "Google Stitch screen structure and the WatchUp green identity are the official visual direction.",
     "MVP navigation exposes dashboard, alerts, groups and contacts, and monitoring settings; event detail opens contextually.",
     "Only text-event capability is labelled active; unsupported media analysis is not represented as working.",
-    "Owner authorized the first Git commit and push to https://github.com/eldadi9/WatchUp.git; VPS deployment and Yuli phone pairing still require a separate post-readiness approval."
+    "Owner authorized the first Git commit and push to https://github.com/eldadi9/WatchUp.git; VPS deployment and Yuli phone pairing still require a separate post-readiness approval.",
+    "Owner explicitly approved synthetic-only WP-3.5 VPS deployment on 2026-10-05; phone pairing and real data remain prohibited."
   ],
   "restrictions": [
     "No WhatsApp send, edit, delete, reaction, typing, or other outbound action.",
     "No real child or family data.",
-    "No VPS mutation, deploy, commit, push, or WhatsApp pairing without separate Owner approval.",
+    "VPS mutation is approved only for synthetic WP-3.5 frontend deployment; no phone pairing or live WhatsApp connection.",
     "EG-SKILLS is the Dream Team source of truth."
   ],
   "files_touched": [
@@ -42,12 +42,18 @@
     "STATUS.md",
     "README.md",
     "STATUS.md",
-    "whatsapp-mcp/whatsapp-bridge/main.go"
+    "whatsapp-mcp/whatsapp-bridge/main.go",
+    "watchup-web/index.html",
+    "README.md",
+    "STATUS.md",
+    ".gitignore"
   ],
   "files_created": [
     "watchup-web/screenshots/wp35-dashboard-desktop.png",
     "watchup-web/screenshots/wp35-people-mobile-frame.png",
-    "watchup-web/screenshots/wp35-event-mobile-frame.png"
+    "watchup-web/screenshots/wp35-event-mobile-frame.png",
+    "watchup-web/screenshots/wp35-live-mobile-final.png",
+    "watchup-web/screenshots/wp35-live-desktop-final.png"
   ],
   "files_deleted": [
     "watchup-web/screenshots/capture-event.html",
@@ -57,18 +63,21 @@
     "watchup-web/screenshots/wp35-people-mobile-v2.png"
   ],
   "tests": [
-    "WatchUp Web tests: 7/7 passed.",
-    "WatchUp API tests: 29/29 passed.",
+    "WatchUp Web tests: 7/7 passed immediately before and after deployment.",
     "JavaScript syntax validation passed.",
-    "Focused Go read-only/auth/webhook safety tests passed."
+    "Focused Go read-only/auth/webhook safety tests passed.",
+    "Live mobile and desktop Playwright flows passed with zero console errors and no horizontal overflow."
   ],
   "validation": [
-    "GitHub main contains the initial baseline and excludes real environment files, databases, QR/session material and secrets.",
-    "VPS demo endpoint returned HTTPS 200 with CSP, X-Frame-Options DENY, no camera/microphone/geolocation permissions, and no public database port.",
-    "VPS inventory shows watchup-web, watchup-api and watchup-postgres active on dedicated watchup-internal network with watchup-postgres-data volume."
+    "HTTPS returned 200 with CSP, X-Frame-Options DENY and restrictive permissions policy.",
+    "Local and VPS SHA-256 hashes matched for HTML, CSS, JavaScript and image assets.",
+    "All approved MVP screens and event-detail flow worked in a real browser at 390x844 and 1440x1000.",
+    "Live UI explicitly says synthetic demo and Yuli's phone is not connected.",
+    "Rollback copy preserved at /opt/watchup-web/backups/wp35-predeploy-20261005T0200."
   ],
   "errors": [
-    "Full Go suite did not finish within 90 seconds on Windows and was stopped; focused security-critical tests passed."
+    "Full Go suite did not finish within 90 seconds on Windows and was stopped; focused security-critical tests passed.",
+    "One malformed remote validation command was safely retried; no partial deployment occurred and the final deployment passed all checks."
   ],
   "blockers": [
     "Live phone pairing is blocked until parent authentication, retention/deletion validation and final security approval are complete."
@@ -84,15 +93,15 @@
   "workspace_root": "C:\\Users\\Master_PC\\Desktop\\Projects Eldad\\01_Active_Projects\\WatchUp",
   "git": {
     "branch": "main",
-    "head": "4b87ecf",
+    "head": "243d9a9",
     "dirty": true
   },
-  "last_worker": "Codex / WatchUp WP-3.5 Stitch-aligned UI implementation and QA",
-  "last_session": "2026-10-04T230338.815557Z",
+  "last_worker": "Codex / GitHub baseline and POC deployment readiness",
+  "last_session": "2026-10-04T232514.403334Z",
   "checkpoint_health": {
-    "last_checkpoint": "2026-10-04T230338.815557Z",
+    "last_checkpoint": "2026-10-04T232514.403334Z",
     "turns_since_checkpoint": 0,
     "dirty_since_checkpoint": false
   },
-  "updated_at": "2026-10-04T230338.815557Z"
+  "updated_at": "2026-10-04T232514.403334Z"
 }

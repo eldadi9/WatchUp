@@ -38,6 +38,8 @@ Thumbs.db
 .dream-team/rollback/
 .claude/.dream-team-backups/
 .vendor-git-backups/
+.playwright-cli/
+watchup-web/screenshots/wp35-live-mobile.png
 
 # Secrets written by New Project Tool - do not commit
 .env.local
