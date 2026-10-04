@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "engine_version": "0.1.0",
+  "orchestrator_id": "watchup-orchestrator",
+  "display_name": "WatchUp",
+  "project_name": "WatchUp",
+  "project_root": "C:\\Users\\Master_PC\\Desktop\\Projects Eldad\\01_Active_Projects\\WatchUp",
+  "trigger_words": [
+    "watchup"
+  ],
+  "execution_mode": {
+    "default_mode": "MANUAL",
+    "autonomous_safe_allowed": false,
+    "max_retry_attempts": 3
+  },
+  "models": {
+    "vocabulary": [
+      "Haiku",
+      "Sonnet",
+      "Opus",
+      "Fable"
+    ],
+    "fallback_model": null,
+    "escalation_model": null
+  },
+  "resource_policy": {
+    "cheapest_capable_first": true,
+    "strongest_only_when_justified": true,
+    "no_agent_swarm_by_default": true,
+    "max_expensive_agents": 1,
+    "do_not_assign_same_premium_to_every_subagent": true,
+    "higher_reasoning_only_where_needed": true,
+    "escalate_model_only_after_evidence": true,
+    "consider_quota_cost_resources": true,
+    "preferred_cost_tier": "low"
+  },
+  "protected_actions": {
+    "inherit_global": true,
+    "additional": []
+  },
+  "continuity": {
+    "state_path": ".ai/andy",
+    "auto_checkpoint": true
+  },
+  "telemetry": {
+    "trace_path": ".ai/andy/trace.jsonl",
+    "enabled": true
+  },
+  "metadata": {
+    "bootstrap_version": "1.1",
+    "source": "project-bootstrap"
+  }
+}

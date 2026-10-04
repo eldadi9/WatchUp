@@ -1,0 +1,13 @@
+# Dream Team Codex project profile. Generated from dream-team/policies/governance.json
+# (resource_governance.provider_enforcement.codex). Do not edit; regenerate instead.
+# Project-scoped (.codex/config.toml); global ~/.codex/config.toml is never modified.
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+# Dream Team token governance. Generated from dream-team/policies/governance.json
+# (resource_governance.provider_enforcement.codex). Do not edit; regenerate instead.
+# Limits apply to subagents only; the main session model and reasoning stay as configured.
+[agents]
+max_concurrent_threads_per_session = 2
+max_depth = 1
+default_subagent_model = "gpt-5.6-terra"
+default_subagent_reasoning_effort = "medium"

@@ -1,0 +1,93 @@
+{
+  "andy_version": "1.1",
+  "project": "WatchUp",
+  "workstream": "watchup-poc",
+  "goal": "Build the approved WatchUp single-family POC with a strictly read-only WhatsApp connection.",
+  "status": "active",
+  "current_phase": "WP-3.5 Git baseline and POC deployment readiness",
+  "current_task": "Create a secret-safe first GitHub baseline with the approved Stitch-aligned MVP and assess VPS/phone-pairing readiness.",
+  "last_completed": [
+    "WP-3.5 dashboard and alerts refined in the approved calm premium RTL direction.",
+    "Groups and contacts screen plus dedicated event detail screen implemented with synthetic data only.",
+    "Responsive, RTL, interaction, accessibility and visual QA completed on mobile and desktop."
+  ],
+  "open_tasks": [
+    "WP-3 Hebrew RTL parent dashboard and alerts using synthetic data",
+    "Operational monitoring and secret rotation",
+    "Off-host encrypted backup replication and periodic recovery drills",
+    "Separately approved live read-only WhatsApp integration and phone pairing"
+  ],
+  "next_action": "Create the initial commit and push main to the authorized GitHub repository, then perform a read-only VPS readiness check.",
+  "decisions": [
+    "Google Stitch screen structure and the WatchUp green identity are the official visual direction.",
+    "MVP navigation exposes dashboard, alerts, groups and contacts, and monitoring settings; event detail opens contextually.",
+    "Only text-event capability is labelled active; unsupported media analysis is not represented as working.",
+    "Owner authorized the first Git commit and push to https://github.com/eldadi9/WatchUp.git; VPS deployment and Yuli phone pairing still require a separate post-readiness approval."
+  ],
+  "restrictions": [
+    "No WhatsApp send, edit, delete, reaction, typing, or other outbound action.",
+    "No real child or family data.",
+    "No VPS mutation, deploy, commit, push, or WhatsApp pairing without separate Owner approval.",
+    "EG-SKILLS is the Dream Team source of truth."
+  ],
+  "files_touched": [
+    "DESIGN.md",
+    "design-qa.md",
+    "watchup-web/index.html",
+    "watchup-web/styles.css",
+    "watchup-web/app.js",
+    "watchup-web/tests/test_static_dashboard.py",
+    ".gitignore",
+    "README.md",
+    "STATUS.md"
+  ],
+  "files_created": [
+    "watchup-web/screenshots/wp35-dashboard-desktop.png",
+    "watchup-web/screenshots/wp35-people-mobile-frame.png",
+    "watchup-web/screenshots/wp35-event-mobile-frame.png"
+  ],
+  "files_deleted": [
+    "watchup-web/screenshots/capture-event.html",
+    "watchup-web/screenshots/capture-people.html",
+    "watchup-web/screenshots/wp35-event-mobile.png",
+    "watchup-web/screenshots/wp35-people-mobile.png",
+    "watchup-web/screenshots/wp35-people-mobile-v2.png"
+  ],
+  "tests": [
+    "WatchUp Web tests: 7/7 passed.",
+    "WatchUp API tests: 29/29 passed.",
+    "JavaScript syntax validation passed.",
+    "Focused Go read-only/auth/webhook safety tests passed."
+  ],
+  "validation": [
+    "Staged-path audit confirmed that no real .env, database, QR session, bridge token, key or certificate is included.",
+    "Credential-pattern scan found no private keys, GitHub tokens, OpenAI keys or AWS access keys in staged content.",
+    "GitHub repository is reachable and currently empty; initial branch is main."
+  ],
+  "errors": [
+    "Full Go suite did not finish within 90 seconds on Windows and was stopped; focused security-critical tests passed."
+  ],
+  "blockers": [],
+  "source_of_truth": [
+    "PROJECT_BRIEF.md",
+    "REQUIREMENTS.md",
+    "PRD.md",
+    "ARCHITECTURE.md",
+    "SECURITY_PLAN.md",
+    "MISSION.md"
+  ],
+  "workspace_root": "C:\\Users\\Master_PC\\Desktop\\Projects Eldad\\01_Active_Projects\\WatchUp",
+  "git": {
+    "branch": "",
+    "head": "",
+    "dirty": false
+  },
+  "last_worker": "Codex / WatchUp WP-3.5 Stitch-aligned UI implementation and QA",
+  "last_session": "2026-10-04T230127.878743Z",
+  "checkpoint_health": {
+    "last_checkpoint": "2026-10-04T230127.878743Z",
+    "turns_since_checkpoint": 0,
+    "dirty_since_checkpoint": false
+  },
+  "updated_at": "2026-10-04T230127.878743Z"
+}

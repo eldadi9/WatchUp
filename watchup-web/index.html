@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#075d48">
+  <title>WatchUp — מרכז הבקרה ההורי</title>
+  <link rel="icon" type="image/jpeg" href="assets/watchup-eye-icon-owner.jpg">
+  <link rel="apple-touch-icon" href="assets/watchup-eye-icon-owner.jpg">
+  <link rel="stylesheet" href="styles.css?v=wp35">
+</head>
+<body>
+  <a class="skip-link" href="#main">דלג לתוכן הראשי</a>
+  <div class="demo-banner" id="environment-status" role="status">סביבת הדגמה · כל הנתונים במסך זה מדומים</div>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#home" data-view-link="home" aria-label="WatchUp — דף הבית"><img class="brand-mark" src="assets/watchup-eye-icon-owner.jpg" alt=""><span><strong lang="en" dir="ltr">WatchUp</strong><small>רואים רק מה שחשוב</small></span></a>
+      <nav class="side-nav" aria-label="ניווט ראשי">
+        <a href="#home" data-view-link="home" class="active"><span class="nav-icon" aria-hidden="true">⌂</span><span><b>תמונת מצב</b><small>מה חשוב עכשיו</small></span></a>
+        <a href="#alerts" data-view-link="alerts"><span class="nav-icon" aria-hidden="true">!</span><span><b>התראות</b><small>אירועים לבדיקה</small></span><bdi class="nav-count">4</bdi></a>
+        <a href="#people" data-view-link="people"><span class="nav-icon" aria-hidden="true">◌</span><span><b>קבוצות ואנשי קשר</b><small>מי חדש ומה השתנה</small></span></a>
+        <a href="#rules" data-view-link="rules"><span class="nav-icon" aria-hidden="true">✓</span><span><b>הגדרות מעקב</b><small>מילים וחיבורים</small></span></a>
+      </nav>
+      <div class="privacy-note"><span aria-hidden="true">◉</span><p><b>קריאה בלבד</b><small>המערכת לא שולחת הודעות ולא משנה תוכן.</small></p></div>
+    </aside>
+    <div class="workspace">
+      <header class="topbar">
+        <button class="child-switch" type="button" aria-label="החלפת ילד — כרגע יולי"><span class="child-avatars" aria-hidden="true"><i>י</i><i>+</i></span><span><b>יולי</b><small>פרופיל הדגמה</small></span><span aria-hidden="true">⌄</span></button>
+        <img class="mobile-brand" src="assets/watchup-eye-icon-owner.jpg" alt="WatchUp">
+        <div class="top-actions"><span class="sync-label" id="sync-status"><i aria-hidden="true"></i>נתוני הדגמה</span><button class="icon-button" type="button" aria-label="פתח התראות" data-view-button="alerts">🔔<span class="notification-dot" aria-hidden="true"></span></button></div>
+      </header>
+      <main id="main" tabindex="-1">
+        <section class="view-panel active" id="view-home" data-view="home" aria-labelledby="home-title">
+          <div class="child-overview"><div class="child-portrait" aria-hidden="true">י</div><div><span class="section-kicker">מרכז הבקרה של</span><h2>יולי</h2><p>הפרופיל מחובר ומקבל עדכונים</p></div><button type="button" class="secondary">החלפת ילד</button></div>
+          <section class="watchup-hero" aria-labelledby="home-title"><div class="hero-copy"><p class="eyebrow">תמונת המצב להיום</p><h1 id="home-title">הכול רגוע אצל יולי</h1><p>יש אירוע אחד שכדאי לבדוק. שאר הפעילות נראית רגילה.</p><div class="connection-pill"><i aria-hidden="true"></i><span><b id="api-state-title">מצב הדגמה</b><small id="api-state-detail">מחובר · קריאה בלבד</small></span></div></div><img src="assets/watchup-child-hero.jpg" alt="איור של ילד המחזיק טלפון ויושב מעל סמל תקשורת ירוק"></section>
+          <section class="summary-strip" aria-label="סיכום יומי">
+            <button type="button" data-view-button="alerts"><span class="summary-symbol urgent" aria-hidden="true">!</span><span><b data-event-count="alert">1</b><small>אירוע חשוב</small></span><em>דורש בדיקה</em></button>
+            <button type="button" data-view-button="alerts"><span class="summary-symbol contact" aria-hidden="true">+</span><span><b data-event-count="contact">2</b><small>אנשי קשר חדשים</small></span><em>מהיום</em></button>
+            <button type="button" data-view-button="people"><span class="summary-symbol group" aria-hidden="true">#</span><span><b data-event-count="group">1</b><small>קבוצה חדשה</small></span><em>מהיום</em></button>
+            <button type="button" data-view-button="rules"><span class="summary-symbol rule" aria-hidden="true">✓</span><span><b>2</b><small>כללי מעקב פעילים</small></span><em>עובדים כרגיל</em></button>
+          </section>
+          <div class="home-grid">
+            <section class="focus-panel" aria-labelledby="focus-title"><div class="section-heading"><div><span class="section-kicker">כדאי לבדוק</span><h2 id="focus-title">האירוע החשוב ביותר היום</h2></div><button class="text-button" type="button" data-view-button="alerts">כל ההתראות ←</button></div>
+              <article class="lead-alert" data-alert data-state="new"><div class="alert-top"><span class="severity important">חשוב</span><time datetime="2026-10-04T10:42:00+03:00">10:42</time></div><h3>ביטוי במעקב זוהה בקבוצה</h3><p>הביטוי <mark>“אוהבת אותך”</mark> הופיע בקבוצת ההדגמה “חברות מהכיתה”.</p><div class="context-line"><span><b>חברות מהכיתה</b><small>קבוצה · 12 משתתפות</small></span><span><b>הופעה אחת</b><small>התאמה מדויקת</small></span></div><div class="alert-actions"><button type="button" class="primary" data-review>סמן כנבדק</button><button type="button" class="secondary" data-view-button="event">הצג פרטים</button></div></article>
+            </section>
+            <section class="timeline-panel" aria-labelledby="timeline-title"><div class="section-heading"><div><span class="section-kicker">מה השתנה</span><h2 id="timeline-title">עדכונים אחרונים</h2></div></div><div class="mini-timeline">
+              <button type="button" data-view-button="alerts"><span class="timeline-dot amber" aria-hidden="true"></span><span><b>מספר לא מזוהה שלח הודעה</b><small><bdi dir="ltr">050-123-4587</bdi> · לפני שעה</small></span><em>לבדיקה</em></button>
+              <button type="button" data-view-button="people"><span class="timeline-dot blue" aria-hidden="true"></span><span><b>קבוצה חדשה הופיעה</b><small>חוג ריקוד — יום חמישי · 08:51</small></span><em>חדש</em></button>
+              <button type="button" data-view-button="people"><span class="timeline-dot green" aria-hidden="true"></span><span><b>איש קשר חדש נשמר</b><small>נועה מהכיתה · 07:36</small></span><em>נבדק</em></button>
+            </div></section>
+          </div>
+          <section class="week-glance" aria-labelledby="week-title"><div><span class="section-kicker">השבוע של יולי</span><h2 id="week-title">תמונה מהירה</h2><p>הפעילות יציבה. יום רביעי היה הפעיל ביותר.</p></div><div class="week-stat"><b>7</b><span>קבוצות פעילות</span></div><div class="week-stat"><b>3</b><span>התראות שנבדקו</span></div><button type="button" class="secondary" data-view-button="people">לקבוצות ולאנשי הקשר</button></section>
+        </section>
+
+        <section class="view-panel" id="view-alerts" data-view="alerts" aria-labelledby="alerts-title" hidden>
+          <div class="page-title compact"><div><p class="eyebrow">מרכז ההתראות</p><h1 id="alerts-title">מה דורש תשומת לב</h1><p>כל האירועים מסודרים לפי חשיבות, כדי לדעת במה לטפל קודם.</p></div><div class="count-badge"><b>4</b><span>פתוחות</span></div></div>
+          <div class="filter-bar" role="group" aria-label="סינון התראות"><button class="active" type="button" data-filter="all">הכול <bdi>4</bdi></button><button type="button" data-filter="important">חשוב <bdi>1</bdi></button><button type="button" data-filter="review">לבדיקה <bdi>2</bdi></button><button type="button" data-filter="info">מידע <bdi>1</bdi></button></div>
+          <div class="alerts-layout"><div class="alert-feed" id="alerts-feed">
+            <article class="feed-item selected" data-category="important"><span class="feed-symbol urgent" aria-hidden="true">!</span><div><div class="feed-meta"><span class="severity important">חשוב</span><time>10:42</time></div><h2>ביטוי במעקב זוהה בקבוצה</h2><p>“אוהבת אותך” · חברות מהכיתה</p></div><button type="button" data-view-button="event" aria-label="פתח פרטי התראה">←</button></article>
+            <article class="feed-item" data-category="review"><span class="feed-symbol contact" aria-hidden="true">?</span><div><div class="feed-meta"><span class="severity review">לבדיקה</span><time>09:18</time></div><h2>מספר לא מזוהה שלח הודעה</h2><p><bdi dir="ltr">050-123-4587</bdi> · שיחה פרטית ראשונה</p></div><button type="button" data-view-button="event" aria-label="פתח פרטי התראה">←</button></article>
+            <article class="feed-item" data-category="info"><span class="feed-symbol group" aria-hidden="true">#</span><div><div class="feed-meta"><span class="severity info">מידע</span><time>08:51</time></div><h2>קבוצה חדשה הופיעה</h2><p>חוג ריקוד — יום חמישי</p></div><button type="button" data-view-button="event" aria-label="פתח פרטי התראה">←</button></article>
+            <article class="feed-item" data-category="review"><span class="feed-symbol media" aria-hidden="true">▶</span><div><div class="feed-meta"><span class="severity review">לבדיקה</span><time>אתמול</time></div><h2>הודעה קולית ארוכה התקבלה</h2><p>קבוצת ההדגמה · 3:42 דקות</p></div><button type="button" data-view-button="event" aria-label="פתח פרטי התראה">←</button></article>
+          </div><aside class="alert-preview" aria-label="פרטי ההתראה שנבחרה"><span class="severity important">חשוב</span><h2>ביטוי במעקב זוהה בקבוצה</h2><p>המערכת זיהתה התאמה מדויקת לכלל שהגדרת.</p><dl><div><dt>מקור</dt><dd>חברות מהכיתה</dd></div><div><dt>סוג</dt><dd>קבוצה · 12 משתתפות</dd></div><div><dt>כלל</dt><dd>“אוהבת אותך”</dd></div><div><dt>זמן</dt><dd>היום, 10:42</dd></div></dl><div class="privacy-box"><b>פרטיות לפני הכול</b><p>מוצג רק ההקשר הדרוש להבנת החריגה, לא שיחה מלאה.</p></div><button type="button" class="primary wide" data-review-preview>סמן כנבדק</button></aside></div>
+        </section>
+
+        <section class="view-panel" id="view-people" data-view="people" aria-labelledby="people-title" hidden>
+          <div class="page-title compact"><div><p class="eyebrow">המעגל של יולי</p><h1 id="people-title">קבוצות ואנשי קשר</h1><p>מקום אחד להבין מי חדש, אילו קבוצות פעילות ומה השתנה השבוע.</p></div><div class="count-badge calm"><b>3</b><span>שינויים</span></div></div>
+          <div class="people-summary" aria-label="סיכום קבוצות ואנשי קשר"><article><span class="summary-symbol group" aria-hidden="true">#</span><div><b>11</b><small>קבוצות מוכרות</small></div></article><article><span class="summary-symbol contact" aria-hidden="true">+</span><div><b>2</b><small>אנשי קשר חדשים</small></div></article><article><span class="summary-symbol urgent" aria-hidden="true">?</span><div><b>1</b><small>מספר לא מזוהה</small></div></article></div>
+          <div class="people-tabs" role="tablist" aria-label="בחירת סוג רשימה"><button type="button" class="active" role="tab" aria-selected="true" data-people-tab="groups">קבוצות</button><button type="button" role="tab" aria-selected="false" data-people-tab="contacts">אנשי קשר</button></div>
+          <div class="people-layout">
+            <section class="directory-panel" data-people-panel="groups" aria-labelledby="groups-title"><div class="section-heading"><div><span class="section-kicker">11 קבוצות</span><h2 id="groups-title">הקבוצות של יולי</h2></div><span class="trend">פעילות יציבה</span></div><div class="directory-list"><button type="button"><span class="directory-avatar group">#</span><span><b>חברות מהכיתה</b><small>12 משתתפות · פעילה היום</small></span><em class="status-known">מוכרת</em></button><button type="button"><span class="directory-avatar group">#</span><span><b>חוג ריקוד — יום חמישי</b><small>21 משתתפות · נוספה היום</small></span><em class="status-new">חדשה</em></button><button type="button"><span class="directory-avatar family">מ</span><span><b>משפחה</b><small>8 משתתפים · פעילה אתמול</small></span><em class="status-known">מוכרת</em></button></div></section>
+            <section class="directory-panel" data-people-panel="contacts" aria-labelledby="contacts-title" hidden><div class="section-heading"><div><span class="section-kicker">36 אנשי קשר</span><h2 id="contacts-title">אנשי הקשר של יולי</h2></div></div><div class="directory-list"><button type="button"><span class="directory-avatar contact">נ</span><span><b>נועה מהכיתה</b><small>נשמרה היום · אין אירועים חריגים</small></span><em class="status-new">חדשה</em></button><button type="button" data-view-button="event"><span class="directory-avatar unknown">?</span><span><b><bdi dir="ltr">050-123-4587</bdi></b><small>לא נמצא באנשי הקשר · הודעה ראשונה היום</small></span><em class="status-review">לבדיקה</em></button><button type="button"><span class="directory-avatar contact">א</span><span><b>אמא</b><small>איש קשר מוכר · פעילות רגילה</small></span><em class="status-known">מוכר</em></button></div></section>
+            <aside class="weekly-card" aria-labelledby="weekly-card-title"><span class="section-kicker">דוח בסיסי</span><h2 id="weekly-card-title">השבוע בקצרה</h2><div class="weekly-meter"><span><b>חברות מהכיתה</b><small>הקבוצה הפעילה ביותר</small></span><strong>88</strong></div><div class="weekly-meter"><span><b>משפחה</b><small>פעילות בינונית</small></span><strong>62</strong></div><div class="weekly-meter"><span><b>חוג ריקוד</b><small>קבוצה חדשה</small></span><strong>41</strong></div><p>המספרים מייצגים אירועים שנקלטו, לא זמן מסך ולא ציון מוגנות.</p></aside>
+          </div>
+        </section>
+
+        <section class="view-panel" id="view-event" data-view="event" aria-labelledby="event-title" hidden>
+          <button type="button" class="back-link" data-view-button="alerts">→ חזרה להתראות</button>
+          <div class="event-layout"><article class="event-card"><div class="event-heading"><span class="event-symbol" aria-hidden="true">!</span><div><span class="severity important">חשוב</span><h1 id="event-title">ביטוי במעקב זוהה בקבוצה</h1><p>המערכת זיהתה התאמה מדויקת לכלל שהגדרת.</p></div></div><div class="event-facts"><div><span>מקור האירוע</span><b>חברות מהכיתה</b><small>קבוצה · 12 משתתפות</small></div><div><span>זמן</span><b>היום, 10:42</b><small>נקלט תוך 8 שניות</small></div><div><span>הכלל שהופעל</span><b>“אוהבת אותך”</b><small>התאמה מדויקת</small></div><div><span>סוג תוכן</span><b>טקסט</b><small>יכולת פעילה ב־MVP</small></div></div><section class="context-card" aria-labelledby="context-title"><div><span class="section-kicker">הקשר מינימלי</span><h2 id="context-title">למה האירוע הוצג?</h2></div><blockquote>“…אוהבת אותך…”</blockquote><p>מוצג רק החלק שהפעיל את הכלל. השיחה המלאה אינה מוצגת במסך זה.</p></section><div class="event-actions"><button type="button" class="primary" data-review-event>סמן כנבדק</button><button type="button" class="secondary" data-view-button="people">פתח את פרטי הקבוצה</button></div></article><aside class="event-explainer"><span aria-hidden="true">◉</span><h2>מה כדאי לדעת</h2><p>זו התראת בדיקה שנוצרה מנתונים מדומים. היא נועדה לוודא שכלל המילים פועל ומגיע בזמן.</p><ul><li>אין שליחה או פעולה ב־WhatsApp</li><li>האירוע נשמר לקריאה בלבד</li><li>אפשר לסמן שנבדק בלי לשנות את השיחה</li></ul></aside></div>
+        </section>
+
+        <section class="view-panel" id="view-rules" data-view="rules" aria-labelledby="rules-title" hidden>
+          <div class="page-title compact"><div><p class="eyebrow">התאמה אישית</p><h1 id="rules-title">הגדרות ומעקב</h1><p>כל ההגדרות החשובות, כולל מילים וביטויים במעקב, מחולקות לפי נושא במקום אחד ברור.</p></div><div class="count-badge calm"><b>2</b><span>כללים פעילים</span></div></div>
+          <section class="settings-groups" aria-label="קטגוריות הגדרות">
+            <div class="settings-group"><h2>חיבור והתראות</h2><button type="button"><span class="setting-tone green"></span><span><b>חיבור WhatsApp</b><small>מחובר · סנכרון חי · קריאה בלבד</small></span><em>תקין</em></button><button type="button"><span class="setting-tone amber"></span><span><b>סוגי התראות</b><small>אירועים חשובים, שינויים ועדכונים</small></span><em>4 פעילים</em></button></div>
+            <div class="settings-group"><h2>מעקב ותוכן</h2><button type="button" data-jump-rules><span class="setting-tone purple"></span><span><b>מילים וביטויים</b><small>הוספה וניהול של כללי זיהוי</small></span><em>2 פעילים</em></button><button type="button"><span class="setting-tone blue"></span><span><b>דוח שבועי</b><small>סיכום פעילות, קבוצות ושינויים</small></span><em>פעיל</em></button></div>
+            <div class="settings-group"><h2>פרטיות ומשפחה</h2><button type="button"><span class="setting-tone red"></span><span><b>פרטיות ואבטחה</b><small>גישה, שמירת נתונים והפרדה מלאה</small></span><em>מוגן</em></button><button type="button"><span class="setting-tone teal"></span><span><b>ניהול ילדים</b><small>יולי · פרופיל אחד מחובר</small></span><em>1</em></button></div>
+          </section>
+          <section class="api-connect" aria-labelledby="api-connect-title">
+            <div><span class="section-kicker">חיבור מאובטח</span><h2 id="api-connect-title">נתוני ה־POC מהשרת</h2><p>הזינו את קוד הגישה הזמני כדי לטעון אירועי בדיקה מה־API לקריאה בלבד.</p></div>
+            <form id="api-connect-form"><label for="api-token">קוד גישה</label><input id="api-token" type="password" autocomplete="current-password" required minlength="24"><button class="primary" type="submit">התחברו</button><button class="secondary" id="api-disconnect" type="button" hidden>נתקו</button></form>
+          </section>
+          <div class="rules-layout"><section class="rule-builder"><span class="section-kicker">כלל חדש</span><h2>מה תרצו שהמערכת תזהה?</h2><form id="rule-form"><label for="rule-input">מילה או ביטוי</label><input id="rule-input" name="rule" dir="auto" placeholder="לדוגמה: אוהבת אותך" required minlength="2"><label for="severity-select">רמת החשיבות</label><select id="severity-select"><option value="לבדיקה">לבדיקה</option><option value="חשוב">חשוב</option><option value="קריטי">קריטי</option></select><fieldset><legend>איפה לחפש?</legend><label><input type="checkbox" checked> קבוצות</label><label><input type="checkbox" checked> שיחות פרטיות</label></fieldset><button class="primary wide" type="submit">הוסף למעקב</button><p class="form-help">הנתונים נשמרים בדפדפן ההדגמה בלבד.</p></form></section>
+            <section class="active-rules"><div class="section-heading"><div><span class="section-kicker">פעילים עכשיו</span><h2>כללי המעקב שלי</h2></div></div><ul class="rule-list" id="rule-list"><li><span class="rule-status" aria-hidden="true"></span><span><b>אוהבת אותך</b><small>התאמה מדויקת · כל הצ׳אטים</small></span><span class="severity important">חשוב</span><button type="button" data-remove aria-label="הסר את הביטוי אוהבת אותך">הסר</button></li><li><span class="rule-status" aria-hidden="true"></span><span><b>חרם</b><small>מילה מלאה · כל הקבוצות</small></span><span class="severity critical">קריטי</span><button type="button" data-remove aria-label="הסר את המילה חרם">הסר</button></li></ul><div class="rules-tip"><b>טיפ ל־POC</b><p>כדאי להתחיל גם במילים חיוביות שקל לצפות שיופיעו. כך נוכל לוודא במהירות שהזיהוי וההתראה עובדים בזמן אמת.</p></div></section></div>
+        </section>
+        <footer class="app-footer"><span>WatchUp · סביבת POC מאובטחת</span><a href="accessibility.html">הצהרת נגישות</a></footer>
+      </main>
+    </div>
+  </div>
+  <nav class="mobile-nav" aria-label="ניווט תחתון"><a href="#home" data-view-link="home" class="active"><span aria-hidden="true">⌂</span>בית</a><a href="#alerts" data-view-link="alerts"><span aria-hidden="true">!</span>התראות<i>4</i></a><a href="#people" data-view-link="people"><span aria-hidden="true">◌</span>קבוצות ואנשי קשר</a><a href="#rules" data-view-link="rules"><span aria-hidden="true">✓</span>הגדרות</a></nav>
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+  <script src="app.js?v=wp35"></script>
+</body>
+</html>

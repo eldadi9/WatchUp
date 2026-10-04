@@ -1,0 +1,3 @@
+subjectAltName=DNS:watchup-postgres
+extendedKeyUsage=serverAuth
+keyUsage=digitalSignature,keyEncipherment

@@ -1,0 +1,574 @@
+{
+  "schemaVersion": "1.0",
+  "skill": "israeli-appsec-scanner",
+  "generated_at": "2026-08-26T16:24:09.186835",
+  "claims": [
+    {
+      "claim_id": "amendment-13-in-force",
+      "claim": "Amendment 13 to the Protection of Privacy Law, 5741-1981 entered into force on 14 August 2025.",
+      "source_url": "https://iapp.org/news/a/israel-marks-a-new-era-in-privacy-law-amendment-13-ushers-in-sweeping-reform",
+      "raw_snippet": "On 14 Aug., Israel enters a new chapter in its data protection regime. With the enactment of Amendment 13 to the Protection of Privacy Law, 5741-1981, the country has introduced a comprehensive overhaul of its privacy framework.",
+      "fetched_at": "2026-08-09",
+      "verified_via": "raw HTML fetch (curl) of source page",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "amendment-13-registration",
+      "claim": "Database registration is required only where the database's primary purpose is collecting personal data to provide to others as a business (data brokers) and it holds data on more than 10,000 / 10,000 individuals, or where the controller is a public body.",
+      "source_url": "https://iclg.com/practice-areas/data-protection-laws-and-regulations/israel/",
+      "raw_snippet": "Under the PPL, a database must be registered if one of the following conditions is met: (a) its primary purpose is to collect personal data for the purpose of providing it to others as a business practice or for compensation, including direct mailing services, and the database contains personal data about more than 10,000 individuals; or (b) the controller of the database is a public body (excluding databases of personal data about employees only). In addition, the PPL stipulates a duty to notify the Registrar if the database contains data of special sensitivity about more than 100,000 data subjects.",
+      "fetched_at": "2026-08-09",
+      "verified_via": "raw HTML fetch (curl) of source page",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "amendment-13-breach-notification",
+      "claim": "On a severe security incident the controller must immediately notify the PPA and report the measures taken; the statute says \"immediately\", not a fixed 72-hour clock.",
+      "source_url": "https://iclg.com/practice-areas/data-protection-laws-and-regulations/israel/",
+      "raw_snippet": "Under the Data Security Regulations, in the event of a “severe security incident” (see definition above), the controller must immediately notify the PPA and report the measures taken following the incident.",
+      "fetched_at": "2026-08-09",
+      "verified_via": "raw HTML fetch (curl) of source page",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "amendment-13-statutory-damages",
+      "claim": "Amendment 13 adds a court power to award damages independent of proven harm, up to NIS 10,000 / 10,000 ש\"ח, for breaches such as purpose limitation, right of access, and failure to delete on request.",
+      "source_url": "https://www.ebnlaw.co.il/he/%D7%90%D7%95%D7%A9%D7%A8-%D7%AA%D7%99%D7%A7%D7%95%D7%9F-%D7%9E%D7%A1-13-%D7%9C%D7%97%D7%95%D7%A7-%D7%94%D7%92%D7%A0%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%95%D7%AA-%D7%A2%D7%99%D7%A7%D7%A8%D7%99/",
+      "raw_snippet": "• התיקון מקנה סמכות לבית המשפט לפסוק פיצויים עונשיים שאינם תלויים בנזק עד 10,000 ש\"ח, למשל במקרים בהם הופר עיקרון צמידות המטרה, לא מומשה זכות העיון במידע, או שלא נמחק מידע בעקבות בקשת אדם וכיו\"ב.",
+      "fetched_at": "2026-08-09",
+      "verified_via": "raw HTML fetch (curl) of source page",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "ppl-and-gdpr-section-refs",
+      "claim": "Privacy Protection Law 5741-1981, section 1: a person shall not infringe the privacy of another without their consent. The compliance table maps Israeli Privacy Protection Law provisions to GDPR articles. Israeli refs: Section 1, Section 8, Section 11, Section 13, Section 14, Section 14A, Section 3",
+      "source_url": "https://he.wikisource.org/wiki/%D7%97%D7%95%D7%A7_%D7%94%D7%92%D7%A0%D7%AA_%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%95%D7%AA",
+      "raw_snippet": "1. איסור הפגיעה בפרטיות לא יפגע אדם בפרטיות של זולתו ללא הסכמתו.",
+      "fetched_at": "2026-08-13",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ],
+      "verified_via": "curl",
+      "verified_at": "2026-08-13"
+    },
+    {
+      "claim_id": "owasp-top10-2025-a03",
+      "claim": "OWASP Top 10:2025 category A03 is Software Supply Chain Failures.",
+      "source_url": "https://owasp.org/Top10/2025/",
+      "raw_snippet": "A03:2025 - Software Supply Chain Failures",
+      "fetched_at": "2026-08-09",
+      "verified_via": "raw HTML fetch (curl) of source page",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ]
+    },
+    {
+      "claim_id": "owasp-top10-2025-a05",
+      "claim": "OWASP Top 10:2025 category A05 is Injection (down from A03 in 2021).",
+      "source_url": "https://owasp.org/Top10/2025/",
+      "raw_snippet": "A05:2025 - Injection",
+      "fetched_at": "2026-08-09",
+      "verified_via": "raw HTML fetch (curl) of source page",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ]
+    },
+    {
+      "claim_id": "owasp-top10-2025-a09",
+      "claim": "OWASP Top 10:2025 category A09 is renamed Security Logging and Alerting Failures.",
+      "source_url": "https://owasp.org/Top10/2025/",
+      "raw_snippet": "A09:2025 - Security Logging and Alerting Failures",
+      "fetched_at": "2026-08-09",
+      "verified_via": "raw HTML fetch (curl) of source page",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ]
+    },
+    {
+      "claim_id": "owasp-top10-2025-a10",
+      "claim": "OWASP Top 10:2025 adds a new A10, Mishandling of Exceptional Conditions.",
+      "source_url": "https://owasp.org/Top10/2025/",
+      "raw_snippet": "A10:2025 - Mishandling of Exceptional Conditions",
+      "fetched_at": "2026-08-09",
+      "verified_via": "raw HTML fetch (curl) of source page",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ]
+    },
+    {
+      "claim_id": "owasp-top10-2025-ssrf",
+      "claim": "SSRF is no longer a standalone Top 10 entry in 2025; CWE-918 (SSRF) is now mapped under A01 Broken Access Control.",
+      "source_url": "https://owasp.org/Top10/2025/A01_2025-Broken_Access_Control/",
+      "raw_snippet": "CWE-918 Server-Side Request Forgery (SSRF)",
+      "fetched_at": "2026-08-09",
+      "verified_via": "raw HTML fetch (curl) of source page",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ]
+    },
+    {
+      "claim_id": "trivy-compromise",
+      "claim": "GHSA-69fq-xp46-6x23 / CVE-2026-33634: malicious Trivy v0.69.4 release on 19 Mar 2026, 76 of 77 aquasecurity/trivy-action tags force-pushed, all 7 setup-trivy tags replaced, malicious v0.69.5/v0.69.6 DockerHub images on 22 Mar 2026. Fixed: trivy-action >= 0.35.0, setup-trivy >= 0.2.6; trivy binary v0.69.3 and earlier unaffected.",
+      "source_url": "https://github.com/aquasecurity/trivy/security/advisories/GHSA-69fq-xp46-6x23",
+      "raw_snippet": "On March 19, 2026, a threat actor used compromised credentials to publish a malicious Trivy v0.69.4 release, force-push 76 of 77 version tags in aquasecurity/trivy-action to credential-stealing malware, and replace all 7 tags in aquasecurity/setup-trivy with malicious commits. On March 22, 2026, a threat actor used compromised credentials to publish a malicious Trivy v0.69.5 and v0.69.6 DockerHub images.",
+      "fetched_at": "2026-08-26",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ],
+      "verified_via": "raw HTML fetch (curl) of source page"
+    },
+    {
+      "claim_id": "security-tool-urls",
+      "claim": "Security tooling and reference URLs used by the skill. Also covers: https://github.com/trufflesecurity/trufflehog https://snyk.io/product/open-source-security-management/ https://trojansource.codes/ https://unicode.org/reports/tr9/. The skill references https://trivy.dev.",
+      "source_url": "https://raw.githubusercontent.com/aquasecurity/trivy/main/README.md",
+      "raw_snippet": "Trivy ([pronunciation][pronunciation]) is a comprehensive and versatile security scanner.",
+      "fetched_at": "2026-08-18",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ],
+      "verified_via": "Trivy's own README in the aquasecurity/trivy repository",
+      "verified_at": "2026-08-18"
+    },
+    {
+      "claim_id": "gov-and-nevo-urls",
+      "claim": "The Privacy Protection Authority is the Israeli regulatory and enforcing authority for personal digital information under the Privacy Protection Law; its gov.il department pages (Hebrew and English) and those of the Israel National Cyber Directorate are the reference URLs used in this skill. NOTE: the Nevo URL https://www.nevo.co.il/law_html/law01/133_001.htm previously cited here for the Privacy Protection Law text actually serves a DIFFERENT statute (Patient Rights Law) and must be replaced.",
+      "source_url": "https://www.gov.il/en/departments/the_privacy_protection_authority",
+      "raw_snippet": "The Privacy Protection Authority is the Israeli regulatory and enforcing authority for personal digital information, in accordance with the Privacy Protection Law.",
+      "fetched_at": "2026-08-11T00:00:00Z",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "illustrative-examples",
+      "claim": "Illustrative (non-operational) examples in the OWASP Hebrew checklist: percent-encoded Hebrew path segments such as %D7%90 (alef), which contain literal sequences like 7% as a side effect, and example CSP / Google Fonts URLs. Covers these references: https://fonts.googleapis.com https://fonts.googleapis.com/css2?family=Heebo:wght@400;700 https://fonts.gstatic.com https://your-api.co.il",
+      "source_url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "raw_snippet": "OWASP Web Security Testing Guide | OWASP Foundation",
+      "fetched_at": "2026-08-18",
+      "appears_in": [
+        "references/owasp-hebrew-checklist.md",
+        "SKILL.md"
+      ],
+      "verified_via": "reference-coverage entry; the links it covers moved into the claim and the snippet is a quote from its own source page",
+      "verified_at": "2026-08-18"
+    },
+    {
+      "claim_id": "owasp-top10-index",
+      "claim": "https://owasp.org/Top10/ is the OWASP Top 10 project index, which now redirects to the 2025 edition.",
+      "source_url": "https://owasp.org/Top10/",
+      "raw_snippet": "Redirecting to OWASP Top 10:2025. If not redirected,",
+      "fetched_at": "2026-08-09",
+      "verified_via": "raw HTML fetch (curl) of source page",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ]
+    },
+    {
+      "claim_id": "owasp-top10-2021",
+      "claim": "https://owasp.org/Top10/2021/ is the OWASP Top 10:2021 edition, the predecessor referenced for comparison.",
+      "source_url": "https://owasp.org/Top10/2021/",
+      "raw_snippet": "Welcome to the OWASP Top 10:2021 documentation.",
+      "fetched_at": "2026-08-09",
+      "verified_via": "raw HTML fetch (curl) of source page",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ]
+    },
+    {
+      "claim_id": "incd-he-url",
+      "claim": "Reference link: the Israel National Cyber Directorate gov.il department page (Hebrew), https://www.gov.il/he/departments/israel_national_cyber_directorate . It is the technological-operational body responsible for defending the national cyberspace.",
+      "source_url": "https://www.gov.il/he/departments/israel_national_cyber_directorate",
+      "raw_snippet": "המערך הוא גוף טכנולוגי - מבצעי האמון על הגנת מרחב הסייבר הלאומי ועל קידום וביסוס עוצמתה של ישראל בתחום.",
+      "fetched_at": "2026-08-11T00:00:00Z",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ]
+    },
+    {
+      "claim_id": "incd-en-url",
+      "claim": "Reference link: the Israel National Cyber Directorate gov.il department page (English), https://www.gov.il/en/departments/israel_national_cyber_directorate . It is responsible for all aspects of cyber defense in the civilian sphere.",
+      "source_url": "https://www.gov.il/en/departments/israel_national_cyber_directorate",
+      "raw_snippet": "The Israel National Cyber Directorate is responsible for all aspects of cyber defense in the civilian sphere, from formulating policy and building technological power to operational defense in cyberspace.",
+      "fetched_at": "2026-08-11T00:00:00Z",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ]
+    },
+    {
+      "claim_id": "ppa-he-url",
+      "claim": "Reference link: the Privacy Protection Authority gov.il department page (Hebrew), https://www.gov.il/he/departments/the_privacy_protection_authority . It is the body that regulates, supervises and enforces under Israel's Privacy Protection Law.",
+      "source_url": "https://www.gov.il/he/departments/the_privacy_protection_authority",
+      "raw_snippet": "הרשות להגנת הפרטיות הינה הגוף המסדיר, המפקח והאוכף על פי חוק הגנת הפרטיות בישראל.",
+      "fetched_at": "2026-08-11T00:00:00Z",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ]
+    },
+    {
+      "claim_id": "ppl-s1-no-infringement",
+      "claim": "סעיף 1 לחוק הגנת הפרטיות: לא יפגע אדם בפרטיות של זולתו ללא הסכמתו.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/71631.htm",
+      "raw_snippet": "1. לא יפגע אדם בפרטיות של זולתו ללא הסכמתו. פגיעה בפרטיות מהי 2. פגיעה בפרטיות היא אחת מאלה: (1) בילוש או התחקות אחרי אדם, העלולים להטרידו, או הטרדה אחרת; (2) האזנה האסורה על פי חו",
+      "fetched_at": "2026-08-17",
+      "verified_via": "Privacy Protection Law read directly on nevo (title confirmed)",
+      "verified_at": "2026-08-17",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "ppl-s6-de-minimis",
+      "claim": "סעיף 6 לחוק שולל תביעה בשל פגיעה שאין בה ממש.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/71631.htm",
+      "raw_snippet": "6. לא תהיה זכות לתביעה אזרחית או פלילית לפי חוק זה בשל פגיעה שאין בה ממש. פרק ב': הגנה על הפרטיות במאגרי מידע הגדרות 7. (בוטל) סימן א': מאגרי מידע ניהול מאגר מידע ועיבוד חוקי של מי",
+      "fetched_at": "2026-08-17",
+      "verified_via": "Privacy Protection Law read directly on nevo (title confirmed)",
+      "verified_at": "2026-08-17",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "ppl-s8-lawful-processing",
+      "claim": "סעיף 8 לחוק מתנה עיבוד מידע אישי במאגר במטרה שלשמה הוקם.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/71631.htm",
+      "raw_snippet": "8. (א) בסעיף זה, \" עיבוד \" – למעט אחסון באקראי ובתום לב. (ב) לא יעבד אדם מידע אישי במאגר מידע אלא למטרת המאגר שנקבעה לו כדין. (ג) לא יעבד אדם מידע אישי ממאגר מידע ללא הרשאה מאת בעל",
+      "fetched_at": "2026-08-17",
+      "verified_via": "Privacy Protection Law read directly on nevo (title confirmed)",
+      "verified_at": "2026-08-17",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "ppl-s11-notice-on-collection",
+      "claim": "סעיף 11 לחוק מחייב שפנייה לאדם לקבלת מידע אישי תלווה בהודעה.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/71631.htm",
+      "raw_snippet": "11. פניה לאדם לקבלת מידע אישי לשם עיבודו במאגר מידע תלווה בהודעה שיצויינו בה – (1) אם חלה על אותו אדם חובה חוקית למסור את המידע, או שמסירת המידע תלויה ברצונו ובהסכמתו ומהי תוצאת אי",
+      "fetched_at": "2026-08-17",
+      "verified_via": "Privacy Protection Law read directly on nevo (title confirmed)",
+      "verified_at": "2026-08-17",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "ppl-s13-right-of-access",
+      "claim": "סעיף 13 לחוק מקנה לכל אדם זכות עיון במידע האישי שעליו.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/71631.htm",
+      "raw_snippet": "13. (א) כל אדם זכאי לעיין בעצמו, או על ידי בא-כוחו שהרשהו בכתב או על ידי אפוטרופסו, במידע האישי שעליו המוחזק במאגר מידע. (ב) בעל שליטה במאגר מידע יאפשר עיון במידע האישי, לפי בקשת א",
+      "fetched_at": "2026-08-17",
+      "verified_via": "Privacy Protection Law read directly on nevo (title confirmed)",
+      "verified_at": "2026-08-17",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "ppl-s14-correct-or-delete",
+      "claim": "סעיף 14(א) לחוק מקנה זכות לבקש לתקן את המידע האישי או למוחקו. אין בחוק סעיף 14א; זו הייתה הצעת תיקון בלבד.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/71631.htm",
+      "raw_snippet": "14. (א) אדם שעיין במידע האישי שעליו ומצא כי אינו נכון, שלם, ברור או מעודכן, רשאי לפנות לבעל השליטה במאגר המידע, ואם הוא תושב חוץ – למחזיק מאגר המידע, בבקשה לתקן את המידע האישי או ל",
+      "fetched_at": "2026-08-17",
+      "verified_via": "Privacy Protection Law read directly on nevo (title confirmed)",
+      "verified_at": "2026-08-17",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "ppl-s15-refusal",
+      "claim": "סעיף 15 לחוק עוסק בסירוב לאפשר עיון ובדרכי הערעור עליו.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/71631.htm",
+      "raw_snippet": "15. על סירובו של בעל שליטה במאגר מידע לאפשר עיון כאמור בסעיף 13 או בסעיף 13א ועל הודעת סירוב כאמור בסעיף 14(ג), רשאי מבקש המידע להגיש תובענה לבית המשפט באופן ובדרך שנקבעו בתקנות. פ",
+      "fetched_at": "2026-08-17",
+      "verified_via": "Privacy Protection Law read directly on nevo (title confirmed)",
+      "verified_at": "2026-08-17",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "ppl-s16-confidentiality",
+      "claim": "סעיף 16 לחוק אוסר גילוי מידע אישי שהגיע לאדם בתוקף תפקידו.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/71631.htm",
+      "raw_snippet": "16. לא יגלה אדם מידע אישי שהגיע אליו בתוקף תפקידו כעובד, כמנהל או כמחזיק של מאגר מידע, אלא לצורך ביצוע עבודתו או לביצוע חוק זה או על פי צו בית משפט בקשר להליך משפטי; אם הוגשה הבקשה",
+      "fetched_at": "2026-08-17",
+      "verified_via": "Privacy Protection Law read directly on nevo (title confirmed)",
+      "verified_at": "2026-08-17",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "ppl-s17-security-duty",
+      "claim": "סעיף 17 לחוק מטיל על בעל השליטה ועל המחזיק במאגר את האחריות לאבטחת המידע.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/71631.htm",
+      "raw_snippet": "17. (א) בעל שליטה במאגר מידע ומחזיק במאגר מידע, כל אחד מהם אחראי לאבטחת המידע שבמאגר המידע. (ב) (1) שר המשפטים, בהסכמת ראש הממשלה ובאישור ועדת החוקה, רשאי לקבוע תקנות לעניין האחריו",
+      "fetched_at": "2026-08-17",
+      "verified_via": "Privacy Protection Law read directly on nevo (title confirmed)",
+      "verified_at": "2026-08-17",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "ppl-s17vav-direct-marketing",
+      "claim": "סעיף 17ו לחוק מחייב שכל פנייה בדיוור ישיר תציין את זכות הנמען להימחק מהמאגר, ומקנה את הזכות לדרוש זאת. סעיף 17ג בוטל.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/71631.htm",
+      "raw_snippet": "17ו. (א) כל פניה בדיוור ישיר תכיל באופן ברור ובולט – (1) ציון כי הפניה היא בדיוור ישיר, בצירוף ציון מספר הרישום של המאגר המשמש לשירותי דיוור ישיר במרשם מאגרי מידע; (2) הודעה על זכו",
+      "fetched_at": "2026-08-17",
+      "verified_via": "Privacy Protection Law read directly on nevo (title confirmed)",
+      "verified_at": "2026-08-17",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "ppl-s30-press",
+      "claim": "סעיף 30 לחוק עוסק באחריות בשל פגיעה בפרטיות שפורסמה בעיתון.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/71631.htm",
+      "raw_snippet": "30. (א) פורסמה פגיעה בפרטיות בעתון, ישאו באחריות פלילית ואזרחית בשל הפגיעה האדם שהביא את הדבר לעתון וגרם בכך לפרסומו, עורך העתון ומי שהחליט בפועל על פרסום אותה פגיעה בעתון, ובאחריו",
+      "fetched_at": "2026-08-17",
+      "verified_via": "Privacy Protection Law read directly on nevo (title confirmed)",
+      "verified_at": "2026-08-17",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "ppl-s32-evidence",
+      "claim": "סעיף 32 לחוק פוסל חומר שהושג תוך פגיעה בפרטיות כראיה, אלא באישור בית המשפט.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/71631.htm",
+      "raw_snippet": "32. חומר שהושג תוך פגיעה בפרטיות יהיה פסול לשמש ראיה בבית משפט, ללא הסכמת הנפגע, זולת אם בית המשפט התיר מטעמים שיירשמו להשתמש בחומר, או אם היו לפוגע, שהיה צד להליך, הגנה או פטור לפ",
+      "fetched_at": "2026-08-17",
+      "verified_via": "Privacy Protection Law read directly on nevo (title confirmed)",
+      "verified_at": "2026-08-17",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "ppl-s36-regulation-power",
+      "claim": "Section 36 of the Privacy Protection Law is the Minister of Justice's power to make regulations, not a cross-border transfer rule. סעיף 36 לחוק אינו עוסק בהעברה חוצת גבולות אלא בסמכות ההתקנה.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/71631.htm",
+      "raw_snippet": "36. שר המשפטים ממונה על ביצוע חוק זה והוא רשאי להתקין תקנות, באישור ועדת החוקה, בכל ענין הנוגע לביצועו, ובין השאר – (1) תנאי החזקת מידע ושמירתו במאגרי מידע; (2) תנאים להעברה של מיד",
+      "fetched_at": "2026-08-17",
+      "verified_via": "Privacy Protection Law read directly on nevo (title confirmed)",
+      "verified_at": "2026-08-17",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "ppl-cross-border-regs",
+      "claim": "העברת מידע אל מחוץ לישראל נשלטת בתקנות הגנת הפרטיות (העברת מידע אל מאגרי מידע שמחוץ לגבולות המדינה), תשס\"א-2001, ולא בסעיף 36 לחוק.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/71639.htm",
+      "raw_snippet": "לא יעביר אדם מידע ולא יאפשר העברה של מידע ממאגר מידע בישראל אל מחוץ לגבולותיה, אלא אם כן דין המדינה שאליה מועבר המידע, מבטיח רמת הגנה על מידע שאינה פחותה, בשינויים המחויבים, מרמת ההגנה על מידע הקבועה בדין הישראלי, ובכלל",
+      "fetched_at": "2026-08-17",
+      "verified_via": "transfer regulations read directly on nevo (title confirmed)",
+      "verified_at": "2026-08-17",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ]
+    },
+    {
+      "claim_id": "sec-regs-11-breach",
+      "claim": "תקנה 11 לתקנות הגנת הפרטיות (אבטחת מידע) עוסקת באירועי אבטחה, ותקנה 11(ד) מחייבת הודעה מיידית לרשם על אירוע אבטחה חמור. אין בתקנות תקנה 11א.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/144811.htm",
+      "raw_snippet": "(ד) אירע אירוע אבטחה חמור – (1) יודיע על כך בעל המאגר לרשם באופן מיידי, וכן ידווח לרשם על הצעדים שנקט בעקבות האירוע; (2) רשאי הרשם להורות לבעל מאגר המידע, למעט לבעל מאגר מידע מן המנויים בסעיף 13(ה) לח",
+      "fetched_at": "2026-08-17",
+      "verified_via": "Privacy Protection (Data Security) Regulations read directly on nevo (title confirmed)",
+      "verified_at": "2026-08-17",
+      "appears_in": [
+        "SKILL_HE.md",
+        "SKILL.md"
+      ]
+    },
+    {
+      "claim_id": "trivy-action-fixed-versions",
+      "claim": "The advisory's known-safe versions are: Trivy binary v0.69.2/v0.69.3, aquasecurity/trivy-action v0.35.0, aquasecurity/setup-trivy v0.2.6.",
+      "source_url": "https://github.com/aquasecurity/trivy/security/advisories/GHSA-69fq-xp46-6x23",
+      "raw_snippet": "## Recommended Actions ### Update to Known-Safe Versions | Component | Safe Version | | ------------ | ---------------- | | Trivy binary | v0.69.2, v0.69.3 | | trivy-action | v0.35.0 | | setup-trivy | v0.2.6 |",
+      "fetched_at": "2026-08-26",
+      "verified_via": "GitHub Advisories REST API (curl), advisory description body",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ],
+      "verified_at": "2026-08-26"
+    },
+    {
+      "claim_id": "trivy-latest-stable-2026-08",
+      "claim": "Current stable Trivy release is v0.74.0, published 2026-08-14.",
+      "source_url": "https://api.github.com/repos/aquasecurity/trivy/releases/latest",
+      "raw_snippet": "\"tag_name\": \"v0.74.0\", \"published_at\": \"2026-08-14T11:29:11Z\"",
+      "fetched_at": "2026-08-26",
+      "verified_via": "GitHub Releases REST API (curl)",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ],
+      "verified_at": "2026-08-26"
+    },
+    {
+      "claim_id": "trivy-scanners-flag-rename",
+      "claim": "Trivy's --security-checks flag is deprecated and renamed --scanners, and the scanner value 'config' is deprecated in favour of 'misconfig'. Current syntax: trivy fs --scanners vuln,secret,misconfig .",
+      "source_url": "https://raw.githubusercontent.com/aquasecurity/trivy/v0.74.0/pkg/flag/scan_flags.go",
+      "raw_snippet": "Name:       \"security-checks\",\n\t\t\t\tConfigName: \"scan.security-checks\",\n\t\t\t\tDeprecated: true, // --security-checks was renamed to --scanners",
+      "fetched_at": "2026-08-26",
+      "verified_via": "raw source file from the v0.74.0 tag (curl)",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ],
+      "verified_at": "2026-08-26"
+    },
+    {
+      "claim_id": "ppa-notification-30-days",
+      "claim": "לפי סעיף 8א(ב) לחוק, בעל מאגר שיש בו מידע בעל רגישות מיוחדת על יותר מ-100,000 איש ואינו חייב ברישום חייב למסור הודעה לרשות בתוך 30 יום. תקנה 2 לתקנות אבטחת מידע מחייבת מסמך הגדרות מאגר, שהעתקו נכלל בהודעה.",
+      "source_url": "https://www.gov.il/BlobFolder/reports/guide_tikon13_professional/he/tikun%2013%20_170825.pdf",
+      "raw_snippet": "ביחס למאגרי מידע שיש בהם מידע בעל רגישות מיוחדת על יותר מ 100,000-איש אולם אינם חייבים ברישום ,נקבעה חובה חדשה בדין של מסירת הודעה לרשות בתוך 30יום על מאגר המידע. מה צריכה לכלול הודעה לרשות על מאגר מידע לפי סעיף 8א(",
+      "fetched_at": "2026-08-26",
+      "verified_via": "pdf",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ],
+      "verified_at": "2026-08-26"
+    },
+    {
+      "claim_id": "sec-regs-high-level-thresholds",
+      "claim": "High security level (Second Schedule) applies to a First Schedule item (1) or (3) database with data on 100,000 people or more, or with more than 100 authorized users.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/144811.htm",
+      "raw_snippet": "תוספת שנייה (תקנה 1) מאגרי מידע שחלה עליהם רמת האבטחה הגבוהה – (1) מאגר מידע כאמור בפרט 1(1) או (3) בתוספת הראשונה, לרבות מאגר של גוף ציבורי כמשמעותו בסעיף 23(1) לחוק המקיים את האמור בפרטים (1) או (3), שיש בו מידע על אודות 100,000 אנשים ומעלה; (2) מאגר מידע כאמור בפרט 1(1) או (3) בתוספת הראשונה, לרבות מאגר של גוף ציבורי כמשמעותו בסעיף 23(1) לחוק המקיים את האמור בפרטים (1) או (3), שמספר בעלי ההרשאה בו עולה על 100. (adsbygoogle",
+      "fetched_at": "2026-08-26",
+      "verified_via": "raw HTML fetch (curl) of nevo statute page",
+      "verified_at": "2026-08-26",
+      "appears_in": [
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "sec-regs-audit-24-months",
+      "claim": "Regulation 16(a): a medium- or high-level database must undergo an internal or external information-security audit at least once every 24 months, by a suitably qualified person who is not the database's own security officer.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/144811.htm",
+      "raw_snippet": "ביקורות תקופתיות לווידוא קיומם ותקינותם של אמצעי האבטחה לפי נוהל האבטחה ולפי תקנות אלה כאמור בתקנה 16; (4) הוראות לעניין גיבוי הנתונים האמורים בתקנה 18(א)(1); (5) הוראות לעניין אופן ביצוע פעולות פיתוח במאגר ותיעודן, ובכלל זה אופן הגישה של אנשי הפיתוח לנתונים במאגר. (ה) בעל מאגר מידע יבחן, אחת לשנה, את הצורך בעדכון הנוהל, ובלי לג",
+      "fetched_at": "2026-08-26",
+      "verified_via": "raw HTML fetch (curl) of nevo statute page",
+      "verified_at": "2026-08-26",
+      "appears_in": [
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "sec-regs-pentest-18-months-high-only",
+      "claim": "Penetration tests are required at least once every 18 months, for high-level databases only.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/144811.htm",
+      "raw_snippet": "(ד) במאגר מידע שחלה עליו רמת האבטחה הגבוהה, בעל המאגר אחראי לכך שייערכו מבדקי חדירות למערכות המאגר לבחינת עמידותן בפני סיכונים פנימיים וחיצוניים, אחת לשמונה עשר חודשים לפחות; בעל המאגר ידון בתוצאות מבדקי החדירות ויפעל לתיקון הליקויים שהתגלו, ככל שהתגלו. (ה) ארגון שהוא בעל כמה מאגרי מידע, רשאי לקבוע",
+      "fetched_at": "2026-08-26",
+      "verified_via": "raw HTML fetch (curl) of nevo statute page",
+      "verified_at": "2026-08-26",
+      "appears_in": [
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "sec-regs-individually-managed",
+      "claim": "An individually-managed database is one managed by an individual or individually-owned corporation where only that individual plus at most 2 further authorized users may use it, excluding data-broker databases, databases on 10,000 people or more, and those under professional confidentiality.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/144811.htm",
+      "raw_snippet": "\" מאגר המנוהל בידי יחיד \" – מאגר מידע שמנהל יחיד או תאגיד בבעלות יחיד, ואשר רק היחיד ולכל היותר שני בעלי הרשאה נוספים רשאים לעשות בו שימוש ובאפשרותם לעשות בו שימוש, ולמעט מאגרי מידע כמפורט להלן: (1) מאגר מידע שמטרתו העיקרית היא איסוף מידע לצורך מסירתו לאחר כדרך עיסוק, לרבות שירותי דיוור ישיר; (2) מאגר מידע שיש בו מידע על אודות 10,000 אנשים ומעלה; (3) מאגר מידע הכולל מידע שבעל המאגר כפוף בשלו לחובת סודיות מקצועית לפי",
+      "fetched_at": "2026-08-26",
+      "verified_via": "raw HTML fetch (curl) of nevo statute page",
+      "verified_at": "2026-08-26",
+      "appears_in": [
+        "references/israeli-privacy-law-guide.md"
+      ]
+    },
+    {
+      "claim_id": "cross-border-reg3-written-undertaking",
+      "claim": "תקנה 3 לתקנות הגנת הפרטיות (העברת מידע אל מאגרי מידע שמחוץ לגבולות המדינה), תשס\"א-2001: בהעברה לפי תקנה 1 או לפי תקנה 2 חייב בעל המאגר לקבל התחייבות בכתב ממקבל המידע שהוא נוקט אמצעים מספיקים להבטחת הפרטיות ושהמידע לא יועבר לאדם אחר. Regulation 3 applies to transfers under both Regulation 1 and Regulation 2, so the written undertaking is not an alternative to consent.",
+      "source_url": "https://www.nevo.co.il/law_html/law00/71639.htm",
+      "raw_snippet": "בהעברת מידע לפי תקנה 1 או 2 יבטיח בעל מאגר המידע, בהתחייבות בכתב של מקבל המידע, כי מקבל המידע נוקט אמצעים מספיקים להבטחת פרטיותם של מי שהמידע עליהם, וכי הוא מבטיח שהמידע לא יועבר לכל אדם זולתו, בין באותה מדינה ובין במדינה אחרת. סייג לתחולה 4. הוראות תקנות אלה לא יחולו על מידע המועבר עקב בקשה לפי חוק",
+      "fetched_at": "2026-08-26",
+      "verified_via": "raw HTML fetch (curl) of nevo regulations page",
+      "verified_at": "2026-08-26",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ]
+    },
+    {
+      "claim_id": "comm-law-30a-statutory-damages",
+      "claim": "סעיף 30א(י)(1) לחוק התקשורת (בזק ושידורים) מאפשר פיצויים שאינם תלויים בנזק של עד 1,000 ש\"ח בשל כל דבר פרסומת שקיבל הנמען בניגוד לסעיף. Section 30A of the Communications Law also requires prior opt-in consent and in-message sender identification and opt-out mechanics.",
+      "source_url": "https://he.wikisource.org/wiki/חוק_התקשורת_(בזק_ושידורים)",
+      "raw_snippet": "שוגר דבר פרסומת ביודעין בניגוד להוראות סעיף זה, רשאי בית המשפט לפסוק בשל הפרה זו פיצויים שאינם תלויים בנזק (בסעיף זה – פיצויים לדוגמה), בסכום שלא יעלה על 1,000 שקלים חדשים בשל כל דבר פרסומת שקיבל הנמען בניגוד להוראות סעיף זה. (2) בבואו לקבוע את גובה הפיצויים לדוגמה, רשאי בית המשפט להתחשב בכך שאותו מפרסם הורשע, בשל אותו מעשה, בעב",
+      "fetched_at": "2026-08-26",
+      "verified_via": "raw HTML fetch (curl) of source page",
+      "verified_at": "2026-08-26",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ]
+    }
+  ]
+}

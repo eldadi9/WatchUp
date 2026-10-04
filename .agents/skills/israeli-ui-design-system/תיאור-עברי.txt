@@ -1,0 +1,15 @@
+﻿╔══════════════════════════════════════════════════╗
+  תיאור בעברית - israeli-ui-design-system
+╚══════════════════════════════════════════════════╝
+
+שם בעברית:  מערכת עיצוב ישראלית
+
+תיאור:
+  Build RTL-first UI component libraries and design systems for Israeli applications with Hebrew typography. Use when user asks about Hebrew UI components, "itzuv" (design), Israeli design system, Hebrew font pairing, RTL component library, "tipografia ivrit" (Hebrew typography), or gov.il design patterns. Covers RTL-first component architecture, Hebrew font pairings (Heebo+Inter, Rubik+Source Sa...
+
+──────────────────────────────────────────────────
+Source: SKILL.md (no description in SKILL_HE.md)
+ריפוזיטורי: localization
+נוצר: 29/09/2026 01:12
+ארגון: https://github.com/skills-il
+──────────────────────────────────────────────────

@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.0",
+  "bootstrap_version": "1.1",
+  "engine_version": "0.1.0",
+  "installed_engine_version": "0.1.0",
+  "migration_version": "1.1",
+  "migration_status": "none",
+  "project_id": "watchup",
+  "project_name": "WatchUp",
+  "project_root": "C:\\Users\\Master_PC\\Desktop\\Projects Eldad\\01_Active_Projects\\WatchUp",
+  "orchestrator_role": "ori",
+  "orchestrator_id": "watchup-orchestrator",
+  "trigger_words": [
+    "watchup"
+  ],
+  "enabled_agents": [
+    "yuli",
+    "ori",
+    "peri",
+    "teddy",
+    "amy",
+    "mori",
+    "sefi",
+    "mark",
+    "dani",
+    "saker",
+    "gonesh",
+    "valdi"
+  ],
+  "enabled_skills": [],
+  "provider_preferences": {
+    "primary": "claude",
+    "allowed": [
+      "claude",
+      "codex",
+      "cursor"
+    ]
+  },
+  "model_preferences": {
+    "vocabulary": [
+      "Haiku",
+      "Sonnet",
+      "Opus",
+      "Fable"
+    ],
+    "preferred_cost_tier": "low",
+    "fallback_model": null,
+    "escalation_model": null
+  },
+  "execution_mode_defaults": {
+    "default_mode": "MANUAL",
+    "autonomous_safe_allowed": false,
+    "max_retry_attempts": 3,
+    "parallel_execution": false
+  },
+  "governance_profile": "dream-team/policies/governance.json",
+  "protected_actions": {
+    "inherit_global": true,
+    "additional": []
+  },
+  "project_constraints": {},
+  "context_policy": {
+    "learning_may_increase_budget": false
+  },
+  "routing_policy_overrides": {},
+  "learning": {
+    "enabled": true,
+    "apply_mode": "recommend_only",
+    "min_samples": 3
+  },
+  "created_at": "2026-10-03T23:50:30Z",
+  "updated_at": "2026-10-03T23:50:30Z",
+  "migrated_from": null,
+  "engine_root": "C:\\Users\\Master_PC\\Desktop\\Projects Eldad\\EG_SKIILS\\Skills_IL\\EG-SKIILS\\orchestration-engine",
+  "authority_chain": [
+    "Eldad / Owner",
+    "Yuli / Chief of Staff",
+    "Ori / Orchestrator",
+    "Mission",
+    "Intelligent Router",
+    "Context Engine",
+    "Execution DAG",
+    "Workers",
+    "Deterministic Checks",
+    "Valdi",
+    "Gate Controller",
+    "Repair / Revalidation",
+    "Checkpoint / Resume",
+    "Audit Ledger",
+    "Executive Report",
+    "Telemetry Analysis",
+    "Bounded Learning Recommendations",
+    "Project Bootstrap / Reuse"
+  ]
+}

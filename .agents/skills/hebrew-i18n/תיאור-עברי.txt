@@ -1,0 +1,15 @@
+﻿╔══════════════════════════════════════════════════╗
+  תיאור בעברית - hebrew-i18n
+╚══════════════════════════════════════════════════╝
+
+שם בעברית:  בינלאומיות עברית
+
+תיאור:
+  Implement comprehensive Hebrew internationalization (i18n) patterns for web and mobile applications. Use when user asks about Hebrew localization, "beinle'umiyut", i18n for Israeli apps, Hebrew plural forms, Hebrew date formatting, RTL CSS logical properties, bidirectional text handling, React/Vue/Angular/Next.js RTL integration, Tailwind CSS RTL, or next-intl setup. Covers Hebrew pluralization...
+
+──────────────────────────────────────────────────
+Source: SKILL.md (no description in SKILL_HE.md)
+ריפוזיטורי: localization
+נוצר: 29/09/2026 01:12
+ארגון: https://github.com/skills-il
+──────────────────────────────────────────────────

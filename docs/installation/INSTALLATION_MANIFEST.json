@@ -1,0 +1,3038 @@
+{
+  "bundle_decisions": [
+    {
+      "decision": "deduplicated",
+      "detail": "andy -> continuity.andy (provided by Full Dream Team)"
+    },
+    {
+      "decision": "deduplicated",
+      "detail": "valdi-validator -> role.valdi (provided by Full Dream Team)"
+    },
+    {
+      "decision": "deduplicated",
+      "detail": "yuli-ceo -> role.yuli (provided by Full Dream Team)"
+    },
+    {
+      "component_id": "bundle.full-dream-team",
+      "decision": "expanded-bundle",
+      "resolved_components": [
+        "bundle.full-dream-team",
+        "configuration.dream-team-project",
+        "continuity.andy",
+        "role.ori",
+        "role.valdi",
+        "role.yuli",
+        "template.dream-team-runtime",
+        "worker.amy",
+        "worker.dani",
+        "worker.gonesh",
+        "worker.mark",
+        "worker.mori",
+        "worker.peri",
+        "worker.saker",
+        "worker.sefi",
+        "worker.teddy"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "component_id": "worker.amy",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".claude/agents/dt-amy-integrations.md",
+        "provider": "claude"
+      },
+      "id": "AGENT.CLAUDE.AMY",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-amy",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "1b592f32f3ac592159841f7b321180d75c0ebe3485b59b1ddfed4706469098f6",
+        "kind": "file",
+        "path": ".claude/agents/dt-amy-integrations.md",
+        "provider": "claude",
+        "sha256": "1b592f32f3ac592159841f7b321180d75c0ebe3485b59b1ddfed4706469098f6"
+      },
+      "id": "VERSION.CLAUDE.AGENT-AMY",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.dani",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".claude/agents/dt-dani-data-ai.md",
+        "provider": "claude"
+      },
+      "id": "AGENT.CLAUDE.DANI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-dani",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "ea0eb094ade3f8cd526ddcc3a2b96c05d6064ee8dcf5dd04ce05672566809dcd",
+        "kind": "file",
+        "path": ".claude/agents/dt-dani-data-ai.md",
+        "provider": "claude",
+        "sha256": "ea0eb094ade3f8cd526ddcc3a2b96c05d6064ee8dcf5dd04ce05672566809dcd"
+      },
+      "id": "VERSION.CLAUDE.AGENT-DANI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.gonesh",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".claude/agents/dt-gonesh-exec.md",
+        "provider": "claude"
+      },
+      "id": "AGENT.CLAUDE.GONESH",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-gonesh",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "32917d3667754aaa2af7ee3f5a9c8e3739d45219897d23d85445c4745333a115",
+        "kind": "file",
+        "path": ".claude/agents/dt-gonesh-exec.md",
+        "provider": "claude",
+        "sha256": "32917d3667754aaa2af7ee3f5a9c8e3739d45219897d23d85445c4745333a115"
+      },
+      "id": "VERSION.CLAUDE.AGENT-GONESH",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.mark",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".claude/agents/dt-mark-growth.md",
+        "provider": "claude"
+      },
+      "id": "AGENT.CLAUDE.MARK",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-mark",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "a819925f7e4d7b969eaa73d6e281af8aab2f0c4bf82872f825a036f262a310db",
+        "kind": "file",
+        "path": ".claude/agents/dt-mark-growth.md",
+        "provider": "claude",
+        "sha256": "a819925f7e4d7b969eaa73d6e281af8aab2f0c4bf82872f825a036f262a310db"
+      },
+      "id": "VERSION.CLAUDE.AGENT-MARK",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.mori",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".claude/agents/dt-mori-ux-ui.md",
+        "provider": "claude"
+      },
+      "id": "AGENT.CLAUDE.MORI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-mori",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "f5a7837b7143943d59698dd8ef4ab62f97e3af9d2f941bd269224634d7f18a49",
+        "kind": "file",
+        "path": ".claude/agents/dt-mori-ux-ui.md",
+        "provider": "claude",
+        "sha256": "f5a7837b7143943d59698dd8ef4ab62f97e3af9d2f941bd269224634d7f18a49"
+      },
+      "id": "VERSION.CLAUDE.AGENT-MORI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.peri",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".claude/agents/dt-peri-product.md",
+        "provider": "claude"
+      },
+      "id": "AGENT.CLAUDE.PERI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-peri",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "b11f49ac3cc9569ad6e36ff9eabcea2c6260941986d074c9e65a7cd977567d2b",
+        "kind": "file",
+        "path": ".claude/agents/dt-peri-product.md",
+        "provider": "claude",
+        "sha256": "b11f49ac3cc9569ad6e36ff9eabcea2c6260941986d074c9e65a7cd977567d2b"
+      },
+      "id": "VERSION.CLAUDE.AGENT-PERI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.saker",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".claude/agents/dt-saker-research.md",
+        "provider": "claude"
+      },
+      "id": "AGENT.CLAUDE.SAKER",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-saker",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "6c7441bdc7b674f80bf1858f1e7f9eff31b189e3353dd2e6a12edf8384ac568d",
+        "kind": "file",
+        "path": ".claude/agents/dt-saker-research.md",
+        "provider": "claude",
+        "sha256": "6c7441bdc7b674f80bf1858f1e7f9eff31b189e3353dd2e6a12edf8384ac568d"
+      },
+      "id": "VERSION.CLAUDE.AGENT-SAKER",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.sefi",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".claude/agents/dt-sefi-devops-security.md",
+        "provider": "claude"
+      },
+      "id": "AGENT.CLAUDE.SEFI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-sefi",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "c523b48297d1fc01ff48d3f9d3168f6975ef0c8ad789d97a5eab4b4e2949910b",
+        "kind": "file",
+        "path": ".claude/agents/dt-sefi-devops-security.md",
+        "provider": "claude",
+        "sha256": "c523b48297d1fc01ff48d3f9d3168f6975ef0c8ad789d97a5eab4b4e2949910b"
+      },
+      "id": "VERSION.CLAUDE.AGENT-SEFI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.teddy",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".claude/agents/dt-teddy-leaddev.md",
+        "provider": "claude"
+      },
+      "id": "AGENT.CLAUDE.TEDDY",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-teddy",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "b25a5a65bd7b410244880965551e1cecc27a0b659e3982a61c27ce2bf61450c1",
+        "kind": "file",
+        "path": ".claude/agents/dt-teddy-leaddev.md",
+        "provider": "claude",
+        "sha256": "b25a5a65bd7b410244880965551e1cecc27a0b659e3982a61c27ce2bf61450c1"
+      },
+      "id": "VERSION.CLAUDE.AGENT-TEDDY",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "role.valdi",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".claude/agents/dt-valdi-validate.md",
+        "provider": "claude"
+      },
+      "id": "AGENT.CLAUDE.VALDI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-valdi",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "41648f571804f5171f3e16b16448d2b3f41a397fa83f493d414efcee42e8b7e4",
+        "kind": "file",
+        "path": ".claude/agents/dt-valdi-validate.md",
+        "provider": "claude",
+        "sha256": "41648f571804f5171f3e16b16448d2b3f41a397fa83f493d414efcee42e8b7e4"
+      },
+      "id": "VERSION.CLAUDE.AGENT-VALDI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "rule-dream-team-agent-governor",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": ".claude/hooks/dream-team-agent-governor.py",
+        "provider": "claude"
+      },
+      "id": "GOVERNANCE-HOOK.CLAUDE.DREAM-TEAM-AGENT-GOVERNOR",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-governance-hook-dream-team-agent-governor",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "da83ab50d33e79d202cb25c83aa336a9606c5d51743498307904de0ee9f8d33c",
+        "kind": "file",
+        "path": ".claude/hooks/dream-team-agent-governor.py",
+        "provider": "claude",
+        "sha256": "da83ab50d33e79d202cb25c83aa336a9606c5d51743498307904de0ee9f8d33c"
+      },
+      "id": "VERSION.CLAUDE.GOVERNANCE-HOOK-DREAM-TEAM-AGENT-GOVERNOR",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "rule-dream-team-governor-policy",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": ".claude/hooks/dream-team-governor-policy.json",
+        "provider": "claude"
+      },
+      "id": "GOVERNANCE-HOOK.CLAUDE.DREAM-TEAM-GOVERNOR-POLICY",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-governance-hook-dream-team-governor-policy",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "162e0018c14c3860a541c2417a850184985e70a8bd19e45bc8f59fd010d133f4",
+        "kind": "file",
+        "path": ".claude/hooks/dream-team-governor-policy.json",
+        "provider": "claude",
+        "sha256": "162e0018c14c3860a541c2417a850184985e70a8bd19e45bc8f59fd010d133f4"
+      },
+      "id": "VERSION.CLAUDE.GOVERNANCE-HOOK-DREAM-TEAM-GOVERNOR-POLICY",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.amy",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".codex/agents/amy.toml",
+        "provider": "codex"
+      },
+      "id": "AGENT.CODEX.AMY",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-amy",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "b54d4bccdc8d3321742f95416841b768b7b5e33fc2f9575933c52f38511775be",
+        "kind": "file",
+        "path": ".codex/agents/amy.toml",
+        "provider": "codex",
+        "sha256": "b54d4bccdc8d3321742f95416841b768b7b5e33fc2f9575933c52f38511775be"
+      },
+      "id": "VERSION.CODEX.AGENT-AMY",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.dani",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".codex/agents/dani.toml",
+        "provider": "codex"
+      },
+      "id": "AGENT.CODEX.DANI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-dani",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "321d0e380f9eabb1ec82a230c32897d931780f8ade5d5c2abf76a30e028842cd",
+        "kind": "file",
+        "path": ".codex/agents/dani.toml",
+        "provider": "codex",
+        "sha256": "321d0e380f9eabb1ec82a230c32897d931780f8ade5d5c2abf76a30e028842cd"
+      },
+      "id": "VERSION.CODEX.AGENT-DANI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.gonesh",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".codex/agents/gonesh.toml",
+        "provider": "codex"
+      },
+      "id": "AGENT.CODEX.GONESH",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-gonesh",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "ce3bf8d888530f26abd97bbf78a1c1ca3dd1e21f17d9db723db26030e488c693",
+        "kind": "file",
+        "path": ".codex/agents/gonesh.toml",
+        "provider": "codex",
+        "sha256": "ce3bf8d888530f26abd97bbf78a1c1ca3dd1e21f17d9db723db26030e488c693"
+      },
+      "id": "VERSION.CODEX.AGENT-GONESH",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.mark",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".codex/agents/mark.toml",
+        "provider": "codex"
+      },
+      "id": "AGENT.CODEX.MARK",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-mark",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "0999ec3c2d2ca24152886ddbea22c4b397061d570aa3a120710ba5fd07b48ec5",
+        "kind": "file",
+        "path": ".codex/agents/mark.toml",
+        "provider": "codex",
+        "sha256": "0999ec3c2d2ca24152886ddbea22c4b397061d570aa3a120710ba5fd07b48ec5"
+      },
+      "id": "VERSION.CODEX.AGENT-MARK",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.mori",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".codex/agents/mori.toml",
+        "provider": "codex"
+      },
+      "id": "AGENT.CODEX.MORI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-mori",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "667fcb3c87cda072c54e21431cd6080aa8a1acf61048d7bc71419c5084a78dd3",
+        "kind": "file",
+        "path": ".codex/agents/mori.toml",
+        "provider": "codex",
+        "sha256": "667fcb3c87cda072c54e21431cd6080aa8a1acf61048d7bc71419c5084a78dd3"
+      },
+      "id": "VERSION.CODEX.AGENT-MORI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.peri",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".codex/agents/peri.toml",
+        "provider": "codex"
+      },
+      "id": "AGENT.CODEX.PERI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-peri",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "071c5e8118aab9fe88f537f63ec2ff34e2fe45e5c7e9c70c9dffac00609b52ea",
+        "kind": "file",
+        "path": ".codex/agents/peri.toml",
+        "provider": "codex",
+        "sha256": "071c5e8118aab9fe88f537f63ec2ff34e2fe45e5c7e9c70c9dffac00609b52ea"
+      },
+      "id": "VERSION.CODEX.AGENT-PERI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.saker",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".codex/agents/saker.toml",
+        "provider": "codex"
+      },
+      "id": "AGENT.CODEX.SAKER",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-saker",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "ac3cb0d6ce8ff556fd0e8aac9e6c3643a1168091e26bd87b19922ef88e03f872",
+        "kind": "file",
+        "path": ".codex/agents/saker.toml",
+        "provider": "codex",
+        "sha256": "ac3cb0d6ce8ff556fd0e8aac9e6c3643a1168091e26bd87b19922ef88e03f872"
+      },
+      "id": "VERSION.CODEX.AGENT-SAKER",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.sefi",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".codex/agents/sefi.toml",
+        "provider": "codex"
+      },
+      "id": "AGENT.CODEX.SEFI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-sefi",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "a4782d9297b3c0b53d4d72f4d21799f834f3a3fa13d733abdddb1cf7eaf48f8e",
+        "kind": "file",
+        "path": ".codex/agents/sefi.toml",
+        "provider": "codex",
+        "sha256": "a4782d9297b3c0b53d4d72f4d21799f834f3a3fa13d733abdddb1cf7eaf48f8e"
+      },
+      "id": "VERSION.CODEX.AGENT-SEFI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.teddy",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".codex/agents/teddy.toml",
+        "provider": "codex"
+      },
+      "id": "AGENT.CODEX.TEDDY",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-teddy",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "2ecd0a7732e39569800064b561041e7d801fdf44fef3937f3ba650d77ea5977e",
+        "kind": "file",
+        "path": ".codex/agents/teddy.toml",
+        "provider": "codex",
+        "sha256": "2ecd0a7732e39569800064b561041e7d801fdf44fef3937f3ba650d77ea5977e"
+      },
+      "id": "VERSION.CODEX.AGENT-TEDDY",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "role.valdi",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".codex/agents/valdi.toml",
+        "provider": "codex"
+      },
+      "id": "AGENT.CODEX.VALDI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-valdi",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "f9d6617cbc185e0f440b7ee65b71f6e3c8149f9c58a23532e64d3a2c48bf190d",
+        "kind": "file",
+        "path": ".codex/agents/valdi.toml",
+        "provider": "codex",
+        "sha256": "f9d6617cbc185e0f440b7ee65b71f6e3c8149f9c58a23532e64d3a2c48bf190d"
+      },
+      "id": "VERSION.CODEX.AGENT-VALDI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "rule-config",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": ".codex/config.toml",
+        "provider": "codex"
+      },
+      "id": "GOVERNANCE-CONFIG.CODEX.CONFIG",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-governance-config-config",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "427be3a91e3c2b3b3381a1110e1413c2c7b6837669a07a7c536765bc990a81f7",
+        "kind": "file",
+        "path": ".codex/config.toml",
+        "provider": "codex",
+        "sha256": "427be3a91e3c2b3b3381a1110e1413c2c7b6837669a07a7c536765bc990a81f7"
+      },
+      "id": "VERSION.CODEX.GOVERNANCE-CONFIG-CONFIG",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.amy",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".cursor/agents/amy.md",
+        "provider": "cursor"
+      },
+      "id": "AGENT.CURSOR.AMY",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-amy",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "8cd101996cf849d1d0a8f6972e65034ed82078e1c0559715000751d6c6bc7312",
+        "kind": "file",
+        "path": ".cursor/agents/amy.md",
+        "provider": "cursor",
+        "sha256": "8cd101996cf849d1d0a8f6972e65034ed82078e1c0559715000751d6c6bc7312"
+      },
+      "id": "VERSION.CURSOR.AGENT-AMY",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.dani",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".cursor/agents/dani.md",
+        "provider": "cursor"
+      },
+      "id": "AGENT.CURSOR.DANI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-dani",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "61847ceb993d26f21b92b902fa921f0a118520b45ffcb8d6c1d0d7616cd94aa5",
+        "kind": "file",
+        "path": ".cursor/agents/dani.md",
+        "provider": "cursor",
+        "sha256": "61847ceb993d26f21b92b902fa921f0a118520b45ffcb8d6c1d0d7616cd94aa5"
+      },
+      "id": "VERSION.CURSOR.AGENT-DANI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.gonesh",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".cursor/agents/gonesh.md",
+        "provider": "cursor"
+      },
+      "id": "AGENT.CURSOR.GONESH",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-gonesh",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "d2c547f9c628dfdf7028c6e32c059240da5f841b08443a86765959f6f95346a8",
+        "kind": "file",
+        "path": ".cursor/agents/gonesh.md",
+        "provider": "cursor",
+        "sha256": "d2c547f9c628dfdf7028c6e32c059240da5f841b08443a86765959f6f95346a8"
+      },
+      "id": "VERSION.CURSOR.AGENT-GONESH",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.mark",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".cursor/agents/mark.md",
+        "provider": "cursor"
+      },
+      "id": "AGENT.CURSOR.MARK",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-mark",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "0bb5053267e274824731164b0e08adeb1fc717cc3cfda9547fb0593ec15f75ad",
+        "kind": "file",
+        "path": ".cursor/agents/mark.md",
+        "provider": "cursor",
+        "sha256": "0bb5053267e274824731164b0e08adeb1fc717cc3cfda9547fb0593ec15f75ad"
+      },
+      "id": "VERSION.CURSOR.AGENT-MARK",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.mori",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".cursor/agents/mori.md",
+        "provider": "cursor"
+      },
+      "id": "AGENT.CURSOR.MORI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-mori",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "657529e2f961d869714a834964444d0f5fb3c9f49f0f60f534cc53f564fb269c",
+        "kind": "file",
+        "path": ".cursor/agents/mori.md",
+        "provider": "cursor",
+        "sha256": "657529e2f961d869714a834964444d0f5fb3c9f49f0f60f534cc53f564fb269c"
+      },
+      "id": "VERSION.CURSOR.AGENT-MORI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.peri",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".cursor/agents/peri.md",
+        "provider": "cursor"
+      },
+      "id": "AGENT.CURSOR.PERI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-peri",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "b4a7e11f68ceee3b79ce2075e941ea9ddbbd9693c6e7459c34252b82c494b241",
+        "kind": "file",
+        "path": ".cursor/agents/peri.md",
+        "provider": "cursor",
+        "sha256": "b4a7e11f68ceee3b79ce2075e941ea9ddbbd9693c6e7459c34252b82c494b241"
+      },
+      "id": "VERSION.CURSOR.AGENT-PERI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.saker",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".cursor/agents/saker.md",
+        "provider": "cursor"
+      },
+      "id": "AGENT.CURSOR.SAKER",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-saker",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "6f197457d9c8c546c13e17333c417ae40426c11945771d342889b2989528aace",
+        "kind": "file",
+        "path": ".cursor/agents/saker.md",
+        "provider": "cursor",
+        "sha256": "6f197457d9c8c546c13e17333c417ae40426c11945771d342889b2989528aace"
+      },
+      "id": "VERSION.CURSOR.AGENT-SAKER",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.sefi",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".cursor/agents/sefi.md",
+        "provider": "cursor"
+      },
+      "id": "AGENT.CURSOR.SEFI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-sefi",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "e4ced518342c925266d7a7a1de034a80a0b900fa36ccef00ffc4f0eaa292e839",
+        "kind": "file",
+        "path": ".cursor/agents/sefi.md",
+        "provider": "cursor",
+        "sha256": "e4ced518342c925266d7a7a1de034a80a0b900fa36ccef00ffc4f0eaa292e839"
+      },
+      "id": "VERSION.CURSOR.AGENT-SEFI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "worker.teddy",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".cursor/agents/teddy.md",
+        "provider": "cursor"
+      },
+      "id": "AGENT.CURSOR.TEDDY",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-teddy",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "d934ea2433a5df6d354e4da4a14a8ff4e7c66f369633c0988db14957440fff38",
+        "kind": "file",
+        "path": ".cursor/agents/teddy.md",
+        "provider": "cursor",
+        "sha256": "d934ea2433a5df6d354e4da4a14a8ff4e7c66f369633c0988db14957440fff38"
+      },
+      "id": "VERSION.CURSOR.AGENT-TEDDY",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "role.valdi",
+      "evidence": {
+        "exists": true,
+        "kind": "agent",
+        "path": ".cursor/agents/valdi.md",
+        "provider": "cursor"
+      },
+      "id": "AGENT.CURSOR.VALDI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-agent-valdi",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "781fc0fa30291bcbd82bb5346e394e2f2ae4d9e7904b5cdeb11024370dc3a830",
+        "kind": "file",
+        "path": ".cursor/agents/valdi.md",
+        "provider": "cursor",
+        "sha256": "781fc0fa30291bcbd82bb5346e394e2f2ae4d9e7904b5cdeb11024370dc3a830"
+      },
+      "id": "VERSION.CURSOR.AGENT-VALDI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "rule-amy",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": ".cursor/rules/amy.mdc",
+        "provider": "cursor"
+      },
+      "id": "RULE.CURSOR.AMY",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-rule-amy",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "0e83f5d10117ef5fefb92c8c54ed521381adfbe352f3aa39be3d81faeebc28f0",
+        "kind": "file",
+        "path": ".cursor/rules/amy.mdc",
+        "provider": "cursor",
+        "sha256": "0e83f5d10117ef5fefb92c8c54ed521381adfbe352f3aa39be3d81faeebc28f0"
+      },
+      "id": "VERSION.CURSOR.RULE-AMY",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "rule-dani",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": ".cursor/rules/dani.mdc",
+        "provider": "cursor"
+      },
+      "id": "RULE.CURSOR.DANI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-rule-dani",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "e06d1d544cbc09ee1e0e32c3ff0fd4b4cb4b4a6a633e5eeb63f6ec6fd8b0cf12",
+        "kind": "file",
+        "path": ".cursor/rules/dani.mdc",
+        "provider": "cursor",
+        "sha256": "e06d1d544cbc09ee1e0e32c3ff0fd4b4cb4b4a6a633e5eeb63f6ec6fd8b0cf12"
+      },
+      "id": "VERSION.CURSOR.RULE-DANI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "rule-gonesh",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": ".cursor/rules/gonesh.mdc",
+        "provider": "cursor"
+      },
+      "id": "RULE.CURSOR.GONESH",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-rule-gonesh",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "599b8df3adbd2498c8ba16b3e872caecadc83788eff03242db5ca5b60b24392a",
+        "kind": "file",
+        "path": ".cursor/rules/gonesh.mdc",
+        "provider": "cursor",
+        "sha256": "599b8df3adbd2498c8ba16b3e872caecadc83788eff03242db5ca5b60b24392a"
+      },
+      "id": "VERSION.CURSOR.RULE-GONESH",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "rule-mark",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": ".cursor/rules/mark.mdc",
+        "provider": "cursor"
+      },
+      "id": "RULE.CURSOR.MARK",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-rule-mark",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "b872a051e08a8f5f572171e73e9bb9f90fa5905921e6942cde6a96e2985b8ad2",
+        "kind": "file",
+        "path": ".cursor/rules/mark.mdc",
+        "provider": "cursor",
+        "sha256": "b872a051e08a8f5f572171e73e9bb9f90fa5905921e6942cde6a96e2985b8ad2"
+      },
+      "id": "VERSION.CURSOR.RULE-MARK",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "rule-mori",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": ".cursor/rules/mori.mdc",
+        "provider": "cursor"
+      },
+      "id": "RULE.CURSOR.MORI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-rule-mori",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "5c8779f468308aceaa9e27067b1ab3ad9a7480addaf01f452e14a67213ae047a",
+        "kind": "file",
+        "path": ".cursor/rules/mori.mdc",
+        "provider": "cursor",
+        "sha256": "5c8779f468308aceaa9e27067b1ab3ad9a7480addaf01f452e14a67213ae047a"
+      },
+      "id": "VERSION.CURSOR.RULE-MORI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "rule-ori",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": ".cursor/rules/ori.mdc",
+        "provider": "cursor"
+      },
+      "id": "RULE.CURSOR.ORI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-rule-ori",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "c4e50e64d70cfbdc862dd0fe0d648ddfe220f1a190c4f6e0e8f6baf33c3a8afb",
+        "kind": "file",
+        "path": ".cursor/rules/ori.mdc",
+        "provider": "cursor",
+        "sha256": "c4e50e64d70cfbdc862dd0fe0d648ddfe220f1a190c4f6e0e8f6baf33c3a8afb"
+      },
+      "id": "VERSION.CURSOR.RULE-ORI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "rule-peri",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": ".cursor/rules/peri.mdc",
+        "provider": "cursor"
+      },
+      "id": "RULE.CURSOR.PERI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-rule-peri",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "45bd2c5f748efb3acb568f7744c5c6967378091995789ffbfc2c3155793a75aa",
+        "kind": "file",
+        "path": ".cursor/rules/peri.mdc",
+        "provider": "cursor",
+        "sha256": "45bd2c5f748efb3acb568f7744c5c6967378091995789ffbfc2c3155793a75aa"
+      },
+      "id": "VERSION.CURSOR.RULE-PERI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "rule-saker",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": ".cursor/rules/saker.mdc",
+        "provider": "cursor"
+      },
+      "id": "RULE.CURSOR.SAKER",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-rule-saker",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "0323da08411413b40b481b0a0ba273eccb5b9ea4a94aaba2d9d1e748ab576591",
+        "kind": "file",
+        "path": ".cursor/rules/saker.mdc",
+        "provider": "cursor",
+        "sha256": "0323da08411413b40b481b0a0ba273eccb5b9ea4a94aaba2d9d1e748ab576591"
+      },
+      "id": "VERSION.CURSOR.RULE-SAKER",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "rule-sefi",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": ".cursor/rules/sefi.mdc",
+        "provider": "cursor"
+      },
+      "id": "RULE.CURSOR.SEFI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-rule-sefi",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "e40ae0c1268a30ec479e613ff35976ca048e60dac8aeff58cde751621c883d84",
+        "kind": "file",
+        "path": ".cursor/rules/sefi.mdc",
+        "provider": "cursor",
+        "sha256": "e40ae0c1268a30ec479e613ff35976ca048e60dac8aeff58cde751621c883d84"
+      },
+      "id": "VERSION.CURSOR.RULE-SEFI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "rule-teddy",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": ".cursor/rules/teddy.mdc",
+        "provider": "cursor"
+      },
+      "id": "RULE.CURSOR.TEDDY",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-rule-teddy",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "36b21c7a1cac5ed875b1ca7c0a345919501dabc3c6183868149b84f4f4da5f0b",
+        "kind": "file",
+        "path": ".cursor/rules/teddy.mdc",
+        "provider": "cursor",
+        "sha256": "36b21c7a1cac5ed875b1ca7c0a345919501dabc3c6183868149b84f4f4da5f0b"
+      },
+      "id": "VERSION.CURSOR.RULE-TEDDY",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "rule-valdi",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": ".cursor/rules/valdi.mdc",
+        "provider": "cursor"
+      },
+      "id": "RULE.CURSOR.VALDI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-rule-valdi",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "43668c74f73bfc751d505a8952f11a5f6a0a637091093d2510499dbb976d8870",
+        "kind": "file",
+        "path": ".cursor/rules/valdi.mdc",
+        "provider": "cursor",
+        "sha256": "43668c74f73bfc751d505a8952f11a5f6a0a637091093d2510499dbb976d8870"
+      },
+      "id": "VERSION.CURSOR.RULE-VALDI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "rule-yuli",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": ".cursor/rules/yuli.mdc",
+        "provider": "cursor"
+      },
+      "id": "RULE.CURSOR.YULI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "version-rule-yuli",
+      "evidence": {
+        "exists": true,
+        "expected_sha256": "964941b7e50540b1dc6bcbe4a473454c5e1d5d23062213eaf506138b75872aca",
+        "kind": "file",
+        "path": ".cursor/rules/yuli.mdc",
+        "provider": "cursor",
+        "sha256": "964941b7e50540b1dc6bcbe4a473454c5e1d5d23062213eaf506138b75872aca"
+      },
+      "id": "VERSION.CURSOR.RULE-YULI",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "prd",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": "PRD.md"
+      },
+      "id": "DOCS.PRD",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "idea",
+      "evidence": {
+        "exists": false,
+        "kind": "file",
+        "path": "docs/IDEA.md"
+      },
+      "id": "DOCS.IDEA",
+      "remediation": "Install or restore idea at docs/IDEA.md.",
+      "result": "WARN",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "target-agents",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": "AGENTS.md"
+      },
+      "id": "TARGET.AGENTS",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "target-claude",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": "CLAUDE.md"
+      },
+      "id": "TARGET.CLAUDE",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "WARNING"
+    },
+    {
+      "component_id": "project-identity",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": ".dream-team/project.json"
+      },
+      "id": "IDENTITY.PROJECT",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "role.ori",
+      "evidence": {
+        "exists": true,
+        "kind": "skill",
+        "path": ".claude/skills/watchup-orchestrator/SKILL.md",
+        "provider": "claude"
+      },
+      "id": "ORCHESTRATOR.CLAUDE",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "continuity.andy",
+      "evidence": {
+        "exists": true,
+        "kind": "skill",
+        "path": ".agents/skills/andy/SKILL.md",
+        "provider": "shared"
+      },
+      "id": "ANDY.CORE",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "andy-state",
+      "evidence": {
+        "exists": true,
+        "kind": "file",
+        "path": ".ai/andy/current.json"
+      },
+      "id": "ANDY.STATE",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "continuity.andy",
+      "evidence": {
+        "exists": true,
+        "kind": "skill",
+        "path": ".claude/skills/andy/SKILL.md",
+        "provider": "claude"
+      },
+      "id": "ANDY.CLAUDE",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    },
+    {
+      "component_id": "target-claude",
+      "evidence": {
+        "count": 0,
+        "path": "CLAUDE.md",
+        "placeholders": []
+      },
+      "id": "DOCS.CLAUDE.PLACEHOLDERS",
+      "remediation": "None.",
+      "result": "PASS",
+      "severity": "BLOCKER"
+    }
+  ],
+  "components": [
+    {
+      "aliases": [
+        "full-dream-team",
+        "dream-team-agents"
+      ],
+      "canonical_id": "bundle.full-dream-team",
+      "component_type": "bundle",
+      "content_fingerprint": "unversioned|4bca44a8f80a38d9bd31f6f120ae69aac96056c01b4511d79a794ba9302c33e4",
+      "display_name": "Full Dream Team",
+      "source": "canonical-generated",
+      "version": "unversioned"
+    },
+    {
+      "aliases": [],
+      "canonical_id": "configuration.dream-team-project",
+      "component_type": "configuration",
+      "content_fingerprint": "unversioned|4bca44a8f80a38d9bd31f6f120ae69aac96056c01b4511d79a794ba9302c33e4",
+      "display_name": "Dream Team project configuration",
+      "source": "canonical-generated",
+      "version": "unversioned"
+    },
+    {
+      "aliases": [
+        "andy"
+      ],
+      "canonical_id": "continuity.andy",
+      "component_type": "continuity",
+      "content_fingerprint": "unversioned|4bca44a8f80a38d9bd31f6f120ae69aac96056c01b4511d79a794ba9302c33e4",
+      "display_name": "Andy",
+      "source": "canonical-generated",
+      "version": "unversioned"
+    },
+    {
+      "aliases": [
+        "ori",
+        "uri",
+        "uri-orchestrator",
+        "prompthub-orchestrator",
+        "orchestration-engine"
+      ],
+      "canonical_id": "role.ori",
+      "component_type": "orchestrator",
+      "content_fingerprint": "unversioned|4bca44a8f80a38d9bd31f6f120ae69aac96056c01b4511d79a794ba9302c33e4",
+      "display_name": "Ori",
+      "source": "canonical-generated",
+      "version": "unversioned"
+    },
+    {
+      "aliases": [
+        "valdi",
+        "valdi-validator"
+      ],
+      "canonical_id": "role.valdi",
+      "component_type": "validator",
+      "content_fingerprint": "unversioned|4bca44a8f80a38d9bd31f6f120ae69aac96056c01b4511d79a794ba9302c33e4",
+      "display_name": "Valdi",
+      "source": "canonical-generated",
+      "version": "unversioned"
+    },
+    {
+      "aliases": [
+        "yuli",
+        "yuli-ceo"
+      ],
+      "canonical_id": "role.yuli",
+      "component_type": "chief-of-staff",
+      "content_fingerprint": "unversioned|4bca44a8f80a38d9bd31f6f120ae69aac96056c01b4511d79a794ba9302c33e4",
+      "display_name": "Yuli",
+      "source": "canonical-generated",
+      "version": "unversioned"
+    },
+    {
+      "aliases": [],
+      "canonical_id": "template.dream-team-runtime",
+      "component_type": "template",
+      "content_fingerprint": "unversioned|4bca44a8f80a38d9bd31f6f120ae69aac96056c01b4511d79a794ba9302c33e4",
+      "display_name": "Dream Team runtime templates",
+      "source": "canonical-generated",
+      "version": "unversioned"
+    },
+    {
+      "aliases": [
+        "amy"
+      ],
+      "canonical_id": "worker.amy",
+      "component_type": "worker",
+      "content_fingerprint": "unversioned|4bca44a8f80a38d9bd31f6f120ae69aac96056c01b4511d79a794ba9302c33e4",
+      "display_name": "Amy",
+      "source": "canonical-generated",
+      "version": "unversioned"
+    },
+    {
+      "aliases": [
+        "dani"
+      ],
+      "canonical_id": "worker.dani",
+      "component_type": "worker",
+      "content_fingerprint": "unversioned|4bca44a8f80a38d9bd31f6f120ae69aac96056c01b4511d79a794ba9302c33e4",
+      "display_name": "Dani",
+      "source": "canonical-generated",
+      "version": "unversioned"
+    },
+    {
+      "aliases": [
+        "gonesh"
+      ],
+      "canonical_id": "worker.gonesh",
+      "component_type": "worker",
+      "content_fingerprint": "unversioned|4bca44a8f80a38d9bd31f6f120ae69aac96056c01b4511d79a794ba9302c33e4",
+      "display_name": "Gonesh",
+      "source": "canonical-generated",
+      "version": "unversioned"
+    },
+    {
+      "aliases": [
+        "mark"
+      ],
+      "canonical_id": "worker.mark",
+      "component_type": "worker",
+      "content_fingerprint": "unversioned|4bca44a8f80a38d9bd31f6f120ae69aac96056c01b4511d79a794ba9302c33e4",
+      "display_name": "Mark",
+      "source": "canonical-generated",
+      "version": "unversioned"
+    },
+    {
+      "aliases": [
+        "mori"
+      ],
+      "canonical_id": "worker.mori",
+      "component_type": "worker",
+      "content_fingerprint": "unversioned|4bca44a8f80a38d9bd31f6f120ae69aac96056c01b4511d79a794ba9302c33e4",
+      "display_name": "Mori",
+      "source": "canonical-generated",
+      "version": "unversioned"
+    },
+    {
+      "aliases": [
+        "peri"
+      ],
+      "canonical_id": "worker.peri",
+      "component_type": "worker",
+      "content_fingerprint": "unversioned|4bca44a8f80a38d9bd31f6f120ae69aac96056c01b4511d79a794ba9302c33e4",
+      "display_name": "Peri",
+      "source": "canonical-generated",
+      "version": "unversioned"
+    },
+    {
+      "aliases": [
+        "saker"
+      ],
+      "canonical_id": "worker.saker",
+      "component_type": "worker",
+      "content_fingerprint": "unversioned|4bca44a8f80a38d9bd31f6f120ae69aac96056c01b4511d79a794ba9302c33e4",
+      "display_name": "Saker",
+      "source": "canonical-generated",
+      "version": "unversioned"
+    },
+    {
+      "aliases": [
+        "sefi"
+      ],
+      "canonical_id": "worker.sefi",
+      "component_type": "worker",
+      "content_fingerprint": "unversioned|4bca44a8f80a38d9bd31f6f120ae69aac96056c01b4511d79a794ba9302c33e4",
+      "display_name": "Sefi",
+      "source": "canonical-generated",
+      "version": "unversioned"
+    },
+    {
+      "aliases": [
+        "teddy"
+      ],
+      "canonical_id": "worker.teddy",
+      "component_type": "worker",
+      "content_fingerprint": "unversioned|4bca44a8f80a38d9bd31f6f120ae69aac96056c01b4511d79a794ba9302c33e4",
+      "display_name": "Teddy",
+      "source": "canonical-generated",
+      "version": "unversioned"
+    }
+  ],
+  "generated_at": "2026-10-03T23:51:00.997199Z",
+  "installation_stages": {
+    "bootstrap": {
+      "agents": 0,
+      "components": [],
+      "skills": 0
+    },
+    "final_verified": {
+      "agents": 10,
+      "components": [
+        {
+          "id": "role.valdi",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.amy",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.dani",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.gonesh",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.mark",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.mori",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.peri",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.saker",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.sefi",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.teddy",
+          "kind": "agent"
+        },
+        {
+          "id": "continuity.andy",
+          "kind": "skill"
+        },
+        {
+          "id": "role.ori",
+          "kind": "skill"
+        },
+        {
+          "id": "skill.codex-rtl-documents",
+          "kind": "skill"
+        },
+        {
+          "id": "skill.hebrew-i18n",
+          "kind": "skill"
+        },
+        {
+          "id": "skill.hebrew-rtl-best-practices",
+          "kind": "skill"
+        },
+        {
+          "id": "skill.impeccable",
+          "kind": "skill"
+        },
+        {
+          "id": "skill.israeli-accessibility-compliance",
+          "kind": "skill"
+        },
+        {
+          "id": "skill.israeli-appsec-scanner",
+          "kind": "skill"
+        },
+        {
+          "id": "skill.israeli-postgres-toolkit",
+          "kind": "skill"
+        },
+        {
+          "id": "skill.israeli-privacy-shield",
+          "kind": "skill"
+        },
+        {
+          "id": "skill.israeli-ui-design-system",
+          "kind": "skill"
+        },
+        {
+          "id": "skill.ponytail",
+          "kind": "skill"
+        },
+        {
+          "id": "skill.ponytail-review",
+          "kind": "skill"
+        },
+        {
+          "id": "skill.product-branding-system-builder",
+          "kind": "skill"
+        }
+      ],
+      "skills": 14
+    },
+    "html_manager_additions": {
+      "agents": 10,
+      "components": [
+        {
+          "id": "role.valdi",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.amy",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.dani",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.gonesh",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.mark",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.mori",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.peri",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.saker",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.sefi",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.teddy",
+          "kind": "agent"
+        },
+        {
+          "id": "continuity.andy",
+          "kind": "skill"
+        }
+      ],
+      "skills": 1
+    },
+    "notes": [
+      "Pre-existing or externally installed components are counted only in the final verified state: skill:role.ori, skill:skill.codex-rtl-documents, skill:skill.hebrew-i18n, skill:skill.hebrew-rtl-best-practices, skill:skill.impeccable, skill:skill.israeli-accessibility-compliance, skill:skill.israeli-appsec-scanner, skill:skill.israeli-postgres-toolkit, skill:skill.israeli-privacy-shield, skill:skill.israeli-ui-design-system, skill:skill.ponytail, skill:skill.ponytail-review, skill:skill.product-branding-system-builder"
+    ]
+  },
+  "lifecycle": {
+    "installed": {
+      "components": [
+        {
+          "id": "worker.amy",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.dani",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.gonesh",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.mark",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.mori",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.peri",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.saker",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.sefi",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.teddy",
+          "kind": "agent"
+        },
+        {
+          "id": "role.valdi",
+          "kind": "agent"
+        },
+        {
+          "id": "continuity.andy",
+          "kind": "skill"
+        }
+      ],
+      "counts": {
+        "agents": 10,
+        "skills": 1
+      },
+      "source_version": "new-project-tool",
+      "target": {
+        "providers": [
+          "claude",
+          "codex",
+          "cursor"
+        ]
+      },
+      "timestamp": "2026-10-03T23:51:00.997199Z"
+    },
+    "requested": {
+      "components": [
+        {
+          "id": "bundle.full-dream-team",
+          "kind": "bundle"
+        },
+        {
+          "id": "continuity.andy",
+          "kind": "skill"
+        },
+        {
+          "id": "role.yuli",
+          "kind": "skill"
+        },
+        {
+          "id": "role.valdi",
+          "kind": "skill"
+        }
+      ],
+      "counts": {
+        "agents": 0,
+        "skills": 3
+      },
+      "source_version": "new-project-tool",
+      "target": {
+        "providers": [
+          "claude",
+          "codex",
+          "cursor"
+        ]
+      },
+      "timestamp": "2026-10-03T23:51:00.997199Z"
+    },
+    "resolved": {
+      "components": [
+        {
+          "id": "worker.amy",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.dani",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.gonesh",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.mark",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.mori",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.peri",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.saker",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.sefi",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.teddy",
+          "kind": "agent"
+        },
+        {
+          "id": "role.valdi",
+          "kind": "agent"
+        },
+        {
+          "id": "continuity.andy",
+          "kind": "skill"
+        }
+      ],
+      "counts": {
+        "agents": 10,
+        "skills": 1
+      },
+      "source_version": "new-project-tool",
+      "target": {
+        "providers": [
+          "claude",
+          "codex",
+          "cursor"
+        ]
+      },
+      "timestamp": "2026-10-03T23:51:00.997199Z"
+    },
+    "verified": {
+      "components": [
+        {
+          "id": "worker.amy",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.dani",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.gonesh",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.mark",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.mori",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.peri",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.saker",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.sefi",
+          "kind": "agent"
+        },
+        {
+          "id": "worker.teddy",
+          "kind": "agent"
+        },
+        {
+          "id": "role.valdi",
+          "kind": "agent"
+        },
+        {
+          "id": "continuity.andy",
+          "kind": "skill"
+        }
+      ],
+      "counts": {
+        "agents": 10,
+        "skills": 2
+      },
+      "source_version": "new-project-tool",
+      "target": {
+        "providers": [
+          "claude",
+          "codex",
+          "cursor"
+        ]
+      },
+      "timestamp": "2026-10-03T23:51:00.997199Z"
+    }
+  },
+  "overall": "READY WITH WARNINGS",
+  "reconciliation": {
+    "balanced": true,
+    "transitions": [
+      {
+        "after": 10,
+        "before": 0,
+        "delta": 10,
+        "from": "requested",
+        "kind": "agents",
+        "reason": "Full Dream Team expanded into its agents and Andy; de-duplicated: andy -> continuity.andy (provided by Full Dream Team); valdi-validator -> role.valdi (provided by Full Dream Team); yuli-ceo -> role.yuli (provided by Full Dream Team)",
+        "to": "resolved"
+      },
+      {
+        "after": 1,
+        "before": 3,
+        "delta": -2,
+        "from": "requested",
+        "kind": "skills",
+        "reason": "Full Dream Team expanded into its agents and Andy; de-duplicated: andy -> continuity.andy (provided by Full Dream Team); valdi-validator -> role.valdi (provided by Full Dream Team); yuli-ceo -> role.yuli (provided by Full Dream Team)",
+        "to": "resolved"
+      },
+      {
+        "after": 10,
+        "before": 10,
+        "delta": 0,
+        "from": "resolved",
+        "kind": "agents",
+        "reason": "",
+        "to": "installed"
+      },
+      {
+        "after": 1,
+        "before": 1,
+        "delta": 0,
+        "from": "resolved",
+        "kind": "skills",
+        "reason": "",
+        "to": "installed"
+      },
+      {
+        "after": 10,
+        "before": 10,
+        "delta": 0,
+        "from": "installed",
+        "kind": "agents",
+        "reason": "",
+        "to": "verified"
+      },
+      {
+        "after": 2,
+        "before": 1,
+        "delta": 1,
+        "from": "installed",
+        "kind": "skills",
+        "reason": "verified by readiness checks but not installed in this run: role.ori",
+        "to": "verified"
+      }
+    ]
+  },
+  "schema_version": "1.0",
+  "verification_plan": [
+    {
+      "check_id": "AGENT.CLAUDE.AMY",
+      "component_id": "worker.amy",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".claude/agents/dt-amy-integrations.md",
+      "provider": "claude",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CLAUDE.AGENT-AMY",
+      "component_id": "version-agent-amy",
+      "expected_sha256": "1b592f32f3ac592159841f7b321180d75c0ebe3485b59b1ddfed4706469098f6",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".claude/agents/dt-amy-integrations.md",
+      "provider": "claude",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CLAUDE.DANI",
+      "component_id": "worker.dani",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".claude/agents/dt-dani-data-ai.md",
+      "provider": "claude",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CLAUDE.AGENT-DANI",
+      "component_id": "version-agent-dani",
+      "expected_sha256": "ea0eb094ade3f8cd526ddcc3a2b96c05d6064ee8dcf5dd04ce05672566809dcd",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".claude/agents/dt-dani-data-ai.md",
+      "provider": "claude",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CLAUDE.GONESH",
+      "component_id": "worker.gonesh",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".claude/agents/dt-gonesh-exec.md",
+      "provider": "claude",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CLAUDE.AGENT-GONESH",
+      "component_id": "version-agent-gonesh",
+      "expected_sha256": "32917d3667754aaa2af7ee3f5a9c8e3739d45219897d23d85445c4745333a115",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".claude/agents/dt-gonesh-exec.md",
+      "provider": "claude",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CLAUDE.MARK",
+      "component_id": "worker.mark",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".claude/agents/dt-mark-growth.md",
+      "provider": "claude",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CLAUDE.AGENT-MARK",
+      "component_id": "version-agent-mark",
+      "expected_sha256": "a819925f7e4d7b969eaa73d6e281af8aab2f0c4bf82872f825a036f262a310db",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".claude/agents/dt-mark-growth.md",
+      "provider": "claude",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CLAUDE.MORI",
+      "component_id": "worker.mori",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".claude/agents/dt-mori-ux-ui.md",
+      "provider": "claude",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CLAUDE.AGENT-MORI",
+      "component_id": "version-agent-mori",
+      "expected_sha256": "f5a7837b7143943d59698dd8ef4ab62f97e3af9d2f941bd269224634d7f18a49",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".claude/agents/dt-mori-ux-ui.md",
+      "provider": "claude",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CLAUDE.PERI",
+      "component_id": "worker.peri",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".claude/agents/dt-peri-product.md",
+      "provider": "claude",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CLAUDE.AGENT-PERI",
+      "component_id": "version-agent-peri",
+      "expected_sha256": "b11f49ac3cc9569ad6e36ff9eabcea2c6260941986d074c9e65a7cd977567d2b",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".claude/agents/dt-peri-product.md",
+      "provider": "claude",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CLAUDE.SAKER",
+      "component_id": "worker.saker",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".claude/agents/dt-saker-research.md",
+      "provider": "claude",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CLAUDE.AGENT-SAKER",
+      "component_id": "version-agent-saker",
+      "expected_sha256": "6c7441bdc7b674f80bf1858f1e7f9eff31b189e3353dd2e6a12edf8384ac568d",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".claude/agents/dt-saker-research.md",
+      "provider": "claude",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CLAUDE.SEFI",
+      "component_id": "worker.sefi",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".claude/agents/dt-sefi-devops-security.md",
+      "provider": "claude",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CLAUDE.AGENT-SEFI",
+      "component_id": "version-agent-sefi",
+      "expected_sha256": "c523b48297d1fc01ff48d3f9d3168f6975ef0c8ad789d97a5eab4b4e2949910b",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".claude/agents/dt-sefi-devops-security.md",
+      "provider": "claude",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CLAUDE.TEDDY",
+      "component_id": "worker.teddy",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".claude/agents/dt-teddy-leaddev.md",
+      "provider": "claude",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CLAUDE.AGENT-TEDDY",
+      "component_id": "version-agent-teddy",
+      "expected_sha256": "b25a5a65bd7b410244880965551e1cecc27a0b659e3982a61c27ce2bf61450c1",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".claude/agents/dt-teddy-leaddev.md",
+      "provider": "claude",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CLAUDE.VALDI",
+      "component_id": "role.valdi",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".claude/agents/dt-valdi-validate.md",
+      "provider": "claude",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CLAUDE.AGENT-VALDI",
+      "component_id": "version-agent-valdi",
+      "expected_sha256": "41648f571804f5171f3e16b16448d2b3f41a397fa83f493d414efcee42e8b7e4",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".claude/agents/dt-valdi-validate.md",
+      "provider": "claude",
+      "required": false
+    },
+    {
+      "check_id": "GOVERNANCE-HOOK.CLAUDE.DREAM-TEAM-AGENT-GOVERNOR",
+      "component_id": "rule-dream-team-agent-governor",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": ".claude/hooks/dream-team-agent-governor.py",
+      "provider": "claude",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CLAUDE.GOVERNANCE-HOOK-DREAM-TEAM-AGENT-GOVERNOR",
+      "component_id": "version-governance-hook-dream-team-agent-governor",
+      "expected_sha256": "da83ab50d33e79d202cb25c83aa336a9606c5d51743498307904de0ee9f8d33c",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".claude/hooks/dream-team-agent-governor.py",
+      "provider": "claude",
+      "required": false
+    },
+    {
+      "check_id": "GOVERNANCE-HOOK.CLAUDE.DREAM-TEAM-GOVERNOR-POLICY",
+      "component_id": "rule-dream-team-governor-policy",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": ".claude/hooks/dream-team-governor-policy.json",
+      "provider": "claude",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CLAUDE.GOVERNANCE-HOOK-DREAM-TEAM-GOVERNOR-POLICY",
+      "component_id": "version-governance-hook-dream-team-governor-policy",
+      "expected_sha256": "162e0018c14c3860a541c2417a850184985e70a8bd19e45bc8f59fd010d133f4",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".claude/hooks/dream-team-governor-policy.json",
+      "provider": "claude",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CODEX.AMY",
+      "component_id": "worker.amy",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".codex/agents/amy.toml",
+      "provider": "codex",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CODEX.AGENT-AMY",
+      "component_id": "version-agent-amy",
+      "expected_sha256": "b54d4bccdc8d3321742f95416841b768b7b5e33fc2f9575933c52f38511775be",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".codex/agents/amy.toml",
+      "provider": "codex",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CODEX.DANI",
+      "component_id": "worker.dani",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".codex/agents/dani.toml",
+      "provider": "codex",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CODEX.AGENT-DANI",
+      "component_id": "version-agent-dani",
+      "expected_sha256": "321d0e380f9eabb1ec82a230c32897d931780f8ade5d5c2abf76a30e028842cd",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".codex/agents/dani.toml",
+      "provider": "codex",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CODEX.GONESH",
+      "component_id": "worker.gonesh",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".codex/agents/gonesh.toml",
+      "provider": "codex",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CODEX.AGENT-GONESH",
+      "component_id": "version-agent-gonesh",
+      "expected_sha256": "ce3bf8d888530f26abd97bbf78a1c1ca3dd1e21f17d9db723db26030e488c693",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".codex/agents/gonesh.toml",
+      "provider": "codex",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CODEX.MARK",
+      "component_id": "worker.mark",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".codex/agents/mark.toml",
+      "provider": "codex",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CODEX.AGENT-MARK",
+      "component_id": "version-agent-mark",
+      "expected_sha256": "0999ec3c2d2ca24152886ddbea22c4b397061d570aa3a120710ba5fd07b48ec5",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".codex/agents/mark.toml",
+      "provider": "codex",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CODEX.MORI",
+      "component_id": "worker.mori",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".codex/agents/mori.toml",
+      "provider": "codex",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CODEX.AGENT-MORI",
+      "component_id": "version-agent-mori",
+      "expected_sha256": "667fcb3c87cda072c54e21431cd6080aa8a1acf61048d7bc71419c5084a78dd3",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".codex/agents/mori.toml",
+      "provider": "codex",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CODEX.PERI",
+      "component_id": "worker.peri",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".codex/agents/peri.toml",
+      "provider": "codex",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CODEX.AGENT-PERI",
+      "component_id": "version-agent-peri",
+      "expected_sha256": "071c5e8118aab9fe88f537f63ec2ff34e2fe45e5c7e9c70c9dffac00609b52ea",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".codex/agents/peri.toml",
+      "provider": "codex",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CODEX.SAKER",
+      "component_id": "worker.saker",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".codex/agents/saker.toml",
+      "provider": "codex",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CODEX.AGENT-SAKER",
+      "component_id": "version-agent-saker",
+      "expected_sha256": "ac3cb0d6ce8ff556fd0e8aac9e6c3643a1168091e26bd87b19922ef88e03f872",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".codex/agents/saker.toml",
+      "provider": "codex",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CODEX.SEFI",
+      "component_id": "worker.sefi",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".codex/agents/sefi.toml",
+      "provider": "codex",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CODEX.AGENT-SEFI",
+      "component_id": "version-agent-sefi",
+      "expected_sha256": "a4782d9297b3c0b53d4d72f4d21799f834f3a3fa13d733abdddb1cf7eaf48f8e",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".codex/agents/sefi.toml",
+      "provider": "codex",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CODEX.TEDDY",
+      "component_id": "worker.teddy",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".codex/agents/teddy.toml",
+      "provider": "codex",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CODEX.AGENT-TEDDY",
+      "component_id": "version-agent-teddy",
+      "expected_sha256": "2ecd0a7732e39569800064b561041e7d801fdf44fef3937f3ba650d77ea5977e",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".codex/agents/teddy.toml",
+      "provider": "codex",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CODEX.VALDI",
+      "component_id": "role.valdi",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".codex/agents/valdi.toml",
+      "provider": "codex",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CODEX.AGENT-VALDI",
+      "component_id": "version-agent-valdi",
+      "expected_sha256": "f9d6617cbc185e0f440b7ee65b71f6e3c8149f9c58a23532e64d3a2c48bf190d",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".codex/agents/valdi.toml",
+      "provider": "codex",
+      "required": false
+    },
+    {
+      "check_id": "GOVERNANCE-CONFIG.CODEX.CONFIG",
+      "component_id": "rule-config",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": ".codex/config.toml",
+      "provider": "codex",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CODEX.GOVERNANCE-CONFIG-CONFIG",
+      "component_id": "version-governance-config-config",
+      "expected_sha256": "427be3a91e3c2b3b3381a1110e1413c2c7b6837669a07a7c536765bc990a81f7",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".codex/config.toml",
+      "provider": "codex",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CURSOR.AMY",
+      "component_id": "worker.amy",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".cursor/agents/amy.md",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.AGENT-AMY",
+      "component_id": "version-agent-amy",
+      "expected_sha256": "8cd101996cf849d1d0a8f6972e65034ed82078e1c0559715000751d6c6bc7312",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/agents/amy.md",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CURSOR.DANI",
+      "component_id": "worker.dani",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".cursor/agents/dani.md",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.AGENT-DANI",
+      "component_id": "version-agent-dani",
+      "expected_sha256": "61847ceb993d26f21b92b902fa921f0a118520b45ffcb8d6c1d0d7616cd94aa5",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/agents/dani.md",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CURSOR.GONESH",
+      "component_id": "worker.gonesh",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".cursor/agents/gonesh.md",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.AGENT-GONESH",
+      "component_id": "version-agent-gonesh",
+      "expected_sha256": "d2c547f9c628dfdf7028c6e32c059240da5f841b08443a86765959f6f95346a8",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/agents/gonesh.md",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CURSOR.MARK",
+      "component_id": "worker.mark",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".cursor/agents/mark.md",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.AGENT-MARK",
+      "component_id": "version-agent-mark",
+      "expected_sha256": "0bb5053267e274824731164b0e08adeb1fc717cc3cfda9547fb0593ec15f75ad",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/agents/mark.md",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CURSOR.MORI",
+      "component_id": "worker.mori",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".cursor/agents/mori.md",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.AGENT-MORI",
+      "component_id": "version-agent-mori",
+      "expected_sha256": "657529e2f961d869714a834964444d0f5fb3c9f49f0f60f534cc53f564fb269c",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/agents/mori.md",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CURSOR.PERI",
+      "component_id": "worker.peri",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".cursor/agents/peri.md",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.AGENT-PERI",
+      "component_id": "version-agent-peri",
+      "expected_sha256": "b4a7e11f68ceee3b79ce2075e941ea9ddbbd9693c6e7459c34252b82c494b241",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/agents/peri.md",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CURSOR.SAKER",
+      "component_id": "worker.saker",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".cursor/agents/saker.md",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.AGENT-SAKER",
+      "component_id": "version-agent-saker",
+      "expected_sha256": "6f197457d9c8c546c13e17333c417ae40426c11945771d342889b2989528aace",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/agents/saker.md",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CURSOR.SEFI",
+      "component_id": "worker.sefi",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".cursor/agents/sefi.md",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.AGENT-SEFI",
+      "component_id": "version-agent-sefi",
+      "expected_sha256": "e4ced518342c925266d7a7a1de034a80a0b900fa36ccef00ffc4f0eaa292e839",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/agents/sefi.md",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CURSOR.TEDDY",
+      "component_id": "worker.teddy",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".cursor/agents/teddy.md",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.AGENT-TEDDY",
+      "component_id": "version-agent-teddy",
+      "expected_sha256": "d934ea2433a5df6d354e4da4a14a8ff4e7c66f369633c0988db14957440fff38",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/agents/teddy.md",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "AGENT.CURSOR.VALDI",
+      "component_id": "role.valdi",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "agent",
+      "path": ".cursor/agents/valdi.md",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.AGENT-VALDI",
+      "component_id": "version-agent-valdi",
+      "expected_sha256": "781fc0fa30291bcbd82bb5346e394e2f2ae4d9e7904b5cdeb11024370dc3a830",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/agents/valdi.md",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "RULE.CURSOR.AMY",
+      "component_id": "rule-amy",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/amy.mdc",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.RULE-AMY",
+      "component_id": "version-rule-amy",
+      "expected_sha256": "0e83f5d10117ef5fefb92c8c54ed521381adfbe352f3aa39be3d81faeebc28f0",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/amy.mdc",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "RULE.CURSOR.DANI",
+      "component_id": "rule-dani",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/dani.mdc",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.RULE-DANI",
+      "component_id": "version-rule-dani",
+      "expected_sha256": "e06d1d544cbc09ee1e0e32c3ff0fd4b4cb4b4a6a633e5eeb63f6ec6fd8b0cf12",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/dani.mdc",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "RULE.CURSOR.GONESH",
+      "component_id": "rule-gonesh",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/gonesh.mdc",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.RULE-GONESH",
+      "component_id": "version-rule-gonesh",
+      "expected_sha256": "599b8df3adbd2498c8ba16b3e872caecadc83788eff03242db5ca5b60b24392a",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/gonesh.mdc",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "RULE.CURSOR.MARK",
+      "component_id": "rule-mark",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/mark.mdc",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.RULE-MARK",
+      "component_id": "version-rule-mark",
+      "expected_sha256": "b872a051e08a8f5f572171e73e9bb9f90fa5905921e6942cde6a96e2985b8ad2",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/mark.mdc",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "RULE.CURSOR.MORI",
+      "component_id": "rule-mori",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/mori.mdc",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.RULE-MORI",
+      "component_id": "version-rule-mori",
+      "expected_sha256": "5c8779f468308aceaa9e27067b1ab3ad9a7480addaf01f452e14a67213ae047a",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/mori.mdc",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "RULE.CURSOR.ORI",
+      "component_id": "rule-ori",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/ori.mdc",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.RULE-ORI",
+      "component_id": "version-rule-ori",
+      "expected_sha256": "c4e50e64d70cfbdc862dd0fe0d648ddfe220f1a190c4f6e0e8f6baf33c3a8afb",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/ori.mdc",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "RULE.CURSOR.PERI",
+      "component_id": "rule-peri",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/peri.mdc",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.RULE-PERI",
+      "component_id": "version-rule-peri",
+      "expected_sha256": "45bd2c5f748efb3acb568f7744c5c6967378091995789ffbfc2c3155793a75aa",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/peri.mdc",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "RULE.CURSOR.SAKER",
+      "component_id": "rule-saker",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/saker.mdc",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.RULE-SAKER",
+      "component_id": "version-rule-saker",
+      "expected_sha256": "0323da08411413b40b481b0a0ba273eccb5b9ea4a94aaba2d9d1e748ab576591",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/saker.mdc",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "RULE.CURSOR.SEFI",
+      "component_id": "rule-sefi",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/sefi.mdc",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.RULE-SEFI",
+      "component_id": "version-rule-sefi",
+      "expected_sha256": "e40ae0c1268a30ec479e613ff35976ca048e60dac8aeff58cde751621c883d84",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/sefi.mdc",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "RULE.CURSOR.TEDDY",
+      "component_id": "rule-teddy",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/teddy.mdc",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.RULE-TEDDY",
+      "component_id": "version-rule-teddy",
+      "expected_sha256": "36b21c7a1cac5ed875b1ca7c0a345919501dabc3c6183868149b84f4f4da5f0b",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/teddy.mdc",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "RULE.CURSOR.VALDI",
+      "component_id": "rule-valdi",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/valdi.mdc",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.RULE-VALDI",
+      "component_id": "version-rule-valdi",
+      "expected_sha256": "43668c74f73bfc751d505a8952f11a5f6a0a637091093d2510499dbb976d8870",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/valdi.mdc",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "RULE.CURSOR.YULI",
+      "component_id": "rule-yuli",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/yuli.mdc",
+      "provider": "cursor",
+      "required": true
+    },
+    {
+      "check_id": "VERSION.CURSOR.RULE-YULI",
+      "component_id": "version-rule-yuli",
+      "expected_sha256": "964941b7e50540b1dc6bcbe4a473454c5e1d5d23062213eaf506138b75872aca",
+      "expected_version": null,
+      "kind": "file",
+      "path": ".cursor/rules/yuli.mdc",
+      "provider": "cursor",
+      "required": false
+    },
+    {
+      "check_id": "DOCS.PRD",
+      "component_id": "prd",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": "PRD.md",
+      "provider": "",
+      "required": false
+    },
+    {
+      "check_id": "DOCS.IDEA",
+      "component_id": "idea",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": "docs/IDEA.md",
+      "provider": "",
+      "required": false
+    },
+    {
+      "check_id": "TARGET.AGENTS",
+      "component_id": "target-agents",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": "AGENTS.md",
+      "provider": "",
+      "required": false
+    },
+    {
+      "check_id": "TARGET.CLAUDE",
+      "component_id": "target-claude",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": "CLAUDE.md",
+      "provider": "",
+      "required": false
+    },
+    {
+      "check_id": "IDENTITY.PROJECT",
+      "component_id": "project-identity",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": ".dream-team/project.json",
+      "provider": "",
+      "required": true
+    },
+    {
+      "check_id": "ORCHESTRATOR.CLAUDE",
+      "component_id": "role.ori",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "skill",
+      "path": ".claude/skills/watchup-orchestrator/SKILL.md",
+      "provider": "claude",
+      "required": true
+    },
+    {
+      "check_id": "ANDY.CORE",
+      "component_id": "continuity.andy",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "skill",
+      "path": ".agents/skills/andy/SKILL.md",
+      "provider": "shared",
+      "required": true
+    },
+    {
+      "check_id": "ANDY.STATE",
+      "component_id": "andy-state",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "file",
+      "path": ".ai/andy/current.json",
+      "provider": "",
+      "required": true
+    },
+    {
+      "check_id": "ANDY.CLAUDE",
+      "component_id": "continuity.andy",
+      "expected_sha256": null,
+      "expected_version": null,
+      "kind": "skill",
+      "path": ".claude/skills/andy/SKILL.md",
+      "provider": "claude",
+      "required": true
+    }
+  ]
+}

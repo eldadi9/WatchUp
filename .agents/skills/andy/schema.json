@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Andy current.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["andy_version", "project", "status", "updated_at"],
+  "properties": {
+    "andy_version": { "type": "string", "enum": ["1.0", "1.1"] },
+    "project": { "type": "string", "description": "Project name/root folder name. Never a name from another project." },
+    "workstream": { "type": "string", "description": "Active workstream id, matches a file under sessions/ if multiple workstreams exist." },
+    "goal": { "type": "string" },
+    "status": { "type": "string", "enum": ["new", "active", "paused", "blocked", "completed"] },
+
+    "current_phase": { "type": "string" },
+    "current_task": { "type": "string" },
+    "last_completed": { "type": "array", "items": { "type": "string" } },
+    "open_tasks": { "type": "array", "items": { "type": "string" } },
+    "next_action": { "type": "string" },
+
+    "decisions": { "type": "array", "items": { "type": "string" } },
+    "restrictions": { "type": "array", "items": { "type": "string" } },
+
+    "files_touched": { "type": "array", "items": { "type": "string" } },
+    "files_created": { "type": "array", "items": { "type": "string" } },
+    "files_deleted": { "type": "array", "items": { "type": "string" } },
+
+    "tests": { "type": "array", "items": { "type": "string" } },
+    "validation": { "type": "array", "items": { "type": "string" } },
+    "errors": { "type": "array", "items": { "type": "string" } },
+    "blockers": { "type": "array", "items": { "type": "string" } },
+
+    "source_of_truth": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "References to project constitution files (e.g. PRD.md, docs/PROJECT_STATUS.md). Pointers only, never copied content."
+    },
+
+    "workspace_root": {
+      "type": "string",
+      "description": "Absolute root of the active checkout/worktree. It must resolve to the same Git common directory as the canonical project state."
+    },
+
+    "git": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch", "head", "dirty"],
+      "properties": {
+        "branch": { "type": "string" },
+        "head": { "type": "string" },
+        "dirty": { "type": "boolean" }
+      }
+    },
+
+    "last_worker": { "type": "string", "description": "Tool/agent name that made the last checkpoint, e.g. Claude, Codex, Cursor." },
+    "last_session": { "type": "string", "description": "ISO timestamp of the last session touching this state." },
+
+    "checkpoint_health": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["last_checkpoint", "turns_since_checkpoint", "dirty_since_checkpoint"],
+      "properties": {
+        "last_checkpoint": { "type": "string" },
+        "turns_since_checkpoint": { "type": "integer", "minimum": 0 },
+        "dirty_since_checkpoint": { "type": "boolean" }
+      }
+    },
+
+    "updated_at": { "type": "string", "description": "ISO timestamp of last write to this file." }
+  }
+}

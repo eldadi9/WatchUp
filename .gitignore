@@ -1,0 +1,44 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# WhatsApp sessions and local data
+sessions/
+session/
+auth/
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Dependencies and build output
+node_modules/
+.next/
+dist/
+build/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Logs and temporary files
+*.log
+tmp/
+temp/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+.dream-team/rollback/
+.claude/.dream-team-backups/
+.vendor-git-backups/
+
+# Secrets written by New Project Tool - do not commit
+.env.local
+.mcp.json

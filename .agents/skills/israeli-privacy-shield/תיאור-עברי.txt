@@ -1,0 +1,15 @@
+﻿╔══════════════════════════════════════════════════╗
+  תיאור בעברית - israeli-privacy-shield
+╚══════════════════════════════════════════════════╝
+
+שם בעברית:  israeli-privacy-shield
+
+תיאור:
+  Israeli Privacy Protection Law compliance guidance including Amendment 13 (effective August 14, 2025), database registration, consent requirements, data security, cross-border transfers, breach notification, privacy protection officer appointment, and AI governance. Use when user asks about Israeli privacy law, "haganat pratiut", "tikun 13", data protection in Israel, GDPR compliance for Israel...
+
+──────────────────────────────────────────────────
+Source: SKILL.md (no description in SKILL_HE.md)
+ריפוזיטורי: security-compliance
+נוצר: 29/09/2026 01:13
+ארגון: https://github.com/skills-il
+──────────────────────────────────────────────────

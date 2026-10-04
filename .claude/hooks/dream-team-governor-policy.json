@@ -1,0 +1,487 @@
+{
+  "schema_version": 1,
+  "source_of_truth": "This block is the only source of numeric token, context, model, reasoning, concurrency, retry, validation and usage-budget policy. orchestration-engine/core/token-governance.md explains it; generators, the engine governor and host hooks read it.",
+  "principle": "Maximum useful work per unit of context and usage. Cheapest capable model and reasoning for the actual task.",
+  "authority": {
+    "policy_owner": "yuli",
+    "runtime_enforcer": "ori",
+    "rule": "Yuli sets the Mission Budget Plan. Ori enforces it at dispatch time. Yuli never dispatches workers; Ori never raises the budget.",
+    "logical_stages": [
+      "owner_input",
+      "yuli_mission_resource_decision",
+      "ori_orchestration_decision",
+      "worker"
+    ],
+    "audit_actors": {
+      "yuli_decisions": "yuli",
+      "ori_decisions": "orchestrator"
+    }
+  },
+  "concurrency": {
+    "default": 1,
+    "normal_max": 2,
+    "hard_max": 4,
+    "max_spawn_depth": 1,
+    "parallel_writers": false,
+    "parallel_rule": "Two concurrent agents only when their scopes are disjoint and at most one of them writes. Parallel writers stay off until worktree isolation exists.",
+    "above_normal_requires": [
+      "tasks are genuinely independent",
+      "files and scopes do not overlap",
+      "measurable benefit is stated",
+      "context duplication is minimal",
+      "budget state is GREEN",
+      "justification is recorded in the mission audit"
+    ],
+    "coordinator_threads": "Yuli and Ori run as distinct logical stages in the main thread. Host-native runtimes never spawn Yuli or Ori as subagent threads.",
+    "release_idle_agents": true,
+    "validation_agent_lifetime": "spawn Valdi only when the artifact is ready; release immediately after the verdict"
+  },
+  "model_classes": {
+    "FAST": {
+      "registry_class": "economy",
+      "default_reasoning": "low",
+      "use_for": [
+        "discovery",
+        "grep and search",
+        "file inventory",
+        "formatting",
+        "simple mapping",
+        "deterministic extraction",
+        "simple documentation updates"
+      ]
+    },
+    "STANDARD": {
+      "registry_class": "balanced",
+      "default_reasoning": "medium",
+      "use_for": [
+        "ordinary implementation",
+        "UX implementation",
+        "scoped code modification",
+        "normal bug fixing",
+        "ordinary validation"
+      ]
+    },
+    "HIGH": {
+      "registry_class": "high_capability",
+      "default_reasoning": "high",
+      "requires_reason": true,
+      "use_for": [
+        "difficult architecture",
+        "non-trivial root-cause analysis",
+        "security-sensitive reasoning",
+        "complex integration",
+        "important final validation gate"
+      ]
+    },
+    "ESCALATED": {
+      "registry_class": "high_capability",
+      "default_reasoning": "high",
+      "requires_reason": true,
+      "only_when": [
+        "the previous level failed with evidence",
+        "mission complexity is proven"
+      ]
+    }
+  },
+  "reasoning": {
+    "levels": [
+      "low",
+      "medium",
+      "high"
+    ],
+    "inherit_parent": false,
+    "high_only_for": [
+      "security-sensitive work",
+      "difficult architecture",
+      "difficult root-cause analysis",
+      "important final validation"
+    ],
+    "record_per_dispatch": [
+      "MODEL_CLASS",
+      "REASONING",
+      "WHY"
+    ]
+  },
+  "agent_budgets": {
+    "discovery": {
+      "model_class": "FAST",
+      "reasoning": "low",
+      "max_iterations": 1,
+      "max_turns": 12,
+      "max_context_tokens": 6000,
+      "max_files": 12
+    },
+    "research": {
+      "model_class": "FAST",
+      "reasoning": "low",
+      "max_iterations": 1,
+      "max_turns": 20,
+      "max_context_tokens": 6000,
+      "max_files": 16,
+      "stop_condition": "stop once sufficient evidence answers the bounded question"
+    },
+    "implementation": {
+      "model_class": "STANDARD",
+      "reasoning": "medium",
+      "max_iterations": 2,
+      "max_turns": 30,
+      "max_context_tokens": 8000,
+      "max_files": 24
+    },
+    "validation": {
+      "model_class": "STANDARD",
+      "reasoning": "medium",
+      "max_iterations": 1,
+      "max_turns": 20,
+      "max_context_tokens": 8000,
+      "max_files": 24,
+      "max_initial_validations": 1,
+      "max_revalidations_per_repair_cycle": 1
+    },
+    "architecture": {
+      "model_class": "HIGH",
+      "reasoning": "high",
+      "max_iterations": 1,
+      "max_turns": 25,
+      "max_context_tokens": 10000,
+      "max_files": 24
+    }
+  },
+  "retry": {
+    "max_attempts": 3,
+    "ceiling_source": "max_attempts_per_phase",
+    "attempt_1": "classify the failure",
+    "attempt_2": "only when the corrective action is classified and clear",
+    "attempt_3": "REPLAN only: change at least one of context scope, specialist, reasoning or model; never repeat the same worker, context and model",
+    "replan_options": [
+      "narrower context",
+      "different specialist",
+      "higher reasoning",
+      "model escalation",
+      "architecture review"
+    ],
+    "model_escalation_blocked_at": "ORANGE",
+    "after_ceiling": "BLOCKED for Ori re-planning; the Owner only for Owner-level matters listed in owner_escalation"
+  },
+  "validation": {
+    "deterministic_checks_first": true,
+    "valdi_package": [
+      "requirement",
+      "changed files",
+      "relevant tests",
+      "evidence",
+      "expected DOD"
+    ],
+    "valdi_package_excludes": [
+      "full mission history",
+      "full HANDOFF",
+      "full conversation",
+      "unrelated architecture"
+    ],
+    "high_reasoning_only_for": [
+      "final mission gate",
+      "security-sensitive change",
+      "architecture change"
+    ],
+    "cycles_per_task": "1 initial validation + 1 revalidation per repair cycle, bounded by the retry ceiling"
+  },
+  "context": {
+    "layers": [
+      "mission",
+      "phase",
+      "agent"
+    ],
+    "agent_packet_includes": [
+      "exact task",
+      "exact files or sections",
+      "acceptance criteria",
+      "current relevant state"
+    ],
+    "agent_packet_excludes": [
+      "full HANDOFF",
+      "full conversation",
+      "whole project history",
+      "unrelated architecture",
+      "previous checkpoints",
+      "the full Andy current.json (the engine compact previous-state digest is allowed)"
+    ],
+    "host_spawn_fork_turns": "none",
+    "skills": {
+      "selection": "metadata-first",
+      "max_loaded_per_agent": 3,
+      "release_after_task": true
+    }
+  },
+  "checkpoint": {
+    "owner": "andy",
+    "writer": "main thread only; dispatched agents never read or write Andy state",
+    "max_bytes": 6144,
+    "resume_fields": [
+      "objective",
+      "completed",
+      "active",
+      "blocked",
+      "changed files",
+      "validation state",
+      "next exact action",
+      "essential decisions"
+    ]
+  },
+  "usage_governor": {
+    "ledger": "<state_dir>/usage-ledger.jsonl",
+    "telemetry": {
+      "platform": {
+        "codex": "session rollout token_count: tokens + rate_limits primary (5h) and secondary (weekly) used_percent",
+        "claude": "claude -p JSON: modelUsage tokens and total_cost_usd per call; quota percentage UNAVAILABLE",
+        "cursor": "UNAVAILABLE",
+        "grok": "UNAVAILABLE"
+      },
+      "proxy": "work units = class weight x reasoning multiplier per dispatch, against the Mission Budget Plan",
+      "rule": "Platform quota and the internal work budget are different things. Record the source on every reading; never fabricate platform telemetry."
+    },
+    "work_unit_weights": {
+      "FAST": 1,
+      "STANDARD": 2,
+      "HIGH": 4,
+      "ESCALATED": 6
+    },
+    "reasoning_multipliers": {
+      "low": 1.0,
+      "medium": 1.5,
+      "high": 2.0,
+      "deep": 2.0
+    },
+    "default_per_task_work_units": 9,
+    "default_budget_rule": "without a Yuli plan: max(default_mission_work_units[complexity], task_count x default_per_task_work_units); 9 = one STANDARD/medium dispatch (3 units) x the 3-attempt retry ceiling",
+    "default_mission_work_units": {
+      "simple": 12,
+      "normal": 40,
+      "complex": 100
+    },
+    "states": {
+      "GREEN": {
+        "below": 0.5,
+        "max_concurrency": 2,
+        "model_escalation": true,
+        "behavior": "normal execution"
+      },
+      "YELLOW": {
+        "from": 0.5,
+        "max_concurrency": 1,
+        "model_escalation": true,
+        "behavior": "reduce context duplication; no optional parallelism"
+      },
+      "ORANGE": {
+        "from": 0.7,
+        "max_concurrency": 1,
+        "model_escalation": false,
+        "behavior": "no new optional agents; no model escalation; finish the current bounded phase; checkpoint aggressively"
+      },
+      "RED": {
+        "from": 0.85,
+        "max_concurrency": 0,
+        "model_escalation": false,
+        "behavior": "stop spawning; finish only the safe atomic operation; Andy checkpoint; return resumable state (not an Owner escalation)"
+      }
+    },
+    "effective_ratio": "max(platform used fraction when available, proxy ratio)"
+  },
+  "spawn_policy": {
+    "questions": [
+      "Is another agent actually required?",
+      "Can the current bounded worker finish this?",
+      "Is this work independent?",
+      "Will this duplicate context?",
+      "Is a specialist required?",
+      "Is the requested model and reasoning justified?",
+      "What is the stop condition?"
+    ],
+    "default": "DO NOT SPAWN without a strong justification"
+  },
+  "agent_contract_fields": [
+    "agent",
+    "role",
+    "task",
+    "goal",
+    "files_allowed",
+    "files_prohibited",
+    "required_context",
+    "maximum_context",
+    "expected_output",
+    "model_class",
+    "reasoning",
+    "maximum_iterations",
+    "maximum_retries",
+    "validation_requirement",
+    "stop_condition"
+  ],
+  "main_authority": {
+    "schema_version": 1,
+    "origin": "AUTONOMY-RECOVERY WP-1 (Authority Lock): Main = Host only, Governor = Guard only",
+    "main_may": [
+      "receive Owner mission",
+      "invoke the mission runtime",
+      "observe/report state",
+      "state, evidence, plan and git plumbing"
+    ],
+    "main_may_not": [
+      "implement application code",
+      "patch source",
+      "debug implementation line by line",
+      "perform Worker repair"
+    ],
+    "enforcement": "guard hook, main thread only: implementation write -> ledger MAIN_IMPLEMENTATION_WRITE (report.main_implementation_writes); denied when the mission was set with --host-only",
+    "plumbing_globs": [
+      ".ai/**",
+      "**/.ai/**",
+      "**/evidence/**",
+      "**/DREAM_TEAM_EXECUTION_PLAN.md",
+      "**/*.sha256",
+      ".claude/settings*.json"
+    ],
+    "residual": "PARTIAL text heuristic for shell writes (a dynamically built command is not recognised); inline interpreter scripts (python - <<EOF, python -c, node -e, powershell here-strings) with a write call are treated as implementation writes unless every path-like token is plumbing or outside the project root, and a script with no statically resolvable path is denied conservatively; a script file run by name (python script.py) or a dynamically assembled path is not seen; not an OS sandbox"
+  },
+  "runtime_watchdog": {
+    "schema_version": 1,
+    "origin": "ALIGN-2 RESOURCE GOVERNANCE HOTFIX (ALIGN-3 WP-3a incident: general-purpose worker, 104 model calls, 363K context, HTTP 429)",
+    "admission": {
+      "registered_prefix": "dt-",
+      "registered_requires_definition": ".claude/agents/<type>.md",
+      "compat_types": [
+        "general-purpose",
+        "explore",
+        "plan"
+      ],
+      "contract_marker": "DT_AGENT_CONTRACT:",
+      "contract_required_fields": [
+        "mission_id",
+        "wp_id",
+        "role",
+        "model",
+        "reasoning",
+        "files",
+        "tools",
+        "access",
+        "max_turns",
+        "stop_condition",
+        "parent",
+        "justification"
+      ],
+      "unknown_types": "deny",
+      "rule": "dt-* only with an installed definition (frontmatter maxTurns/model). Host built-in types only with a complete one-line DT_AGENT_CONTRACT json bound to the active mission. Never unrestricted general-purpose."
+    },
+    "agent": {
+      "max_turns_hard": 30,
+      "turn_state_ratios": {
+        "YELLOW": 0.67,
+        "ORANGE": 0.84,
+        "RED": 1.0
+      },
+      "context_peak_red_tokens": 200000,
+      "context_growth_orange_ratio": 2.5,
+      "context_growth_red_ratio": 3.5,
+      "tool_calls_proxy_red": 60,
+      "elapsed_orange_seconds": 1200,
+      "elapsed_red_seconds": 1800,
+      "background_shell": "deny"
+    },
+    "work_package": {
+      "max_agents": 3,
+      "replan_marker_from_attempt": 3,
+      "replan_marker": "REPLAN:",
+      "max_model_calls": 75
+    },
+    "mission": {
+      "max_subagent_model_calls": {
+        "simple": 120,
+        "normal": 250,
+        "complex": 400
+      },
+      "raise": "main-thread CLI: authorize model_calls <n> --reason"
+    },
+    "final_handback_max_chars": 2000,
+    "single_writer": true,
+    "access_enforcement": "tool time: access=read denies Write/Edit/MultiEdit/NotebookEdit; access=write limits those tools to the contract files allowlist; shell writes are DECLARED (not parsed). Live sibling and crashed-agent usage files count toward WP / mission totals.",
+    "quota": {
+      "signal": "transcript line with \"apiErrorStatus\":429",
+      "action": "QUOTA_EVENT in the ledger; new spawns denied until main-thread CLI quota-clear --reason",
+      "platform_percentage": "UNAVAILABLE"
+    },
+    "telemetry": {
+      "turns_and_context": "host subagent transcript <transcripts>/<session_id>/subagents/agent-<agent_id>.jsonl (assistant message ids + usage), read incrementally",
+      "fallback": "PROXY: tool-call counter + elapsed time when the transcript is unavailable",
+      "enforcement": "deny of every further tool call (exit 2); hooks cannot kill a running agent"
+    },
+    "main_thread": "not governed by the watchdog (no subagent identity in hook payloads); bounded by discipline and Andy checkpoints"
+  },
+  "provider_enforcement": {
+    "codex": {
+      "mechanism": "config.toml [agents] table plus a per-agent model in .codex/agents/*.toml",
+      "agents_table": {
+        "max_concurrent_threads_per_session": 2,
+        "max_depth": 1,
+        "default_subagent_model": "gpt-5.6-terra",
+        "default_subagent_reasoning_effort": "medium"
+      },
+      "project_profile": {
+        "approval_policy": "on-request",
+        "sandbox_mode": "workspace-write",
+        "scope": "EG_SKIILS roots and NPT-generated projects (project-scoped .codex/config.toml); global ~/.codex/config.toml untouched (Owner decisions ALIGN-2, ALIGN-3 D3)",
+        "effective_scope": "only when Codex starts at Skills_IL/EG-SKIILS or the EG_SKIILS root (no .git: project root = cwd); sessions started in subfolders fall back to the global config (PARTIAL, ALIGN-2 evidence); for NPT-generated projects the project root follows Codex root detection (git root when .git exists); behaviour without .git or from subfolders is UNKNOWN until offline proof"
+      },
+      "installed_agents": "workers only (not yuli, not ori)"
+    },
+    "claude": {
+      "mechanism": "admission hook dream-team/hooks/agent_governor.py: installed matchers: PreToolUse Agent|Task -> pre; PreToolUse * -> guard (state protection on Write|Edit|MultiEdit|NotebookEdit|Bash|PowerShell; runtime watchdog on every subagent tool call); PostToolUse and PostToolUseFailure Agent|Task -> post; SubagentStop -> stop; per-agent model, effort and maxTurns frontmatter. Residual: fail-closed covers governor exceptions only; a hook timeout or missing interpreter is treated by Claude Code as non-blocking (PARTIAL)",
+      "hook_wiring": [
+        {
+          "event": "PreToolUse",
+          "matcher": "Agent|Task",
+          "mode": "pre"
+        },
+        {
+          "event": "PreToolUse",
+          "matcher": "*",
+          "mode": "guard"
+        },
+        {
+          "event": "PostToolUse",
+          "matcher": "Agent|Task",
+          "mode": "post"
+        },
+        {
+          "event": "PostToolUseFailure",
+          "matcher": "Agent|Task",
+          "mode": "post"
+        },
+        {
+          "event": "SubagentStop",
+          "mode": "stop"
+        }
+      ],
+      "hook_timeout": 10,
+      "explicit_model_required_for": [
+        "general-purpose"
+      ],
+      "explicit_model_reason": "general-purpose defaults to the parent session model; Dream Team agents carry an explicit model in their frontmatter",
+      "agent_default_models": {},
+      "model_why_required_for": [
+        "HIGH",
+        "ESCALATED"
+      ],
+      "runtime_state_guard": ".ai/dream-team/ (runtime authorization state; governor CLI only)"
+    },
+    "cursor": {
+      "mechanism": "PARTIAL: Task tool with per-task model slug (observed 2026-09-24); concurrency, depth and reasoning UNSUPPORTED; model per Task UNVERIFIED for generated agents (model: inherit); Ori must pass Task.model; rule text only (Cursor stays MANUAL)",
+      "concurrency": "UNSUPPORTED",
+      "depth": "UNSUPPORTED",
+      "reasoning": "UNSUPPORTED",
+      "model_per_task": "UNVERIFIED for generated agents; Ori must pass Task.model",
+      "agent_banner": "Model control: UNVERIFIED — generated agent inherits the session model; Ori must pass Task.model explicitly. Reasoning/concurrency/depth: UNSUPPORTED in Cursor.",
+      "main_thread_line": "Main-thread stage; do not spawn as a subagent."
+    },
+    "grok": {
+      "mechanism": "no native subagents; engine governor applies when routed"
+    }
+  }
+}

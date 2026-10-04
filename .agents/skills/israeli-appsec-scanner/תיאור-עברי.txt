@@ -1,0 +1,15 @@
+﻿╔══════════════════════════════════════════════════╗
+  תיאור בעברית - israeli-appsec-scanner
+╚══════════════════════════════════════════════════╝
+
+שם בעברית:  israeli-appsec-scanner
+
+תיאור:
+  Security scanning guidance for Israeli web applications covering OWASP Top 10, Israeli Privacy Protection Authority (PPA) compliance, dependency vulnerability scanning, secrets detection, and secure coding patterns for Hebrew/RTL apps. Use when user asks to "scan for vulnerabilities", "check security compliance", "audit Israeli app security", "bodek aviskhut" (Hebrew transliteration), or needs ...
+
+──────────────────────────────────────────────────
+Source: SKILL_HE.md
+ריפוזיטורי: security-compliance
+נוצר: 29/09/2026 01:13
+ארגון: https://github.com/skills-il
+──────────────────────────────────────────────────

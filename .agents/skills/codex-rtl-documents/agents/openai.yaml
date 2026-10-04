@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex RTL Documents"
+  short_description: "Correct Hebrew RTL across Codex and documents"
+  default_prompt: "Apply $codex-rtl-documents to produce correct Hebrew RTL output for chat, IDE, webviews, and office documents."

@@ -1,0 +1,15 @@
+﻿╔══════════════════════════════════════════════════╗
+  תיאור בעברית - hebrew-rtl-best-practices
+╚══════════════════════════════════════════════════╝
+
+שם בעברית:  hebrew-rtl-best-practices
+
+תיאור:
+  Implement right-to-left (RTL) layouts for Hebrew web applications. Use when user asks about RTL layout, Hebrew text direction, bidirectional (bidi) text, Hebrew CSS, "right to left", or needs to build a Hebrew web UI. Covers CSS logical properties, the :dir() pseudo-class, Tailwind RTL, React/Next.js RTL setup, icon mirroring, Hebrew typography, and font selection. Do NOT use for Arabic RTL (si...
+
+──────────────────────────────────────────────────
+Source: SKILL_HE.md
+ריפוזיטורי: localization
+נוצר: 29/09/2026 01:12
+ארגון: https://github.com/skills-il
+──────────────────────────────────────────────────

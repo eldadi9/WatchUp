@@ -1,0 +1,548 @@
+---
+name: israeli-appsec-scanner
+description: Security scanning guidance for Israeli web applications covering OWASP Top 10, Israeli Privacy Protection Authority (PPA) compliance, dependency vulnerability scanning, secrets detection, and secure coding patterns for Hebrew/RTL apps. Use when user asks to "scan for vulnerabilities", "check security compliance", "audit Israeli app security", "bodek aviskhut" (Hebrew transliteration), or needs help with PPA compliance, secrets detection, or Hebrew input sanitization. Provides actionable checklists, automated scanning scripts, and Israeli-specific security guidance. Do NOT use for network penetration testing, physical security audits, or non-application-layer security concerns.
+license: MIT
+compatibility: No special requirements. Works with Claude Code, Cursor, Windsurf.
+---
+
+# Israeli AppSec Scanner
+
+Security scanning and compliance guidance tailored for Israeli web applications. This skill covers the full spectrum of application security, from OWASP Top 10 verification to Israeli Privacy Protection Authority (PPA) compliance, with special attention to Hebrew/RTL-specific attack vectors.
+
+> **OWASP Top 10 version note (2025-2026).** The checklist below is keyed to OWASP Top 10 2021. OWASP Top 10 2025 was published and re-shaped the categories: A01 now subsumes SSRF (no separate A10:SSRF entry), A03 is the new **Software Supply Chain Failures**, A05 is now Injection (down from A03), A09 was renamed **Security Logging and Alerting Failures**, and a new A10 covers **Mishandling of Exceptional Conditions**. When auditing in 2026, treat the 2021 numbering below as a working scaffold and cross-walk findings to the 2025 list at https://owasp.org/Top10/2025/ before reporting.
+
+## OWASP Top 10 Checklist (Israeli Context)
+
+Work through each category systematically. For each finding, note the severity (Critical/High/Medium/Low) and provide a remediation recommendation.
+
+### A01: Broken Access Control
+
+- [ ] Verify all API endpoints enforce authentication (check Next.js middleware, NestJS guards)
+- [ ] Confirm role-based access control covers admin, user, and anonymous roles
+- [ ] Test that Hebrew URL paths cannot bypass route-based authorization
+- [ ] Check for Insecure Direct Object References (IDOR) on user-facing resources
+- [ ] Verify CORS configuration restricts origins to expected Israeli domains
+- [ ] Ensure JWT tokens are validated server-side, not just client-side
+- [ ] Test directory traversal with Hebrew-encoded path segments (%D7%90 etc.)
+
+### A02: Cryptographic Failures
+
+- [ ] Verify TLS 1.2+ on all connections (Israeli hosting providers sometimes default to older versions)
+- [ ] Check that passwords are hashed with bcrypt/argon2 (not MD5/SHA1)
+- [ ] Confirm Israeli national ID numbers (teudat zehut) are encrypted at rest
+- [ ] Verify credit card data is never stored locally (PCI DSS requirement)
+- [ ] Check that Supabase service role keys are never exposed to the client
+- [ ] Ensure Israeli payment gateway tokens (Cardcom, Tranzila) use secure storage
+
+### A03: Injection
+
+- [ ] Test SQL injection with Hebrew text input (`'; DROP TABLE --` with Hebrew characters)
+- [ ] Verify parameterized queries for all database operations involving Hebrew text
+- [ ] Check for NoSQL injection in MongoDB queries (common in Israeli startups using MEAN stack)
+- [ ] Test command injection through file upload names containing Hebrew characters
+- [ ] Verify LDAP injection protection if integrating with Israeli corporate directories
+- [ ] Check for template injection in email templates with Hebrew content
+
+### A04: Insecure Design
+
+- [ ] Verify rate limiting on Israeli SMS gateway endpoints (prevent OTP bombing)
+- [ ] Check for business logic flaws in Israeli payment processing flows
+- [ ] Ensure multi-step forms (common in Israeli government service integrations) maintain state securely
+- [ ] Verify that Hebrew input length limits account for UTF-8 multi-byte characters
+
+### A05: Security Misconfiguration
+
+- [ ] Check HTTP security headers (CSP, X-Frame-Options, HSTS)
+- [ ] Verify error pages do not leak stack traces or Hebrew debug messages
+- [ ] Confirm default credentials are changed on all services
+- [ ] Check that Israeli cloud provider (AWS IL region, GCP) security groups are properly configured
+- [ ] Verify Supabase Row Level Security (RLS) policies are enabled on all tables
+- [ ] Ensure `.env` files with Israeli service credentials are in `.gitignore`
+
+### A06: Vulnerable and Outdated Components
+
+- [ ] Run `npm audit` or `pnpm audit` and address critical/high findings
+- [ ] Check for known vulnerabilities in Hebrew-specific libraries (hebrew-date, bidirectional text processors)
+- [ ] Verify container base images are up to date (use `trivy image`)
+- [ ] Check for outdated Israeli payment SDK versions
+
+### A07: Identification and Authentication Failures
+
+- [ ] Verify Israeli phone number format validation (+972) in authentication flows
+- [ ] Check that OTP codes for Israeli mobile numbers have appropriate expiry (5 minutes max)
+- [ ] Test password policies accommodate Hebrew characters
+- [ ] Verify session management after authentication with Israeli OAuth providers
+- [ ] Check for credential stuffing protection on login endpoints
+
+### A08: Software and Data Integrity Failures
+
+- [ ] Verify npm package integrity with lockfile validation
+- [ ] Check CI/CD pipeline security (GitHub Actions, Vercel deployment hooks)
+- [ ] Ensure third-party Israeli service webhooks are verified (signature validation)
+- [ ] Verify Subresource Integrity (SRI) for external scripts
+
+### A09: Security Logging and Monitoring Failures
+
+- [ ] Confirm authentication events are logged (login, logout, failed attempts)
+- [ ] Verify logs capture Hebrew text correctly (UTF-8 encoding)
+- [ ] Check that Israeli PPA-required audit trails are maintained for personal data access
+- [ ] Ensure log storage complies with Israeli data retention requirements
+
+### A10: Server-Side Request Forgery (SSRF)
+
+- [ ] Verify URL validation for user-supplied URLs (block internal network ranges)
+- [ ] Check that Israeli government API integrations validate redirect URLs
+- [ ] Test for SSRF through Hebrew-encoded URLs and IDN homograph attacks
+
+## Israeli Privacy Protection Authority (PPA) Compliance
+
+Israel's Privacy Protection Law (1981, last major reform Amendment 13 in force August 14, 2025) and its regulations impose specific requirements on applications handling personal data of Israeli residents. Amendment 13 requires immediate notification of a serious security incident to the PPA, mandatory DPO triggers, expanded definitions of "personal information" and "sensitive data", a notification tier for databases with especially sensitive data on >100,000 individuals, and a statutory damages head added by Amendment 13 of up to NIS 10,000 / 10,000 ש"ח without proof of harm for notification and data-subject-rights breaches. Higher no-proof-of-harm ceilings under the older PPL statutory-damages provision are conditional, and the administrative fine tariff is set by a scaling model, so consult the PPA's Amendment 13 guide rather than quoting a figure from memory.
+
+### Database Registration (reformed by Amendment 13)
+
+Amendment 13 (August 2025) repealed the old broad registration duty. The pre-2025 rule, which required registering any database with 10,000+ records, or sensitive data, or used for direct marketing, no longer applies. The current regime:
+
+1. **Registration** is now required only for: (a) **data brokers**, meaning databases whose main purpose is collecting personal data to transfer to others as a business, where the database holds data on more than **10,000 individuals**; and (b) **public bodies**. The 10,000 threshold survives only in the data-broker context, not as a general trigger.
+2. **Notification (not registration)**: a controller of a database holding "especially sensitive information" on more than **100,000 individuals** must notify the PPA of identity, contact, and DPO details, **within 30 days**, even when registration is not required. This duty is residual: it applies to databases that are NOT already subject to registration, not in addition to it.
+3. **No annual renewal**: the annual-renewal requirement is gone. A previously-registered database that no longer qualifies is not auto-removed; the controller must apply to be struck from the register.
+4. Most ordinary consumer apps no longer need to register at all under the new regime, but still owe the full security, consent, and data-subject-rights duties below.
+
+### Data Protection Requirements
+
+```
+CHECKLIST: Israeli Privacy Protection Law Compliance
+
+[ ] Consent: Obtain informed consent before collecting personal data
+    - Consent must be specific, informed, and freely given
+    - Hebrew consent text must be clear and understandable
+    - Separate consent for different processing purposes
+
+[ ] Purpose limitation: Use data only for the stated purpose
+    - Document the purpose in your privacy policy (Hebrew + English)
+    - Do not repurpose data without fresh consent
+
+[ ] Data minimization: Collect only necessary data
+    - Review each form field for necessity
+    - Israeli ID numbers should only be collected when legally required
+
+[ ] Security measures: Implement appropriate technical measures
+    - Follow PPA's "Information Security Regulations" (2017)
+    - Determine your security level first (three levels, plus an individually-managed
+      carve-out). High level = a First Schedule (1)/(3) database with 100,000+ people
+      or more than 100 authorized users. See references/israeli-privacy-law-guide.md
+    - Audit every 24 months (medium and high), NOT annually (Regulation 16(a))
+    - Risk survey and penetration test every 18 months, HIGH level only (Regulation 5)
+    - Maintain access logs for at least 24 months
+
+[ ] Data subject rights: Support access, correction, deletion requests
+    - Respond within 30 days to data access requests
+    - Provide data in a structured, machine-readable format
+    - Hebrew language support for all data subject communications
+
+[ ] Breach notification: Notify PPA and affected individuals
+    - "Serious security incident" must be reported to PPA
+    - Notification should be in Hebrew for Israeli residents
+    - Document all incidents and remediation steps
+```
+
+### Cross-Border Data Transfer
+
+Israeli law restricts transfer of personal data outside Israel, under the Privacy Protection (Transfer of Data Abroad) Regulations, 2001.
+
+**Two things must BOTH be satisfied, and this is the most common compliance error.**
+
+**(1) A lawful gateway.** Either the destination country's law guarantees protection no lower than Israeli law (Regulation 1), or one of the Regulation 2 exceptions applies. The main ones:
+- The data subject consented to the transfer
+- The recipient is a corporation controlled by the transferring database owner, and has secured privacy protection after the transfer
+- The recipient has undertaken by agreement to comply with the conditions for holding and using data that apply to a database in Israel
+- The transfer is required under Israeli law, or the destination is a Council of Europe Convention 108 state or another state the Registrar has published as having a privacy authority
+
+**(2) A written undertaking from the recipient (Regulation 3).** This applies to transfers under **Regulation 1 OR Regulation 2**, so it is NOT a fourth alternative you can skip by relying on consent. The database owner must obtain the recipient's **written undertaking** that the recipient takes sufficient measures to protect the data subjects' privacy AND that the data will not be passed on to anyone else, whether in that country or another.
+
+Consent alone therefore does NOT authorise shipping personal data to a US SaaS vendor with no data-transfer agreement. Note also that "Standard Contractual Clauses" is GDPR terminology; the Israeli instrument is the Regulation 3 written undertaking, though an SCC-based DPA can carry it.
+
+**Common scenarios for Israeli apps:**
+- Cloud hosting on AWS/GCP: Ensure data processing agreement is in place
+- Using US-based SaaS tools: Verify contractual safeguards
+- Analytics services: Consider data anonymization before transfer
+
+## Dependency Scanning
+
+### npm/pnpm Audit
+
+```bash
+# Run vulnerability scan
+pnpm audit
+
+# Fix automatically where possible
+pnpm audit --fix
+
+# Generate detailed JSON report
+pnpm audit --json > audit-report.json
+
+# Check specific severity levels
+pnpm audit --audit-level=high
+```
+
+### Container Scanning with Trivy
+
+> **Trivy supply-chain compromise (March 2026).** GHSA-69fq-xp46-6x23 / CVE-2026-33634 (critical). On 19 Mar 2026 a malicious Trivy **v0.69.4** release was published, **76 of 77 tags in `aquasecurity/trivy-action`** were force-pushed to credential-stealing malware, and **all 7 tags in `aquasecurity/setup-trivy`** were replaced. On 22 Mar 2026 malicious **v0.69.5 and v0.69.6 DockerHub images** followed. Fixed versions per the advisory: `trivy-action` **>= 0.35.0**, `setup-trivy` **>= 0.2.6**; for the binary, v0.69.3 and earlier are unaffected and current stable is **v0.74.0** (Aug 2026), so upgrade rather than pinning back. Pin GitHub Actions to a **full commit SHA** (not a floating `@v0.x` tag, which is what made this exploitable), reference images by digest, and **rotate any secret exposed to a CI run during the window**.
+
+
+```bash
+# Scan Docker image
+trivy image your-app:latest
+
+# Scan with severity filter
+trivy image --severity HIGH,CRITICAL your-app:latest
+
+# Scan filesystem (for local projects)
+trivy fs --scanners vuln,secret,misconfig .
+
+# Generate SARIF report for GitHub integration
+trivy image --format sarif --output trivy-results.sarif your-app:latest
+```
+
+### Python Dependency Scanning
+
+```bash
+# Using pip-audit
+pip-audit
+
+# With fix suggestions
+pip-audit --fix --dry-run
+
+# Scan requirements file
+pip-audit -r requirements.txt
+```
+
+### Snyk Integration
+
+```bash
+# Authenticate
+snyk auth
+
+# Test for vulnerabilities
+snyk test
+
+# Monitor project (continuous)
+snyk monitor
+
+# Test specific package
+snyk test --package-manager=npm
+```
+
+## Secrets Detection
+
+### Scanning for Israeli Service Credentials
+
+Israeli applications commonly use service credentials that must never be committed to version control:
+
+**Israeli Payment Gateways:**
+- Cardcom: Terminal numbers, API usernames, operation codes
+- Tranzila: Supplier codes, terminal passwords
+- PayMe: Seller IDs, API keys
+- Meshulam: Page codes, API keys
+
+**Israeli Services:**
+- Israel Post API keys
+- Israeli bank API credentials (Poalim, Leumi, Discount, Mizrahi)
+- Gov.il API tokens
+- Israeli SMS gateways (019, Cellact, InforUMobile) API keys
+
+### Using TruffleHog
+
+```bash
+# Scan git history
+trufflehog git file://. --only-verified
+
+# Scan specific branch
+trufflehog git file://. --branch main --only-verified
+
+# Scan with JSON output
+trufflehog git file://. --json > secrets-report.json
+```
+
+### Using Gitleaks
+
+```bash
+# Scan repository
+gitleaks detect --source . --verbose
+
+# Scan with custom config for Israeli services
+gitleaks detect --source . --config .gitleaks.toml
+
+# Generate report
+gitleaks detect --source . --report-format json --report-path gitleaks-report.json
+```
+
+**Recommended `.gitleaks.toml` additions for Israeli services:**
+
+```toml
+[[rules]]
+id = "cardcom-terminal"
+description = "Cardcom Terminal Number"
+regex = '''(?i)(cardcom|terminal)[\s]*[=:]\s*["']?\d{6,8}["']?'''
+tags = ["israeli-payment"]
+
+[[rules]]
+id = "tranzila-supplier"
+description = "Tranzila Supplier Code"
+regex = '''(?i)(tranzila|supplier)[\s]*[=:]\s*["']?[a-zA-Z0-9]{4,20}["']?'''
+tags = ["israeli-payment"]
+
+[[rules]]
+id = "israeli-sms-api"
+description = "Israeli SMS Gateway API Key"
+regex = '''(?i)(cellact|inforu|019sms)[\s_-]*(api|key|token)[\s]*[=:]\s*["']?[a-zA-Z0-9]{16,}["']?'''
+tags = ["israeli-service"]
+```
+
+## Hebrew/RTL-Specific Security
+
+### Unicode Bidirectional Text Attacks (Trojan Source)
+
+Bidirectional control characters can make code appear different from what it actually does. This is especially relevant in Hebrew/English mixed codebases.
+
+**Dangerous characters to detect:**
+- U+202A (Left-to-Right Embedding)
+- U+202B (Right-to-Left Embedding)
+- U+202C (Pop Directional Formatting)
+- U+202D (Left-to-Right Override)
+- U+202E (Right-to-Left Override)
+- U+2066 (Left-to-Right Isolate)
+- U+2067 (Right-to-Left Isolate)
+- U+2068 (First Strong Isolate)
+- U+2069 (Pop Directional Isolate)
+
+**Detection script:**
+```python
+import re
+import sys
+
+BIDI_CHARS = re.compile(
+    '[\u202a\u202b\u202c\u202d\u202e\u2066\u2067\u2068\u2069]'
+)
+
+def scan_file(filepath):
+    with open(filepath, 'r', encoding='utf-8') as f:
+        for line_num, line in enumerate(f, 1):
+            matches = BIDI_CHARS.findall(line)
+            if matches:
+                print(f"WARNING: {filepath}:{line_num} contains "
+                      f"{len(matches)} bidirectional control character(s)")
+```
+
+### Hebrew Homoglyph Attacks
+
+Some Hebrew characters visually resemble Latin characters, enabling phishing and spoofing:
+
+| Hebrew | Latin Lookalike | Unicode |
+|--------|----------------|---------|
+| ס (samekh) | o | U+05E1 |
+| ו (vav) | l, 1 | U+05D5 |
+| ח (het) | n | U+05D7 |
+| ן (final nun) | l | U+05DF |
+
+**Mitigation:** Normalize and validate all user-facing URLs and identifiers. Reject mixed-script strings in security-sensitive contexts (usernames, URLs, email addresses).
+
+### RTL Override in URLs
+
+Attackers can use RTL override characters (U+202E) to disguise malicious URLs:
+
+```
+Example: A URL containing U+202E can make "evil.com/gnp.exe" appear as "evil.com/exe.png"
+```
+
+**Mitigation:**
+- Strip all bidirectional override characters from URLs before processing
+- Validate URL structure after Unicode normalization
+- Display punycode for internationalized domain names in security-sensitive contexts
+
+### Hebrew Input Validation Patterns
+
+```javascript
+// Validate Hebrew-only input (letters, spaces, common punctuation)
+const HEBREW_PATTERN = /^[\u0590-\u05FF\s\-'".,:;!?()]+$/;
+
+// Validate mixed Hebrew/English input
+const MIXED_PATTERN = /^[\u0590-\u05FFa-zA-Z0-9\s\-'".,:;!?()@#$%&*]+$/;
+
+// Sanitize Hebrew input for XSS prevention
+function sanitizeHebrewInput(input) {
+  // Remove bidirectional control characters
+  let sanitized = input.replace(/[\u202a-\u202e\u2066-\u2069]/g, '');
+  // Standard HTML entity encoding
+  sanitized = sanitized
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+  return sanitized;
+}
+
+// Validate Israeli phone number
+const IL_PHONE_PATTERN = /^(\+972|0)(5[0-9]|7[2-9])\d{7}$/;
+
+// Validate Israeli ID number (Teudat Zehut) with check digit
+function validateIsraeliId(id) {
+  if (!/^\d{9}$/.test(id)) return false;
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    let digit = parseInt(id[i]) * ((i % 2) + 1);
+    if (digit > 9) digit -= 9;
+    sum += digit;
+  }
+  return sum % 10 === 0;
+}
+```
+
+## Secure Coding Patterns
+
+### Parameterized Queries for Hebrew Text
+
+```typescript
+// CORRECT: Parameterized query (safe)
+const { data, error } = await supabase
+  .from('skills')
+  .select('*')
+  .ilike('name_he', `%${searchTerm}%`);
+
+// INCORRECT: String concatenation (vulnerable to SQL injection)
+// const query = `SELECT * FROM skills WHERE name_he LIKE '%${searchTerm}%'`;
+
+// For raw SQL when parameterized queries are needed:
+const { data } = await supabase.rpc('search_skills', {
+  search_term: searchTerm  // Parameter is safely escaped
+});
+```
+
+### CSRF Protection for Israeli Payment Forms
+
+```typescript
+// Generate CSRF token for payment form
+import { randomBytes } from 'crypto';
+
+function generateCsrfToken(): string {
+  return randomBytes(32).toString('hex');
+}
+
+// Validate on form submission
+function validateCsrfToken(session: string, submitted: string): boolean {
+  return session === submitted && session.length === 64;
+}
+
+// In payment form (Hebrew UI)
+// <input type="hidden" name="_csrf" value={csrfToken} />
+```
+
+### Rate Limiting for Israeli SMS Gateways
+
+```typescript
+// Rate limit OTP requests to prevent abuse
+// Israeli SMS costs ~0.05-0.15 NIS per message
+const OTP_LIMITS = {
+  perPhone: { max: 3, windowMs: 15 * 60 * 1000 },    // 3 per 15 min per phone
+  perIp: { max: 10, windowMs: 60 * 60 * 1000 },       // 10 per hour per IP
+  global: { max: 1000, windowMs: 60 * 60 * 1000 },    // 1000 per hour globally
+};
+
+// Implementation with Redis
+async function checkOtpRateLimit(phone: string, ip: string): Promise<boolean> {
+  const phoneKey = `otp:phone:${phone}`;
+  const ipKey = `otp:ip:${ip}`;
+
+  const phoneCount = await redis.incr(phoneKey);
+  if (phoneCount === 1) await redis.expire(phoneKey, 900);
+  if (phoneCount > OTP_LIMITS.perPhone.max) return false;
+
+  const ipCount = await redis.incr(ipKey);
+  if (ipCount === 1) await redis.expire(ipKey, 3600);
+  if (ipCount > OTP_LIMITS.perIp.max) return false;
+
+  return true;
+}
+```
+
+## Compliance Checklist
+
+### Israeli Privacy Protection Law (GDPR-Equivalent)
+
+| Requirement | Israeli Law | GDPR Equivalent | Status |
+|------------|------------|-----------------|--------|
+| Legal basis for processing | Section 1, PPL | Art. 6 GDPR | [ ] |
+| Consent requirements | Section 11, PPL | Art. 7 GDPR | [ ] |
+| Right of access | Section 13, PPL | Art. 15 GDPR | [ ] |
+| Right to correction | Section 14, PPL | Art. 16 GDPR | [ ] |
+| Right to deletion | Section 14(a) PPL, the request to correct or delete; there is no Section 14A in the enacted law | Art. 17 GDPR | [ ] |
+| Data security measures | Regulations 2017 | Art. 32 GDPR | [ ] |
+| Breach notification | Regulation 11(d), Information Security Regs 2017 (there is no Regulation 11A) | Art. 33-34 GDPR | [ ] |
+| Cross-border transfers | Privacy Protection (Transfer of Data Abroad) Regulations 2001; Section 36 PPL is only the enabling power | Art. 44-49 GDPR | [ ] |
+| Database registration | Section 8A(a) PPL (Section 8 is the lawful-processing duty, not registration) | Art. 30 GDPR (ROPA) | [ ] |
+| DPO appointment | Mandatory for certain entities (Amendment 13, Aug 2025): public bodies, data brokers, large-scale sensitive data processors | Art. 37 GDPR | [ ] |
+
+### SOC 2 Considerations for Israeli Startups
+
+Israeli startups selling to US enterprises often need SOC 2 compliance:
+
+1. **Trust Service Criteria**: Security, Availability, Processing Integrity, Confidentiality, Privacy
+2. **Common control gaps in Israeli startups**:
+   - Lack of formal change management process
+   - Missing access review procedures
+   - Incomplete logging and monitoring
+   - No formal incident response plan
+3. **Israeli-specific considerations**:
+   - IDF service background checks are not a substitute for formal employment screening
+   - Israeli holiday calendar affects SLA calculations
+   - Hebrew documentation may need English translations for auditors
+
+### PCI DSS for Israeli Payment Processing
+
+If your application processes Israeli credit cards (Isracard, Leumi Card, CAL):
+
+1. **Level determination**: Based on annual transaction volume
+2. **SAQ selection**: Most Israeli web apps qualify for SAQ A or SAQ A-EP
+3. **Israeli specifics**:
+   - Shva (the Israeli payment clearing system) has its own security requirements
+   - Israeli credit card numbers follow standard Luhn algorithm
+   - Israeli recurring payment ("hora'at keva") requires additional consent documentation
+
+## Running the Security Audit
+
+Use the included scripts to perform automated checks:
+
+```bash
+# Run the full security audit checklist
+python scripts/security-audit-checklist.py --project-dir /path/to/project
+
+# Scan for Israeli service credentials
+bash scripts/secrets-scanner.sh /path/to/project
+
+# Generate a compliance report
+python scripts/security-audit-checklist.py --project-dir /path/to/project --format json > report.json
+```
+
+Refer to the `references/` directory for detailed guidance on Israeli privacy law and OWASP considerations for Hebrew/RTL applications.
+
+## Gotchas
+
+- Israeli Privacy Protection Law was overhauled by Amendment 13 (in force August 14, 2025). A serious security incident must be reported to the Privacy Protection Authority **immediately** (the law says "immediately", not the GDPR-style fixed 72-hour clock), plus notification to affected individuals where there is high risk. Amendment 13 added a statutory damages head of up to NIS 10,000 / 10,000 ש"ח without proof of harm; do not quote a higher no-proof-of-harm ceiling unconditionally. Agents that quote pre-2025 language miss the new exposure.
+- Hebrew UTF-8 characters are 2 bytes each. Input length validation that counts bytes instead of characters will reject valid Hebrew input at half the expected length.
+- Israeli ID numbers (Teudat Zehut) use a Luhn-variant check digit algorithm, not standard Luhn. Agents may implement the wrong validation and accept invalid IDs.
+- Database registration was narrowed dramatically by Amendment 13 (August 2025): the old "register any database with 10,000+ records" rule was repealed. Registration now applies only to data brokers (databases over 10,000 individuals whose business is selling data) and public bodies, with a separate notification duty for especially-sensitive databases over 100,000 individuals. Agents citing the old general 10,000-record registration threshold are out of date.
+- Sending any commercial message (email, SMS, automated call, fax) from an Israeli app is governed by **section 30A of the Communications (Telecommunications and Broadcasts) Law**, not by the Privacy Protection Law. It requires prior opt-in consent with narrow exceptions, and specific sender-identification and opt-out mechanics inside the message. Section 30A(i)(1) lets a court award damages **not dependent on proof of harm of up to NIS 1,000 per advertising message** the recipient received in breach. This is the most-litigated Israeli digital-compliance provision and the standard class-action vehicle, so an OTP or marketing flow that passes the PPA checklist can still carry six-figure exposure.
+- Bidirectional (BiDi) text attacks are especially dangerous in Hebrew/English mixed codebases. Standard security scanners do not detect RTL override characters (U+202E) that can disguise malicious code.
+
+- A clean run of the bundled scanners is not proof the project is clean. `scripts/secrets-scanner.sh` scans `.env`, `.env.local` and friends but deliberately skips `.env.example` / `.env.sample`, and it now aborts with exit code 2 rather than printing "No secrets detected" if `grep` itself fails. If you see exit 2, the scan did NOT run; never report that as a pass. Pattern matching also cannot see secrets in git history, so pair it with `trufflehog git file://.` before concluding a repo is clean.
+
+## Reference Links
+
+| Source | URL | What to Check |
+|--------|-----|---------------|
+| OWASP Top 10 | https://owasp.org/Top10/ | Current web app vulnerability categories and mitigations |
+| Privacy Protection Authority (PPA) | https://www.gov.il/he/departments/the_privacy_protection_authority | Database registration, breach reporting, audits |
+| Israel National Cyber Directorate | https://www.gov.il/en/departments/israel_national_cyber_directorate | National cybersecurity guidance, incident reporting |
+| Trivy scanner | https://trivy.dev | Container, IaC, and dependency scanning |
+| Snyk | https://snyk.io/product/open-source-security-management/ | Open source dependency vulnerability scanning |
+| TruffleHog | https://github.com/trufflesecurity/trufflehog | Secret scanning in code and git history |

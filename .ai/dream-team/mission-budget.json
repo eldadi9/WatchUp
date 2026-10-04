@@ -1,0 +1,12 @@
+{
+  "complexity": "complex",
+  "work_units": 100,
+  "maximum_parallelism": 1,
+  "default_model_class": "STANDARD",
+  "default_reasoning": "medium",
+  "maximum_retries": 3,
+  "validation_strategy": "deterministic_then_valdi",
+  "checkpoint_strategy": "andy_main_thread_only",
+  "decided_by": "Yuli",
+  "orchestration_decided_by": "Ori"
+}

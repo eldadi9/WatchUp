@@ -1,0 +1,15 @@
+﻿╔══════════════════════════════════════════════════╗
+  תיאור בעברית - israeli-postgres-toolkit
+╚══════════════════════════════════════════════════╝
+
+שם בעברית:  israeli-postgres-toolkit
+
+תיאור:
+  Best practices for PostgreSQL in Israeli apps, covering Supabase patterns, Hebrew text indexing with ICU collation, shekel/NIS currency handling, Israeli date formats, and Asia/Jerusalem timezone gotchas. Use when user asks to "set up Hebrew full-text search", "handle NIS currency in Postgres", "tipul b'ivrit b'database", or configure Israeli-specific database patterns. Includes performance tun...
+
+──────────────────────────────────────────────────
+Source: SKILL_HE.md
+ריפוזיטורי: developer-tools
+נוצר: 29/09/2026 01:13
+ארגון: https://github.com/skills-il
+──────────────────────────────────────────────────

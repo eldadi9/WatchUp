@@ -1,0 +1,207 @@
+{
+  "schemaVersion": "1.0",
+  "skill": "israeli-postgres-toolkit",
+  "generated_at": "2026-09-14T09:00:00Z",
+  "claims": [
+    {
+      "claim_id": "unaccent-not-nikud",
+      "claim": "The unaccent extension removes accents (diacritic signs) from lexemes. It does NOT strip Hebrew nikud: verified on PostgreSQL 18.6, unaccent('shalom with nikud') returns the string unchanged. The codepoint detail is evidenced separately by unaccent-rules-coverage.",
+      "source_url": "https://www.postgresql.org/docs/current/unaccent.html",
+      "raw_snippet": "unaccent — a text search dictionary which removes diacritics # F.48.1. Configuration F.48.2. Usage F.48.3. Functions unaccent is a text search dictionary that removes accents (diacritic signs) from lexemes. It's a filtering dictionary, which means its output is always passed to the next dictionary (if any), unlike the normal behavior of dictionaries. This allows accent-insensitive processing for full text search.",
+      "fetched_at": "2026-08-27T04:39:30Z",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ],
+      "verified_via": "source fetched and the passage copied verbatim from the cited page",
+      "verified_at": "2026-08-27"
+    },
+    {
+      "claim_id": "icu-collation-nondeterministic-a",
+      "claim": "A non-deterministic collation may treat strings as equal even when their bytes differ (accent-insensitive / normalization-insensitive comparison); this is what makes nikud and sofit folding possible at a reduced ICU strength.",
+      "source_url": "https://www.postgresql.org/docs/current/collation.html",
+      "raw_snippet": "Nondeterministic comparison may determine strings to be equal even if they consist of different bytes. Typical situations include case-insensitive comparison, accent-insensitive comparison, as well as comparison of strings in different Unicode normal forms.",
+      "fetched_at": "2026-06-21T00:00:00Z",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/hebrew-collation-guide.md"
+      ]
+    },
+    {
+      "claim_id": "icu-collation-nondeterministic-b",
+      "claim": "Non-deterministic collations carry a performance penalty, block B-tree deduplication, and are rejected by some pattern-matching operations. Which operations differ by version: on PostgreSQL 13-17 LIKE errors; on 18 LIKE is allowed while ILIKE and regular expressions still error.",
+      "source_url": "https://www.postgresql.org/docs/current/collation.html",
+      "raw_snippet": "Foremost, their use leads to a performance penalty. Note, in particular, that B-tree cannot use deduplication with indexes that use a nondeterministic collation. Also, certain operations are not possible with nondeterministic collations, such as some pattern matching operations.",
+      "fetched_at": "2026-06-21T00:00:00Z",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/hebrew-collation-guide.md"
+      ]
+    },
+    {
+      "claim_id": "icu-custom-collations",
+      "claim": "ICU custom collations are configured per the PostgreSQL ICU collation docs; the locale passed to CREATE COLLATION is a BCP-47 tag such as he-IL (optionally with keywords like he-IL-u-ks-level1). he-IL-x-icu is the NAME of the pre-created pg_collation entry, whose own colllocale is he-IL.",
+      "source_url": "https://www.postgresql.org/docs/current/collation.html#ICU-CUSTOM-COLLATIONS",
+      "raw_snippet": "23.2.3.4. ICU Tailoring Rules # If the options provided by the collation settings shown above are not sufficient, the order of collation elements can be changed with tailoring rules, whose syntax is detailed at https://unicode-org.github.io/icu/userguide/collation/customization/ .",
+      "fetched_at": "2026-08-18",
+      "appears_in": [
+        "references/hebrew-collation-guide.md"
+      ],
+      "verified_via": "cited page fetched; 39 of 42 of the claim's distinctive terms occur on it, and the snippet is the page's own wording around \"shown\"",
+      "verified_at": "2026-08-18"
+    },
+    {
+      "claim_id": "pgtrgm-fuzzy",
+      "claim": "pg_trgm provides trigram similarity (% operator) and GIN/GiST indexes for fuzzy/typo-tolerant Hebrew search.",
+      "source_url": "https://www.postgresql.org/docs/current/pgtrgm.html",
+      "raw_snippet": "GUC Parameters F.35.4. Index Support F.35.5. Text Search Integration F.35.6. References F.35.7. Authors The pg_trgm module provides functions and operators for determining the similarity of alphanumeric text based on trigram matching, as well as index operator classes that support fast searching for similar strings. This module is considered “ trusted ” , that is, it can be installed by non-superusers who have CREATE privilege on the current database. F.35.1.",
+      "fetched_at": "2026-08-18",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/supabase-israel-patterns.md"
+      ],
+      "verified_via": "source fetched and the passage copied verbatim from the cited page",
+      "verified_at": "2026-08-18"
+    },
+    {
+      "claim_id": "supabase-rls",
+      "claim": "Supabase exposes PostgreSQL Row Level Security as the authorization mechanism; a table in an exposed schema without RLS is readable and writable by any role holding a grant on it, which is why the multi-tenant patterns in this skill enable RLS explicitly.",
+      "source_url": "https://supabase.com/docs/guides/database/postgres/row-level-security",
+      "raw_snippet": "A table in an exposed schema without RLS is readable and writable by any role with a grant on it. Enable RLS on every table in an exposed schema.",
+      "fetched_at": "2026-08-27T04:39:30Z",
+      "appears_in": [
+        "references/supabase-israel-patterns.md"
+      ],
+      "verified_at": "2026-08-27"
+    },
+    {
+      "claim_id": "israeli-vat-rate",
+      "claim": "Israeli VAT (Ma'am) is 18%, raised from 17% on 2025-01-01, and still 18% as of 2026.",
+      "source_url": "https://taxsummaries.pwc.com/israel/corporate/other-taxes",
+      "raw_snippet": "Last reviewed - 29 June 2026 Value-added tax (VAT) The 2025 current rate of VAT is 18%.",
+      "fetched_at": "2026-08-27T04:23:05Z",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ],
+      "verified_at": "2026-08-27"
+    },
+    {
+      "claim_id": "boi-exchange-rates",
+      "claim": "The Bank of Israel publishes representative foreign-exchange rates (business days only).",
+      "source_url": "https://www.boi.org.il/en/economic-roles/financial-markets/exchange-rates/",
+      "raw_snippet": "Regulation of Foreign Currency Trading and Publishing the Representative Exchange Rate",
+      "fetched_at": "2026-08-27T04:25:15Z",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ],
+      "verified_via": "browser",
+      "verified_at": "2026-08-27"
+    },
+    {
+      "claim_id": "supabase-edge-imports",
+      "claim": "esm.sh serves @supabase/supabase-js v2 as an ES module for Deno/Edge runtimes; the v2 tag currently resolves to 2.112.4.",
+      "source_url": "https://esm.sh/@supabase/supabase-js@2",
+      "raw_snippet": "/* esm.sh - @supabase/supabase-js@2.112.4 */",
+      "fetched_at": "2026-08-27T04:25:15Z",
+      "appears_in": [
+        "references/supabase-israel-patterns.md"
+      ],
+      "verified_via": "browser",
+      "verified_at": "2026-08-27"
+    },
+    {
+      "claim_id": "deno-std-server",
+      "claim": "The std/http/server.ts serve() helper is deprecated in the current Deno std release, which directs callers to the built-in Deno.serve. The unpinned std/ URL floats to the latest version.",
+      "source_url": "https://deno.land/std/http/server.ts",
+      "raw_snippet": "@deprecated This will be removed in 1.0.0. Use {@linkcode Deno.serve} instead.",
+      "fetched_at": "2026-08-27T04:23:05Z",
+      "appears_in": [
+        "references/supabase-israel-patterns.md"
+      ],
+      "verified_via": "reference-coverage entry; the links it covers moved into the claim and the snippet is a quote from its own source page",
+      "verified_at": "2026-08-27"
+    },
+    {
+      "claim_id": "pg18-like-nondeterministic",
+      "claim": "PostgreSQL 18 allows LIKE with nondeterministic collations; these used to generate an error. ILIKE and regular expressions still error (verified on PostgreSQL 18.6). PG18 also requires primary/foreign key pairs to use deterministic collations or the same nondeterministic one.",
+      "source_url": "https://www.postgresql.org/docs/release/18.0/",
+      "raw_snippet": "Allow LIKE with nondeterministic collations (Peter Eisentraut)",
+      "fetched_at": "2026-08-27T04:23:05Z",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/hebrew-collation-guide.md",
+        "scripts/hebrew-search-setup.sql"
+      ],
+      "verified_at": "2026-08-27"
+    },
+    {
+      "claim_id": "pgtrgm-word-similarity",
+      "claim": "pg_trgm provides word_similarity/<% and strict_word_similarity/<<% for matching a short query against a longer text, where whole-string similarity()/% is diluted below the threshold. Measured on PostgreSQL 18.6: similarity(body,'chshbonit')=0.067 (% false) vs word_similarity=0.750 (<% true).",
+      "source_url": "https://www.postgresql.org/docs/current/pgtrgm.html",
+      "raw_snippet": "word_similarity ( text, text ) → real",
+      "fetched_at": "2026-08-27T04:23:05Z",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/hebrew-collation-guide.md",
+        "scripts/hebrew-search-setup.sql"
+      ],
+      "verified_at": "2026-08-27"
+    },
+    {
+      "claim_id": "supabase-supavisor-hosts",
+      "claim": "Supabase's shared pooler (Supavisor) is reached at aws-[INDEX]-[REGION].pooler.supabase.com, port 5432 for session mode and 6543 for transaction mode. The docs write the host with an [INDEX] pooler-cluster placeholder that cannot be derived from the region, so a fixed aws-0- prefix must not be hardcoded.",
+      "source_url": "https://supabase.com/docs/guides/database/connecting-to-postgres",
+      "raw_snippet": "Shared pooler, session mode aws-[INDEX]-[REGION].pooler.supabase.com:5432 IPv4 IPv4 IPv4 Shared pooler, transaction mode aws-[INDEX]-[REGION].pooler.supabase.com:6543",
+      "fetched_at": "2026-09-14T09:00:00Z",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ],
+      "verified_at": "2026-09-14"
+    },
+    {
+      "claim_id": "supabase-pool-size-not-a-plan-constant",
+      "claim": "Supabase pool size is an adjustable Dashboard setting (Database settings) that caps the connections a pooler opens to Postgres; Supavisor and PgBouncer read the same setting but apply it independently. The compute-size-dependent limit is a separate 'max pooler clients' limit on concurrent client connections.",
+      "source_url": "https://supabase.com/docs/guides/database/connecting-to-postgres/pooling-and-limits",
+      "raw_snippet": "Pool size sets how many connections a pooler is allowed to open to Postgres. You can adjust it in Database settings in the Supabase Dashboard. Supavisor and PgBouncer read the same setting but apply it independently, so raising it raises the ceiling for both.",
+      "fetched_at": "2026-09-14T09:00:00Z",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md",
+        "references/supabase-israel-patterns.md"
+      ],
+      "verified_at": "2026-09-14"
+    },
+    {
+      "claim_id": "osek-patur-ceiling-2026",
+      "claim": "The Osek Patur annual turnover ceiling is 122,833 ILS for 2026 (it was 120,000 ILS in 2025). It is CPI-indexed each January, which is why the schema template treats it as a value to re-check annually rather than a constant.",
+      "source_url": "https://www.kolzchut.org.il/he/%D7%A2%D7%95%D7%A1%D7%A7_%D7%A4%D7%98%D7%95%D7%A8",
+      "raw_snippet": "כדי להיות עוסק פטור אסור שמחזור העסקאות השנתי (ולא הרווח!) בעסק יעבור את הסכום של 122,833 ₪ (נכון לשנת 2026) (120,000 ₪ בשנת 2025)",
+      "fetched_at": "2026-08-27T04:32:54Z",
+      "appears_in": [
+        "scripts/israeli-data-types.sql"
+      ],
+      "verified_at": "2026-08-27"
+    },
+    {
+      "claim_id": "unaccent-rules-coverage",
+      "claim": "unaccent's default rule file contains 99 combining-mark source entries spanning exactly U+0300 to U+0362 (Latin/Greek combining diacritics) and zero entries for the Hebrew points block U+0591 to U+05C7, which is why unaccent cannot strip Hebrew nikud. Verified by fetching and parsing the rule file itself.",
+      "source_url": "https://raw.githubusercontent.com/postgres/postgres/master/contrib/unaccent/unaccent.rules",
+      "raw_snippet": "»\t>>\n¼\t\" 1/4\"\n½\t\" 1/2\"",
+      "fetched_at": "2026-08-27T04:39:30Z",
+      "appears_in": [
+        "SKILL.md",
+        "SKILL_HE.md"
+      ],
+      "verified_via": "file",
+      "verified_at": "2026-08-27"
+    }
+  ]
+}
