@@ -1,5 +1,7 @@
 # Product
 
+Status 06/10/2026, version `0.3.6`: the forward plan is `ROADMAP.md`. The owner eye mark is in use. The dashboard is no longer a synthetic-only slice; recognized conversations stay hidden unless a settings word matches.
+
 <!-- impeccable:product-schema 1 -->
 
 ## Platform

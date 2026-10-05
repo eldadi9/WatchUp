@@ -1,5 +1,7 @@
 # WatchUp POC Mission
 
+Status 06/10/2026, version `0.3.6`: Yuli runs the program. The active slice is phase 1 in `ROADMAP.md`. This mission text is unchanged.
+
 ## Owner-approved mission
 
 ⁧להוביל את הקמת ה־POC של WatchUp עבור משפחה אחת וילדה אחת, באמצעות WhatsApp MCP + Bridge במצב קריאה בלבד, עם בידוד מלא ב־VPS, קליטת אירועים בזמן אמת, זיהוי מילים מוגדרות, התראות ודשבורד עברי מובן — בהתאם למסמכי התכנון המאושרים וללא שליחה או שינוי בוואטסאפ.⁩

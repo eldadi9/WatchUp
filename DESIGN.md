@@ -1,5 +1,9 @@
 # WatchUp Visual System
 
+## Status 06/10/2026
+
+Version `0.3.6`. The owner decision from this date replaces one layout rule below: page chrome does not follow the scroll. On a phone the header stays put, and the bottom navigation may stay fixed. The product shows live protection exceptions, not a feed of recognized conversations. Synthetic-data labels remain required wherever the data is still a demo.
+
 ## Direction
 
 Calm parental supervision journal: a bright, mobile-first control center that feels protective and clear rather than invasive or technical.
@@ -45,6 +49,10 @@ The core screen set is: status dashboard, alert journal, groups and contacts, an
 
 No neon, purple AI glow, gradient text or colored outer glow. Elevation is neutral, soft and directional.
 
+Stitch color lock: the application canvas is always Calm Canvas, primary content is always Clean Surface, and navigation selection uses the pale mint family. Blue-tinted page gradients from earlier explorations are retired and must not override these tokens.
+
+Mobile hybrid approved direction: keep the WatchUp green brand frame at the top and bottom. Inside the scrolling content area, follow the exported Stitch surface hierarchy exactly: app surface `#F8F9FF`, white cards `#FFFFFF`, low information surface `#EFF4FF`, container `#E5EEFF`, high container `#DCE9FF`, primary text `#0B1C30`, secondary text `#44474C`, teal action `#006A61`, and error `#BA1A1A`. Do not recolor the desktop baseline unless the owner asks.
+
 ### Typography and RTL
 
 - Hebrew is the source language with document-level `lang="he"` and `dir="rtl"`.
@@ -56,6 +64,8 @@ No neon, purple AI glow, gradient text or colored outer glow. Elevation is neutr
 - Layout uses logical CSS properties only.
 
 ### Components
+
+- All product iconography uses lively square feature artwork instead of punctuation, emoji or dry line icons. Each action gets a unique 3D clay-and-glass miniature with a bold silhouette, WatchUp emerald materials, soft studio depth and a consistent rounded crop. The fixed illustrated family covers home, messages, groups, connection, photos, settings, privacy, recognized contact and unresolved sender. Artwork remains decorative because adjacent Hebrew labels and control names carry the accessible meaning; real group photos, contact initials and the owner-supplied WatchUp mark remain authentic content rather than generated icons.
 
 - Buttons have at least a 44px touch target. Primary is solid green; secondary is white with a quiet edge. Press feedback is tactile and restrained.
 - Content surfaces use 16–24px radii. Use either an edge or elevation, never a heavy combination of both.
@@ -69,6 +79,8 @@ No neon, purple AI glow, gradient text or colored outer glow. Elevation is neutr
 - Desktop uses a fixed logical-start navigation rail and a contained workspace up to 1400px.
 - Mobile collapses to one column with a four-item bottom navigation. Horizontal scrolling is a critical failure.
 - The supplied child illustration anchors the dashboard hero beside one plain-language status sentence and an explicit read-only connection indicator.
+- The hero artwork must fill its entire visual panel edge to edge; empty side gutters inside the image panel are not allowed. Keep the child as the focal point with deliberate cropping rather than shrinking the artwork into a smaller poster.
+- On mobile, the top header belongs to the page flow and scrolls away with the content; only the bottom navigation remains fixed.
 - Alerts lead with priority. Event detail explains what was detected, why it surfaced and what the parent can do.
 - Groups and contacts use clear tabs and show changes before activity totals.
 
@@ -88,4 +100,3 @@ Use a single quiet 180–220ms screen transition, tactile press feedback and an 
 ### Banned Patterns
 
 No pure black, neon, gradient text, emoji as an icon system, generic three-card feature rows, filler copy, generic names, horizontal overflow, overlapping content or controls that imply changing WhatsApp. The owner-supplied green eye mark is the product identity; do not copy the WhatsApp logo.
-
