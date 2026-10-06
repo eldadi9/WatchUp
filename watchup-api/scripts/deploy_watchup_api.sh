@@ -11,11 +11,17 @@ set -euo pipefail
 : "${WATCHUP_DB_SSLROOTCERT:?set its in-container path}"
 : "${WATCHUP_WEBHOOK_SECRET_FILE_HOST:?set the protected host webhook-secret path}"
 : "${WATCHUP_WEBHOOK_SECRET_FILE:?set its in-container path}"
+: "${WATCHUP_PARENTS_FILE_HOST:?set the protected host parent-auth file path}"
+: "${WATCHUP_PARENTS_FILE:?set its in-container path}"
+: "${WATCHUP_SESSION_SECRET_FILE_HOST:?set the protected host session-secret path}"
+: "${WATCHUP_SESSION_SECRET_FILE:?set its in-container path}"
 
 test -f "$WATCHUP_ENV_FILE"
 test -r "$WATCHUP_DB_PASSWORD_FILE_HOST"
 test -r "$WATCHUP_DB_SSLROOTCERT_HOST"
 test -r "$WATCHUP_WEBHOOK_SECRET_FILE_HOST"
+test -r "$WATCHUP_PARENTS_FILE_HOST"
+test -r "$WATCHUP_SESSION_SECRET_FILE_HOST"
 docker rm -f "$WATCHUP_API_CONTAINER" 2>/dev/null || true
 docker run --detach --name "$WATCHUP_API_CONTAINER" --restart unless-stopped \
   --network "$WATCHUP_INTERNAL_NETWORK" \
@@ -23,5 +29,7 @@ docker run --detach --name "$WATCHUP_API_CONTAINER" --restart unless-stopped \
   --mount "type=bind,src=$WATCHUP_DB_PASSWORD_FILE_HOST,dst=$WATCHUP_DB_PASSWORD_FILE,readonly" \
   --mount "type=bind,src=$WATCHUP_DB_SSLROOTCERT_HOST,dst=$WATCHUP_DB_SSLROOTCERT,readonly" \
   --mount "type=bind,src=$WATCHUP_WEBHOOK_SECRET_FILE_HOST,dst=$WATCHUP_WEBHOOK_SECRET_FILE,readonly" \
+  --mount "type=bind,src=$WATCHUP_PARENTS_FILE_HOST,dst=$WATCHUP_PARENTS_FILE,readonly" \
+  --mount "type=bind,src=$WATCHUP_SESSION_SECRET_FILE_HOST,dst=$WATCHUP_SESSION_SECRET_FILE,readonly" \
   --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges \
   "$WATCHUP_API_IMAGE"

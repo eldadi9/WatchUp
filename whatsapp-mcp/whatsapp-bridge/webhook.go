@@ -24,8 +24,11 @@ var webhookClient = &http.Client{Timeout: 30 * time.Second}
 type WebhookPayload struct {
 	EventType       string `json:"eventType,omitempty"`
 	Sender          string `json:"sender"`
+	DisplayName     string `json:"displayName,omitempty"`
+	IsRecognized    bool   `json:"isRecognized"`
 	Content         string `json:"content"`
 	ChatJID         string `json:"chatJID"`
+	ChatType        string `json:"chatType,omitempty"`
 	IsFromMe        bool   `json:"isFromMe"`
 	QuotedMessageId string `json:"quotedMessageId,omitempty"`
 	QuotedSender    string `json:"quotedSender,omitempty"`

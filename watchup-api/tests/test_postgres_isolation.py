@@ -4,6 +4,7 @@ from pathlib import Path
 
 
 MIGRATION = Path(__file__).parents[1] / "migrations" / "001_events.sql"
+TRACKING_WORDS_MIGRATION = Path(__file__).parents[1] / "migrations" / "004_tracking_words.sql"
 VERIFY = Path(__file__).parents[1] / "migrations" / "verify_watchup.sql"
 README = Path(__file__).parents[1] / "migrations" / "README.md"
 
@@ -12,6 +13,7 @@ class PostgresIsolationMigrationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.sql = MIGRATION.read_text(encoding="utf-8")
+        cls.tracking_words_sql = TRACKING_WORDS_MIGRATION.read_text(encoding="utf-8")
         cls.verify_sql = VERIFY.read_text(encoding="utf-8")
         cls.readme = README.read_text(encoding="utf-8")
 
@@ -89,6 +91,14 @@ class PostgresIsolationMigrationTests(unittest.TestCase):
             "pg_get_expr(p.polwithcheck, p.polrelid)",
         ):
             self.assertIn(clause, self.verify_sql)
+
+    def test_tracking_words_are_bounded_and_tenant_isolated(self):
+        sql = self.tracking_words_sql
+        self.assertIn("CHECK (position >= 0 AND position < 30)", sql)
+        self.assertIn("CHECK (char_length(word) BETWEEN 1 AND 40)", sql)
+        self.assertIn("ALTER TABLE watchup.tracking_words FORCE ROW LEVEL SECURITY;", sql)
+        self.assertEqual(sql.count("current_setting('watchup.tenant_id', true)"), 2)
+        self.assertIn("REVOKE ALL ON TABLE watchup.tracking_words FROM PUBLIC;", sql)
 
 
 if __name__ == "__main__":

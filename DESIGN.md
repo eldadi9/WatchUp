@@ -21,7 +21,9 @@ Calm parental supervision journal: a bright, mobile-first control center that fe
 - Connection freshness is always visible.
 - Content excerpts are minimal and synthetic in WP-3.
 - Cards use one depth treatment, 14px radii, strong focus rings, and 44px minimum targets.
-- Mobile uses bottom navigation; wide screens use a fixed inline-start rail.
+- Mobile uses a closed-by-default hamburger menu; wide screens use a fixed inline-start rail.
+- The dashboard hero is split evenly: one half status copy and one half the child illustration.
+- Mobile buttons use visibly darker surfaces than their containing cards, with a stronger selected state.
 
 ## Voice
 
@@ -77,10 +79,10 @@ Mobile hybrid approved direction: keep the WatchUp green brand frame at the top 
 ### Layout
 
 - Desktop uses a fixed logical-start navigation rail and a contained workspace up to 1400px.
-- Mobile collapses to one column with a four-item bottom navigation. Horizontal scrolling is a critical failure.
+- Mobile collapses to one column with a four-item hamburger menu that opens only on request. Horizontal scrolling is a critical failure.
 - The supplied child illustration anchors the dashboard hero beside one plain-language status sentence and an explicit read-only connection indicator.
 - The hero artwork must fill its entire visual panel edge to edge; empty side gutters inside the image panel are not allowed. Keep the child as the focal point with deliberate cropping rather than shrinking the artwork into a smaller poster.
-- On mobile, the top header belongs to the page flow and scrolls away with the content; only the bottom navigation remains fixed.
+- On mobile, the compact top header exposes the hamburger control; the navigation is closed by default and never overlaps the scrolling content.
 - Alerts lead with priority. Event detail explains what was detected, why it surfaced and what the parent can do.
 - Groups and contacts use clear tabs and show changes before activity totals.
 

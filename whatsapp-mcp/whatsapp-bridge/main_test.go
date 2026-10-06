@@ -220,6 +220,33 @@ func TestOutboundEndpointsRefuseAuthorizedRequests(t *testing.T) {
 	}
 }
 
+func TestBridgeSourceDoesNotCallOutboundWhatsApp(t *testing.T) {
+	body, err := os.ReadFile("main.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := string(body)
+	for _, call := range []string{"client.SendMessage(", "client.SendChatPresence(", "sendWhatsAppMessage("} {
+		if strings.Contains(source, call) {
+			t.Errorf("main.go still contains outbound call %s", call)
+		}
+	}
+}
+
+func TestBridgeReconnectsAfterStreamReplaced(t *testing.T) {
+	body, err := os.ReadFile("main.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := string(body)
+	if !strings.Contains(source, "case *events.StreamReplaced:") {
+		t.Fatal("main.go does not handle StreamReplaced")
+	}
+	if !strings.Contains(source, "reconnectChan <- true") {
+		t.Fatal("main.go does not request reconnect after StreamReplaced")
+	}
+}
+
 func TestStoreChatPreservesEphemeralSettings(t *testing.T) {
 	ms := newTestMessageStore(t)
 

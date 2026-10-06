@@ -105,6 +105,28 @@ class PostgresEventStoreTests(unittest.TestCase):
         self.assertIn("ORDER BY received_at DESC", commands[2][0])
         self.assertEqual(commands[2][1], ("tenant-a", "child-a", 50))
 
+    def test_latest_groups_are_queried_outside_the_recent_event_window(self):
+        self.assertEqual(self.store.list_latest_groups("tenant-a", "child-a"), [])
+        commands = self.cursors[0].commands
+        self.assertIn("DISTINCT ON (account->>'chat_jid')", commands[2][0])
+        self.assertEqual(commands[2][1], ("tenant-a", "child-a", 100))
+
+    def test_purge_before_uses_tenant_rls_context(self):
+        cutoff = datetime(2026, 10, 1, tzinfo=timezone.utc)
+        self.assertEqual(self.store.purge_before(cutoff, "tenant-a"), 1)
+        self.assertEqual(self.cursors[0].commands, [
+            ("SET LOCAL ROLE watchup_app", None),
+            ("SELECT set_config('watchup.tenant_id', %s, true)", ("tenant-a",)),
+            ("DELETE FROM watchup.events WHERE received_at < %s AND tenant_id = %s", (cutoff, "tenant-a")),
+        ])
+
+    def test_tracking_words_use_rls_and_parameterized_queries(self):
+        self.store.set_tracking_words("tenant-a", "child-a", ["בדיקה"])
+        commands = self.cursors[0].commands
+        self.assertEqual(commands[1][1], ("tenant-a",))
+        self.assertIn("DELETE FROM watchup.tracking_words", commands[2][0])
+        self.assertEqual(commands[3][1], ("tenant-a", "child-a", 0, "בדיקה", "בדיקה"))
+
     def test_production_main_refuses_sqlite_fallback(self):
         from tempfile import TemporaryDirectory
 
