@@ -9,7 +9,10 @@ let lastDashboardData = null;
 let selectedGroupJid = '';
 let alertsPrimed = false;
 let alertsEnabled = false;
+let dashboardRequest = 0;
+let alertsCategoryFilter = 'all';
 const heardAlertIds = new Set();
+try { alertsEnabled = localStorage.getItem('watchup-alerts') === 'on'; } catch {}
 const API_TIMEOUT_MS = 20000;
 
 function fetchWithTimeout(url, options = {}) {
@@ -31,6 +34,10 @@ function setCount(kind, value) {
 
 function safeText(value, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
+}
+
+function matchText(value) {
+  return safeText(value).replace(/[\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/g, '').replace(/\s+/g, ' ').toLocaleLowerCase('he-IL');
 }
 
 function pad2(value) {
@@ -108,26 +115,30 @@ function senderPhone(event) {
 }
 
 function senderLabel(event) {
-  if (event.account?.is_from_me) return 'הטלפון של יולי';
+  if (event.account?.is_from_me) return 'הטלפון המחובר';
   return safeText(event.account?.display_name) || senderPhone(event) || 'שולח שטרם זוהה';
 }
 
 function isRecognizedSender(event) {
   if (event.account?.is_from_me) return true;
-  return event.account?.is_recognized === true;
+  return event.account?.is_recognized === true || event.payload?.isRecognized === true;
+}
+
+function messageText(event) {
+  const payload = event.payload || {};
+  return [payload.content, payload.Content, payload.quotedContent].map((item) => safeText(item)).filter(Boolean).join('\n');
 }
 
 function matchedWord(event, words) {
-  const content = safeText(event.payload?.content).toLocaleLowerCase('he-IL');
-  return words.find((word) => content.includes(word.toLocaleLowerCase('he-IL'))) || '';
+  const content = matchText(messageText(event));
+  return words.find((word) => {
+    const needle = matchText(word);
+    return needle && content.includes(needle);
+  }) || '';
 }
 
 function isException(event, words) {
-  if (event.type === 'group.snapshot' || event.account?.is_from_me) return false;
-  if (event.type === 'connection.status') {
-    const status = safeText(event.account?.status);
-    return status === 'disconnected' || status === 'relink_required';
-  }
+  if (event.type === 'group.snapshot' || event.account?.is_from_me || event.type === 'connection.status') return false;
   if (!isRecognizedSender(event)) return true;
   return Boolean(matchedWord(event, words));
 }
@@ -145,28 +156,46 @@ function connectionLabel(status) {
 function connectionHealth(connectionEvent) {
   const status = safeText(connectionEvent?.account?.status);
   const stamp = new Date(connectionEvent?.received_at || connectionEvent?.timestamp || 0);
-  const verified = status === 'connected' && !Number.isNaN(stamp.getTime()) && Date.now() - stamp.getTime() < 5 * 60 * 1000;
-  return { status, verified, label: verified ? 'מחובר' : status === 'connected' ? 'החיבור לא אומת לאחרונה' : connectionLabel(status) };
+  // ponytail: the bridge repeats "connected" every 2 minutes. Three missed
+  // beats means the monitor itself stopped. A shorter window flaps on one late tick.
+  const fresh = !Number.isNaN(stamp.getTime()) && Date.now() - stamp.getTime() < 6 * 60 * 1000;
+  if (status === 'disconnected' || status === 'relink_required') return { status, verified: false, label: connectionLabel(status), tone: 'critical' };
+  if (status === 'connected' && fresh) return { status, verified: true, label: 'מחובר', tone: 'ok' };
+  return { status: status || 'disconnected', verified: false, label: 'הניטור נעצר', tone: 'critical' };
 }
 
 function chatSource(event, groups) {
-  const group = groups.get(safeText(event.account?.chat_jid));
+  const chatType = safeText(event.account?.chat_type);
+  const chatJid = safeText(event.account?.chat_jid);
+  if (chatType === 'status' || chatJid === 'status@broadcast') return 'סטטוס וואטסאפ';
+  if (chatType === 'newsletter') return 'ערוץ';
+  const group = groups.get(chatJid);
   if (group) return safeText(group.payload?.name, 'קבוצה');
-  return event.account?.chat_type === 'group' ? 'קבוצה שטרם סונכרנה' : 'שיחה פרטית';
+  if (chatType === 'group' || chatJid.endsWith('@g.us')) return 'קבוצה שטרם סונכרנה';
+  return 'שיחה פרטית';
+}
+
+function messageBody(event) {
+  const text = safeText(event.payload?.content || event.payload?.Content);
+  if (text) return text;
+  return contentTypeLabel(event);
 }
 
 function eventPresentation(event, groups, words) {
   if (event.type === 'connection.status') {
-    const status = safeText(event.account?.status);
-    return { category: 'connection', title: `מצב החיבור: ${connectionLabel(status)}`, details: 'חשבון WhatsApp של יולי', art: 'connection', severity: 'דורש בדיקה', critical: true };
+    const health = connectionHealth(event);
+    return { category: 'connection', title: `מצב החיבור: ${health.label}`, details: 'חשבון WhatsApp המחובר', body: '', art: 'connection', severity: 'קריטי', tone: 'critical' };
   }
   const source = chatSource(event, groups);
   const word = matchedWord(event, words);
-  if (isRecognizedSender(event) && word) {
-    return { category: 'keyword', title: `מילת מעקב: ${word}`, details: source, art: 'messages', severity: 'דחוף', critical: true };
+  const body = messageBody(event);
+  if (word) {
+    const phone = senderPhone(event);
+    const details = isRecognizedSender(event) ? source : `${source} · מספר לא מזוהה: ${phone || 'המספר לא זמין'}`;
+    return { category: 'keyword', title: `מילת מעקב: ${word}`, details, body, art: 'messages', severity: 'קריטי', tone: 'critical' };
   }
   const phone = senderPhone(event) || 'המספר לא זמין';
-  return { category: 'stranger', title: `התקבלה הודעה ממספר טלפון לא מזוהה: ${phone}`, details: source, art: 'unresolved', severity: 'דחוף', critical: true };
+  return { category: 'stranger', title: `התקבלה הודעה ממספר טלפון לא מזוהה: ${phone}`, details: source, body, art: 'unresolved', severity: 'דחוף', critical: true };
 }
 
 function createArtwork(name, className) {
@@ -190,7 +219,7 @@ function createEventCard(event, groups, words, index = 0) {
   const meta = document.createElement('div');
   meta.className = 'feed-meta';
   const severity = document.createElement('span');
-  severity.className = `severity ${view.critical ? 'important' : 'info'}`;
+  severity.className = `severity ${view.tone || (view.critical ? 'important' : 'info')}`;
   severity.textContent = view.severity;
   const time = document.createElement('time');
   time.textContent = eventTime(event);
@@ -200,6 +229,13 @@ function createEventCard(event, groups, words, index = 0) {
   details.textContent = view.details;
   meta.append(severity, time);
   content.append(meta, title, details);
+  if (view.body) {
+    const body = document.createElement('p');
+    body.className = 'feed-message';
+    body.dir = 'auto';
+    body.textContent = view.body;
+    content.append(body);
+  }
   article.append(icon, content);
   return article;
 }
@@ -220,6 +256,16 @@ function renderEvents(events, groups, words) {
   document.querySelector('[data-filter-count="stranger"]').textContent = String(count('stranger'));
   document.querySelector('[data-filter-count="keyword"]').textContent = String(count('keyword'));
   document.querySelector('[data-filter-count="connection"]').textContent = String(count('connection'));
+  applyAlertsCategoryFilter();
+}
+
+function applyAlertsCategoryFilter() {
+  document.querySelectorAll('[data-filter]').forEach((item) => {
+    item.classList.toggle('active', item.dataset.filter === alertsCategoryFilter);
+  });
+  document.querySelectorAll('#alerts-feed [data-category]').forEach((item) => {
+    item.classList.toggle('filtered', alertsCategoryFilter !== 'all' && item.dataset.category !== alertsCategoryFilter);
+  });
 }
 
 function playCriticalTone() {
@@ -227,16 +273,27 @@ function playCriticalTone() {
   if (!AudioContext) return;
   const context = playCriticalTone.context || new AudioContext();
   playCriticalTone.context = context;
-  if (context.state === 'suspended') context.resume();
-  const oscillator = context.createOscillator();
-  const gain = context.createGain();
-  oscillator.frequency.value = 880;
-  gain.gain.setValueAtTime(0.0001, context.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.05, context.currentTime + 0.02);
-  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.28);
-  oscillator.connect(gain).connect(context.destination);
-  oscillator.start();
-  oscillator.stop(context.currentTime + 0.3);
+  const start = () => {
+    const now = context.currentTime;
+    [880, 1175].forEach((frequency, index) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const at = now + index * 0.28;
+      oscillator.type = 'sine';
+      oscillator.frequency.value = frequency;
+      gain.gain.setValueAtTime(0.0001, at);
+      gain.gain.exponentialRampToValueAtTime(0.18, at + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.24);
+      oscillator.connect(gain).connect(context.destination);
+      oscillator.start(at);
+      oscillator.stop(at + 0.25);
+    });
+  };
+  if (context.state === 'suspended') {
+    context.resume().then(start).catch(() => {});
+    return;
+  }
+  start();
 }
 
 function notifyNewCritical(events) {
@@ -264,8 +321,41 @@ function messageCountLabel(count) {
   return count === 1 ? 'הודעה אחת' : `${count} הודעות`;
 }
 
+function eventMoment(event) {
+  const date = new Date(event.timestamp || event.received_at || event.source_timestamp || 0);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function isSameLocalDay(event, now = new Date()) {
+  const date = eventMoment(event);
+  return Boolean(date) && date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+}
+
+function isGroupMessage(event) {
+  if (event.type === 'connection.status' || event.type === 'group.snapshot' || event.account?.is_from_me) return false;
+  const jid = safeText(event.account?.chat_jid);
+  return safeText(event.account?.chat_type) === 'group' || jid.endsWith('@g.us');
+}
+
 function groupMessageCount(jid, events) {
-  return events.filter((event) => event.type !== 'connection.status' && event.type !== 'group.snapshot' && safeText(event.account?.chat_jid) === jid).length;
+  return events.filter((event) => isGroupMessage(event) && safeText(event.account?.chat_jid) === jid).length;
+}
+
+function messagesToday(events, jid) {
+  return events.filter((event) => isGroupMessage(event) && isSameLocalDay(event) && safeText(event.account?.chat_jid) === jid).length;
+}
+
+function busiestHour(events) {
+  const counts = new Map();
+  events.filter((event) => isGroupMessage(event) && isSameLocalDay(event)).forEach((event) => {
+    const hour = eventMoment(event).getHours();
+    counts.set(hour, (counts.get(hour) || 0) + 1);
+  });
+  let best = null;
+  counts.forEach((count, hour) => {
+    if (!best || count > best.count) best = { hour, count };
+  });
+  return best;
 }
 
 function rosterFor(group, events) {
@@ -293,25 +383,33 @@ function rosterFor(group, events) {
   return [...people.values()].sort((left, right) => right.count - left.count || Number(left.recognized) - Number(right.recognized));
 }
 
-function renderGroupDetail(group, events) {
+function renderGroupDetail(group, events, anchor) {
   const panel = document.querySelector('#group-detail');
-  if (!group) {
+  if (!group || !anchor) {
     panel.hidden = true;
     return;
   }
-  panel.hidden = false;
   const jid = safeText(group.account?.chat_jid);
   const messages = groupMessageCount(jid, events);
   const members = Number(group.payload?.participantCount) || 0;
+  const people = rosterFor(group, events);
+  const top = people.find((person) => person.count > 0);
+  const topLabel = top ? (top.name || top.phone || 'שולח שטרם זוהה') : '';
+  const rest = Math.max(0, messages - (top ? top.count : 0));
   document.querySelector('#group-detail-title').textContent = safeText(group.payload?.name, 'קבוצה ללא שם');
-  document.querySelector('#group-detail-stats').textContent = `${messageCountLabel(messages)} · ${members || 'מספר לא ידוע של'} משתתפים`;
+  document.querySelector('#group-detail-stats').textContent = top
+    ? `${messageCountLabel(messages)} · ${members || 'מספר לא ידוע של'} משתתפים · ${topLabel} · ${messageCountLabel(top.count)} מתוך ${messageCountLabel(messages)} · כל השאר ${messageCountLabel(rest)}`
+    : `${messageCountLabel(messages)} · ${members || 'מספר לא ידוע של'} משתתפים`;
   const list = document.querySelector('#group-detail-people');
   list.replaceChildren();
-  const people = rosterFor(group, events);
   people.forEach((person) => {
     const item = document.createElement('li');
     const title = document.createElement('b');
-    title.textContent = person.recognized ? person.name : `מספר לא מזוהה: ${person.phone || 'שולח שטרם זוהה'}`;
+    title.textContent = person.recognized
+      ? person.name
+      : person.name
+        ? `${person.name} · מספר לא מזוהה: ${person.phone || 'שולח שטרם זוהה'}`
+        : `מספר לא מזוהה: ${person.phone || 'שולח שטרם זוהה'}`;
     const detail = document.createElement('small');
     detail.textContent = person.count ? `${messageCountLabel(person.count)} בקבוצה` : 'ברשימת המשתתפים, בלי הודעה אחרונה';
     item.append(title, detail);
@@ -323,12 +421,20 @@ function renderGroupDetail(group, events) {
     empty.textContent = 'רשימת המשתתפים עדיין לא הגיעה מהטלפון.';
     list.append(empty);
   }
+  panel.hidden = false;
+  anchor.after(panel);
 }
 
 function renderGroups(groups, events) {
   const list = document.querySelector('#groups-list');
+  const openPanel = document.querySelector('#group-detail');
+  if (openPanel && list.contains(openPanel)) {
+    openPanel.hidden = true;
+    list.parentElement.append(openPanel);
+  }
   list.replaceChildren();
   let imageCount = 0;
+  let openRow = null;
   const ranked = [...groups.values()].sort((left, right) => {
     const activity = groupMessageCount(safeText(right.account?.chat_jid), events) - groupMessageCount(safeText(left.account?.chat_jid), events);
     return activity || (Number(right.payload?.participantCount) || 0) - (Number(left.payload?.participantCount) || 0);
@@ -337,7 +443,9 @@ function renderGroups(groups, events) {
     const jid = safeText(event.account?.chat_jid);
     const row = document.createElement('button');
     row.type = 'button';
-    row.className = `directory-live-row${jid === selectedGroupJid ? ' selected' : ''}`;
+    const open = jid === selectedGroupJid;
+    row.className = `directory-live-row${open ? ' selected' : ''}`;
+    row.setAttribute('aria-expanded', String(open));
     const imageSource = validGroupImage(event.payload);
     if (imageSource) {
       const image = document.createElement('img');
@@ -362,10 +470,13 @@ function renderGroups(groups, events) {
     status.textContent = messages ? 'פעילה' : 'שקטה';
     row.append(text, status);
     row.addEventListener('click', () => {
-      selectedGroupJid = selectedGroupJid === jid ? '' : jid;
+      const opening = selectedGroupJid !== jid;
+      selectedGroupJid = opening ? jid : '';
       renderGroups(groups, events);
+      if (opening) document.querySelector('#group-detail')?.scrollIntoView({ block: 'nearest' });
     });
     list.append(row);
+    if (open) openRow = row;
   });
   if (!groups.size) {
     const empty = document.createElement('p');
@@ -373,13 +484,13 @@ function renderGroups(groups, events) {
     empty.textContent = 'הקבוצות עדיין לא הגיעו מהטלפון המחובר.';
     list.append(empty);
   }
-  renderGroupDetail(ranked.find((event) => safeText(event.account?.chat_jid) === selectedGroupJid), events);
+  renderGroupDetail(openRow ? ranked.find((event) => safeText(event.account?.chat_jid) === selectedGroupJid) : null, events, openRow);
   setCount('group', groups.size);
   setCount('image', imageCount);
   document.querySelector('#groups-kicker').textContent = `${groups.size} קבוצות · לפי פעילות`;
 }
 
-function renderContacts(events) {
+function renderContacts(events, groups) {
   const list = document.querySelector('#contacts-list');
   list.replaceChildren();
   const strangers = new Map();
@@ -395,7 +506,8 @@ function renderContacts(events) {
     const name = document.createElement('b');
     name.textContent = `התקבלה הודעה ממספר טלפון לא מזוהה: ${phone}`;
     const detail = document.createElement('small');
-    detail.textContent = eventTime(event);
+    detail.dir = 'auto';
+    detail.textContent = `${eventTime(event)} · ${chatSource(event, groups)} · ${messageBody(event)}`;
     text.append(name, detail);
     row.append(avatar, text);
     list.append(row);
@@ -409,29 +521,81 @@ function renderContacts(events) {
   setCount('sender', strangers.size);
 }
 
+function renderGroupBoard(events, groups, changes) {
+  const root = document.querySelector('#group-dashboard');
+  if (!root) return;
+  root.replaceChildren();
+  const todayCount = [...groups.values()].reduce((sum, group) => sum + messagesToday(events, safeText(group.account?.chat_jid)), 0);
+  const summary = document.createElement('p');
+  const hour = busiestHour(events);
+  summary.textContent = hour
+    ? `${messageCountLabel(todayCount)} בקבוצות היום · השעה העמוסה ${pad2(hour.hour)}:00 · ${messageCountLabel(hour.count)}`
+    : 'עדיין אין הודעות קבוצה מהיום.';
+  root.append(summary);
+  [...groups.values()]
+    .filter((group) => messagesToday(events, safeText(group.account?.chat_jid)) > 0)
+    .sort((left, right) => messagesToday(events, safeText(right.account?.chat_jid)) - messagesToday(events, safeText(left.account?.chat_jid)))
+    .slice(0, 6)
+    .forEach((group) => {
+      const jid = safeText(group.account?.chat_jid);
+      const button = document.createElement('button');
+      button.type = 'button';
+      const name = document.createElement('b');
+      name.textContent = safeText(group.payload?.name, 'קבוצה ללא שם');
+      const count = document.createElement('span');
+      count.textContent = messageCountLabel(messagesToday(events, jid));
+      button.append(name, count);
+      button.addEventListener('click', () => {
+        selectedGroupJid = jid;
+        showView('people');
+        renderGroups(groups, events);
+      });
+      root.append(button);
+    });
+  const changeList = Array.isArray(changes) ? changes.filter((change) => safeText(change?.chat_jid)) : [];
+  if (!changeList.length) {
+    const quiet = document.createElement('p');
+    quiet.textContent = 'אין הצטרפות או עזיבה מאז הסנכרון הקודם.';
+    root.append(quiet);
+    return;
+  }
+  const list = document.createElement('ul');
+  changeList.slice(0, 4).forEach((change) => {
+    const item = document.createElement('li');
+    const parts = [];
+    if (Array.isArray(change.added) && change.added.length) parts.push(`הצטרפו ${change.added.slice(0, 4).join(', ')}`);
+    if (Array.isArray(change.left) && change.left.length) parts.push(`עזבו ${change.left.slice(0, 4).join(', ')}`);
+    item.textContent = `${safeText(change.name, 'קבוצה')}: ${parts.join(' · ')}`;
+    list.append(item);
+  });
+  root.append(list);
+}
+
 function renderInsights(events, groups, words) {
   const strangers = events.filter((event) => eventPresentation(event, groups, words).category === 'stranger');
-  const ranked = [...groups.values()].sort((left, right) => groupMessageCount(safeText(right.account?.chat_jid), events) - groupMessageCount(safeText(left.account?.chat_jid), events));
-  const busiest = ranked[0];
-  const latest = events[0] ? eventPresentation(events[0], groups, words) : null;
+  const ranked = [...groups.values()].sort((left, right) => messagesToday(events, safeText(right.account?.chat_jid)) - messagesToday(events, safeText(left.account?.chat_jid)));
+  const busiest = ranked.find((group) => messagesToday(events, safeText(group.account?.chat_jid)) > 0);
+  const latest = events.find((event) => isException(event, words));
+  const latestView = latest ? eventPresentation(latest, groups, words) : null;
   document.querySelector('#insight-unrecognized').textContent = `${new Set(strangers.map((event) => senderPhone(event) || 'שולח שטרם זוהה')).size} מספרים לא מזוהים`;
-  document.querySelector('#insight-active-group').textContent = busiest ? `הקבוצה הפעילה ביותר: ${safeText(busiest.payload?.name, 'קבוצה ללא שם')} · ${messageCountLabel(groupMessageCount(safeText(busiest.account?.chat_jid), events))}` : 'עדיין אין קבוצה פעילה';
-  document.querySelector('#insight-critical').textContent = latest ? `ההתראה האחרונה: ${latest.title}` : 'אין התראה דחופה כרגע';
+  document.querySelector('#insight-active-group').textContent = busiest ? `הכי הרבה הודעות היום: ${safeText(busiest.payload?.name, 'קבוצה ללא שם')} · ${messageCountLabel(messagesToday(events, safeText(busiest.account?.chat_jid)))}` : 'עדיין אין קבוצה פעילה היום';
+  document.querySelector('#insight-critical').textContent = latestView ? `ההתראה האחרונה: ${latestView.title}` : 'אין התראה דחופה כרגע';
+  renderGroupBoard(events, groups, lastDashboardData?.group_changes);
 }
 
 function renderDailyReport(events, groups, words, connectionEvent) {
   const list = document.querySelector('#daily-report');
   const exceptions = events.filter((event) => isException(event, words));
   const strangers = new Set(exceptions.filter((event) => eventPresentation(event, groups, words).category === 'stranger').map((event) => senderPhone(event) || 'שולח שטרם זוהה'));
-  const ranked = [...groups.values()].sort((left, right) => groupMessageCount(safeText(right.account?.chat_jid), events) - groupMessageCount(safeText(left.account?.chat_jid), events));
-  const busiest = ranked[0];
+  const ranked = [...groups.values()].sort((left, right) => messagesToday(events, safeText(right.account?.chat_jid)) - messagesToday(events, safeText(left.account?.chat_jid)));
+  const busiest = ranked.find((group) => messagesToday(events, safeText(group.account?.chat_jid)) > 0);
   const stamps = events.map((event) => new Date(event.received_at || event.timestamp || event.source_timestamp)).filter((date) => !Number.isNaN(date.getTime()));
   const latest = stamps.sort((left, right) => right - left)[0];
   const lines = [
     `חריגים בחלון החי: ${exceptions.length}`,
     `מספרים לא מזוהים: ${strangers.size}`,
     `קבוצות מחוברות: ${groups.size}`,
-    busiest ? `הקבוצה הפעילה ביותר: ${safeText(busiest.payload?.name, 'קבוצה ללא שם')} · ${messageCountLabel(groupMessageCount(safeText(busiest.account?.chat_jid), events))}` : 'עדיין אין קבוצה פעילה',
+    busiest ? `הכי הרבה הודעות היום: ${safeText(busiest.payload?.name, 'קבוצה ללא שם')} · ${messageCountLabel(messagesToday(events, safeText(busiest.account?.chat_jid)))}` : 'עדיין אין קבוצה פעילה היום',
     `מצב החיבור: ${connectionHealth(connectionEvent).label}`,
     latest ? `האירוע האחרון שנשמר: ${formatDateTime(latest)}` : 'עדיין אין אירוע שמור',
   ];
@@ -536,7 +700,8 @@ function renderHome(events, groups, words, connectionEvent) {
     const title = document.createElement('b');
     title.textContent = view.title;
     const detail = document.createElement('small');
-    detail.textContent = view.details;
+    detail.dir = 'auto';
+    detail.textContent = view.body ? `${view.details} · ${view.body}` : view.details;
     text.append(title, detail);
     const time = document.createElement('em');
     time.textContent = eventTime(event);
@@ -550,9 +715,9 @@ function renderHome(events, groups, words, connectionEvent) {
     timeline.append(empty);
   }
   const { status, verified: connected, label: connectionState } = connectionHealth(connectionEvent);
-  document.querySelector('#home-title').textContent = connected ? 'הטלפון של יולי מחובר' : 'בודקים את החיבור של יולי';
-  document.querySelector('#home-status-detail').textContent = connected ? 'מוצגים רק חריגים: מספר לא מזוהה, מילת מעקב, או ניתוק. הקריאה בלבד.' : 'מצב החיבור דורש בדיקה לפני שניתן לסמוך על הנתונים.';
-  document.querySelector('#api-state-title').textContent = connected ? 'ה־API והטלפון מחוברים' : connectionState;
+  document.querySelector('#home-title').textContent = connected ? 'הטלפון מחובר' : connectionState;
+  document.querySelector('#home-status-detail').textContent = connected ? 'מוצגים רק חריגים: מספר לא מזוהה, מילת מעקב, או ניתוק. הקריאה בלבד.' : 'האור וההתראה מראים את אותו מצב. הנתונים לא אמינים עד שהחיבור חוזר.';
+  document.querySelector('#api-state-title').textContent = connectionState;
   document.querySelector('#connection-summary').textContent = connectionState;
   document.querySelector('#settings-connection-state').textContent = connectionState;
   document.querySelector('#settings-connection-detail').textContent = connected ? 'החיבור אומת בדקות האחרונות' : status === 'connected' ? `האישור האחרון היה ב־${eventTime(connectionEvent)}` : 'יש לבדוק את חיבור WhatsApp';
@@ -567,21 +732,28 @@ function renderDashboard(data) {
   const groups = latestGroups([...(Array.isArray(data.groups) ? data.groups : []), ...allEvents]);
   activeEvents = allEvents.filter((event) => event.type !== 'group.snapshot');
   const words = trackingWords();
-  const exceptions = activeEvents.filter((event) => isException(event, words)).slice(0, 20);
   const connectionFromApi = data.connection && data.connection.type === 'connection.status' ? data.connection : null;
   const connectionEvent = connectionFromApi || activeEvents
     .filter((event) => event.type === 'connection.status')
     .sort((left, right) => new Date(right.received_at || right.timestamp || 0) - new Date(left.received_at || left.timestamp || 0))[0];
-  const exceptionCount = exceptions.filter((event) => event.type !== 'connection.status').length;
+  const health = connectionHealth(connectionEvent);
+  const exceptions = activeEvents.filter((event) => isException(event, words));
+  if (!health.verified) {
+    const alertEvent = connectionEvent ? { ...connectionEvent } : { type: 'connection.status', account: { status: '' }, received_at: '', event_id: 'connection-missing' };
+    if (!alertEvent.event_id) alertEvent.event_id = `connection:${safeText(alertEvent.account?.status, 'stale')}:${alertEvent.received_at || alertEvent.timestamp || 'none'}`;
+    exceptions.unshift(alertEvent);
+  }
+  document.body.classList.toggle('connection-down', !health.verified);
+  const exceptionCount = exceptions.length;
   setCount('message', exceptionCount);
   setCount('unresolved', exceptions.filter((event) => matchedWord(event, words)).length);
-  document.querySelector('#environment-status').textContent = connectionHealth(connectionEvent).verified ? 'סביבת POC · נתונים חיים מהטלפון המחובר' : 'סביבת POC · החיבור לא אומת לאחרונה';
+  document.querySelector('#environment-status').textContent = health.verified ? 'סביבת POC · נתונים חיים מהטלפון המחובר' : `סביבת POC · ${health.label}`;
   renderSyncStatus(connectionEvent);
   document.querySelector('#api-state-detail').textContent = `${groups.size} קבוצות · ${exceptionCount} חריגים · קריאה בלבד`;
   notifyNewCritical(exceptions);
   renderEvents(exceptions, groups, words);
   renderGroups(groups, activeEvents);
-  renderContacts(activeEvents);
+  renderContacts(activeEvents, groups);
   renderHome(exceptions, groups, words, connectionEvent);
   renderInsights(activeEvents, groups, words);
   renderDailyReport(activeEvents, groups, words, connectionEvent);
@@ -589,6 +761,7 @@ function renderDashboard(data) {
   document.body.classList.remove('auth-pending', 'auth-required');
   authGate.hidden = true;
   appShell.inert = false;
+  syncMobileNav();
 }
 
 function requireAuthentication(message = 'יש להתחבר כדי לצפות בנתונים.') {
@@ -599,20 +772,45 @@ function requireAuthentication(message = 'יש להתחבר כדי לצפות ב
   document.querySelector('#auth-gate-message').textContent = message;
   authGate.hidden = false;
   appShell.inert = true;
+  syncMobileNav();
 }
 
 async function loadDashboard(notify = false) {
+  const request = ++dashboardRequest;
   try {
     const response = await fetchWithTimeout('/api/watchup/dashboard', { credentials: 'same-origin', cache: 'no-store' });
+    if (request !== dashboardRequest) return true;
     if (response.status === 401) {
       requireAuthentication();
       return false;
     }
+    if (response.status === 502 || response.status === 503 || response.status === 504) {
+      if (csrfToken || lastDashboardData) {
+        document.querySelector('#environment-status').textContent = 'סביבת POC · השרת לא ענה, המסך נשאר פתוח';
+        document.body.classList.remove('auth-pending', 'auth-required');
+        authGate.hidden = true;
+        appShell.inert = false;
+        syncMobileNav();
+        return false;
+      }
+    }
     if (!response.ok) throw new Error('dashboard unavailable');
-    renderDashboard(await response.json());
+    const data = await response.json();
+    if (request !== dashboardRequest) return true;
+    renderDashboard(data);
     if (notify) announce('החיבור לנתונים החיים הצליח');
     return true;
   } catch {
+    if (csrfToken) {
+      document.querySelector('#environment-status').textContent = lastDashboardData
+        ? 'סביבת POC · הרענון נכשל, הנתונים הקודמים נשארו על המסך'
+        : 'סביבת POC · השרת לא ענה, נסו שוב בעוד רגע';
+      document.body.classList.remove('auth-pending', 'auth-required');
+      authGate.hidden = true;
+      appShell.inert = false;
+      syncMobileNav();
+      return false;
+    }
     requireAuthentication('המערכת אינה זמינה כרגע. הנתונים לא הוצגו.');
     if (notify) announce('המערכת אינה זמינה כרגע');
     return false;
@@ -634,6 +832,7 @@ function showView(view, updateHash = true) {
     else link.removeAttribute('aria-current');
   });
   if (updateHash) history.replaceState(null, '', `#${view}`);
+  try { localStorage.setItem('watchup-view', view); } catch {}
   window.scrollTo(0, 0);
   if (view === 'rules') loadAuditLog();
 }
@@ -645,10 +844,8 @@ document.querySelectorAll('[data-view-link]').forEach((link) => link.addEventLis
 }));
 document.querySelectorAll('[data-view-button]').forEach((button) => button.addEventListener('click', () => showView(button.dataset.viewButton)));
 document.querySelectorAll('[data-filter]').forEach((button) => button.addEventListener('click', () => {
-  document.querySelectorAll('[data-filter]').forEach((item) => item.classList.remove('active'));
-  button.classList.add('active');
-  const filter = button.dataset.filter;
-  document.querySelectorAll('#alerts-feed [data-category]').forEach((item) => item.classList.toggle('filtered', filter !== 'all' && item.dataset.category !== filter));
+  alertsCategoryFilter = button.dataset.filter;
+  applyAlertsCategoryFilter();
 }));
 document.querySelectorAll('[data-people-tab]').forEach((button) => button.addEventListener('click', () => {
   document.querySelectorAll('[data-people-tab]').forEach((tab) => {
@@ -682,32 +879,44 @@ document.querySelector('#tracking-words-form').addEventListener('submit', async 
 
 const mobileMenu = document.querySelector('#mobile-nav');
 const mobileMenuButton = document.querySelector('#mobile-menu-button');
+function syncMobileNav() {
+  if (!mobileMenu) return;
+  closeMobileMenu();
+}
 function closeMobileMenu() {
+  if (!mobileMenu) return;
   mobileMenu.hidden = true;
   mobileMenu.classList.remove('open');
-  mobileMenuButton.setAttribute('aria-expanded', 'false');
-  mobileMenuButton.setAttribute('aria-label', 'פתח תפריט');
+  mobileMenuButton?.setAttribute('aria-expanded', 'false');
+  mobileMenuButton?.setAttribute('aria-label', 'פתח תפריט');
 }
-mobileMenuButton.addEventListener('click', () => {
+mobileMenuButton?.addEventListener('click', () => {
   const open = mobileMenu.hidden;
   mobileMenu.hidden = !open;
   mobileMenu.classList.toggle('open', open);
   mobileMenuButton.setAttribute('aria-expanded', String(open));
   mobileMenuButton.setAttribute('aria-label', open ? 'סגור תפריט' : 'פתח תפריט');
 });
+window.addEventListener('resize', () => {
+  if (!window.matchMedia('(max-width: 720px)').matches) closeMobileMenu();
+});
 
-document.querySelector('#enable-alerts').addEventListener('click', async () => {
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  if (AudioContext) {
-    const context = playCriticalTone.context || new AudioContext();
-    playCriticalTone.context = context;
-    await context.resume();
-  }
-  if ('Notification' in window && Notification.permission === 'default') await Notification.requestPermission();
+document.querySelector('#enable-alerts').addEventListener('click', () => {
   alertsEnabled = true;
+  try { localStorage.setItem('watchup-alerts', 'on'); } catch {}
   playCriticalTone();
   document.querySelector('#alert-sound-status').textContent = 'הצליל נבדק וההתראות פעילות במכשיר הזה.';
+  if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
 });
+document.addEventListener('pointerdown', () => {
+  if (!alertsEnabled) return;
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) return;
+  const context = playCriticalTone.context || new AudioContext();
+  playCriticalTone.context = context;
+  if (context.state === 'suspended') context.resume();
+}, { once: true });
+if (alertsEnabled) document.querySelector('#alert-sound-status').textContent = 'הצליל פעיל במכשיר הזה. געו במסך פעם אחת אחרי רענון כדי לאפשר צליל.';
 
 passwordToggle.addEventListener('click', () => {
   const reveal = passwordInput.type === 'password';
@@ -741,8 +950,9 @@ apiForm.addEventListener('submit', async (event) => {
       csrfToken = result.csrf_token;
       apiForm.reset();
       document.querySelector('#parent-username').value = 'eldad';
-      if (await loadDashboard(true)) startPolling();
+      if ((await loadDashboard(true)) || csrfToken) startPolling();
     } else if (response.status === 429) showLoginError('בוצעו יותר מדי ניסיונות. המתינו כמה דקות ונסו שוב.');
+    else if (response.status === 502 || response.status === 503 || response.status === 504) showLoginError('השרת לא ענה. הסיסמה לא נבדקה. נסו שוב בעוד רגע.');
     else showLoginError('שם המשתמש או הסיסמה אינם נכונים.');
   } catch (error) {
     const timedOut = error instanceof DOMException && error.name === 'AbortError';
@@ -755,8 +965,11 @@ apiForm.addEventListener('submit', async (event) => {
 
 function startPolling() {
   clearInterval(liveRefreshTimer);
-  liveRefreshTimer = setInterval(() => loadDashboard(false), 15000);
+  liveRefreshTimer = setInterval(() => loadDashboard(false), 5000);
 }
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && csrfToken) loadDashboard(false);
+});
 
 document.querySelector('#api-disconnect').addEventListener('click', async () => {
   try {
@@ -778,8 +991,7 @@ document.querySelector('#delete-family-data').addEventListener('click', async ()
 });
 
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-history.replaceState(null, '', '#home');
-showView('home', false);
+showView('home', true);
 async function restoreSession() {
   try {
     const response = await fetchWithTimeout('/api/watchup/session', { credentials: 'same-origin', cache: 'no-store' });
@@ -790,7 +1002,7 @@ async function restoreSession() {
     const session = await response.json();
     if (!session.authenticated || !session.csrf_token) throw new Error('invalid session');
     csrfToken = session.csrf_token;
-    if (await loadDashboard()) startPolling();
+    if ((await loadDashboard()) || csrfToken) startPolling();
   } catch { requireAuthentication('המערכת אינה זמינה כרגע. הנתונים לא הוצגו.'); }
 }
 restoreSession();
