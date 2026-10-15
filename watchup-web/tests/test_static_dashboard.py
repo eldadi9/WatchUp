@@ -39,7 +39,8 @@ class DashboardTests(unittest.TestCase):
         self.assertNotIn("chat_jid ||", self.js)
 
     def test_settings_has_contact_mailto(self):
-        self.assertIn('id="contact-link" href="mailto:eldadi9@gmail.com?', self.html)
+        self.assertIn('id="contact-link" href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=eldadi9@gmail.com&amp;', self.html)
+        self.assertIn('id="contact-mailto" href="mailto:eldadi9@gmail.com?', self.html)
 
     def test_no_whatsapp_write_actions(self):
         combined = (self.html + self.js).lower()
