@@ -1,4 +1,6 @@
 from pathlib import Path
+import shutil
+import subprocess
 import unittest
 
 
@@ -78,7 +80,8 @@ class DashboardTests(unittest.TestCase):
         self.assertNotIn("sessionStorage", self.js)
         self.assertNotIn("setDemoState", self.js)
         self.assertIn("location /api/", self.nginx)
-        self.assertIn("http://watchup-api:8769/", self.nginx)
+        self.assertIn("set $watchup_upstream watchup-api:8769;", self.nginx)
+        self.assertIn("proxy_pass http://$watchup_upstream;", self.nginx)
         self.assertIn("watchup-internal", self.compose)
 
     def test_owner_brand_assets_are_used(self):
@@ -189,6 +192,32 @@ class DashboardTests(unittest.TestCase):
         self.assertNotIn("height:440px", self.css)
         self.assertIn(".summary-strip button{background:#e8eff5", self.css)
         self.assertIn(".filter-bar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))", self.css)
+
+    def test_alert_tabs_word_forms_hours_and_retention_controls(self):
+        for hook in ('data-filter="today"', 'data-filter="joined"', 'data-filter="hours"', 'id="schedule-form"', 'id="open-pairing"', 'id="reset-today"', 'id="group-sort"'):
+            self.assertIn(hook, self.html)
+        self.assertIn("function wordForms(word)", self.js)
+        self.assertIn("character === 'ו'", self.js)
+        self.assertIn("['stranger', 'keyword']", self.js)
+        self.assertIn("watchup-seen-alerts", self.js)
+        self.assertIn("Asia/Jerusalem", self.js)
+        self.assertIn("/api/watchup/today", self.js)
+        self.assertIn("/api/watchup/pairing", self.js)
+        node = shutil.which("node")
+        if not node:
+            return
+        script = r"""
+const fs = require('fs');
+const src = fs.readFileSync('app.js', 'utf8');
+const start = src.indexOf('function safeText');
+const end = src.indexOf('function matchedWord');
+eval(src.slice(start, end));
+const stuck = wordForms('\u05e1\u05ea\u05d5\u05dd');
+if (!stuck.has('\u05e1\u05ea\u05d5\u05dd') || !stuck.has('\u05e1\u05ea\u05d5\u05de\u05d4') || !stuck.has('\u05e0\u05e1\u05ea\u05dd') || stuck.has('\u05e1\u05ea\u05dd')) process.exit(1);
+if (wordForms('\u05e1\u05ea\u05dd').has('\u05e1\u05ea\u05d5\u05dd')) process.exit(2);
+"""
+        completed = subprocess.run([node, "-e", script], cwd=ROOT, check=False, capture_output=True, text=True)
+        self.assertEqual(completed.returncode, 0, completed.stderr)
 
 
 class ProjectDashboardTests(unittest.TestCase):

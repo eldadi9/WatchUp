@@ -85,7 +85,8 @@ class PostgresEventStoreTests(unittest.TestCase):
         self.assertEqual(commands[1], ("SELECT set_config('watchup.tenant_id', %s, true)", ("tenant-a",)))
         sql, params = commands[2]
         self.assertIn("INSERT INTO watchup.events", sql)
-        self.assertIn("ON CONFLICT (tenant_id, event_id) DO NOTHING", sql)
+        self.assertIn("ON CONFLICT (tenant_id, event_id) DO UPDATE SET", sql)
+        self.assertIn("WHERE watchup.events.event_type = 'group.snapshot'", sql)
         self.assertIn("%s", sql)
         self.assertEqual(params[6], ("jsonb", self.event["account"]))
         self.assertEqual(params[7], ("jsonb", self.event["payload"]))
@@ -103,13 +104,17 @@ class PostgresEventStoreTests(unittest.TestCase):
         self.assertEqual(commands[0], ("SET LOCAL ROLE watchup_app", None))
         self.assertEqual(commands[1][1], ("tenant-a",))
         self.assertIn("ORDER BY received_at DESC", commands[2][0])
-        self.assertEqual(commands[2][1], ("tenant-a", "child-a", 50))
+        self.assertIn("event_type <> 'group.snapshot'", commands[2][0])
+        self.assertIn("event_type <> 'connection.status'", commands[2][0])
+        self.assertIn("CAST(%s AS timestamptz) IS NULL", commands[2][0])
+        self.assertEqual(commands[2][1], ("tenant-a", "child-a", "event-1", "event-1", 200))
 
     def test_latest_groups_are_queried_outside_the_recent_event_window(self):
         self.assertEqual(self.store.list_latest_groups("tenant-a", "child-a"), [])
         commands = self.cursors[0].commands
         self.assertIn("DISTINCT ON (account->>'chat_jid')", commands[2][0])
-        self.assertEqual(commands[2][1], ("tenant-a", "child-a", 100))
+        self.assertIn("CAST(%s AS timestamptz) IS NULL", commands[2][0])
+        self.assertEqual(commands[2][1], ("tenant-a", "child-a", "event-1", "event-1", 100))
 
     def test_purge_before_uses_tenant_rls_context(self):
         cutoff = datetime(2026, 10, 1, tzinfo=timezone.utc)

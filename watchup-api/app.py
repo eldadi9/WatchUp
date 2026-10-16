@@ -13,12 +13,18 @@ from datetime import datetime, timezone, timedelta
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from zoneinfo import ZoneInfo
+
+import segno
 
 
 MAX_BODY_BYTES = 256 * 1024
 APP_ROLE = "watchup_app"
 SESSION_COOKIE = "watchup_parent_session"
 BIDI_CONTROLS = frozenset(chr(code) for code in (*range(0x202A, 0x202F), *range(0x2066, 0x206A)))
+DAY_KEYS = ("sun", "mon", "tue", "wed", "thu", "fri", "sat")
+WINDOW_KEYS = ("study", "evening")
+JERUSALEM = ZoneInfo("Asia/Jerusalem")
 
 
 class ParentAuth:
@@ -180,6 +186,15 @@ class ParentAuth:
         else:
             self.sessions.clear()
 
+    def revoke_usernames(self, usernames):
+        names = {name for name in usernames if isinstance(name, str)}
+        if self.session_store:
+            self.session_store.delete_usernames(names)
+            return
+        for token_hash, session in list(self.sessions.items()):
+            if session.get("username") in names:
+                self.sessions.pop(token_hash, None)
+
 
 class SQLiteAuthStore:
     """Durable local-PoC auth state; production uses PostgreSQL instead."""
@@ -206,6 +221,10 @@ class SQLiteAuthStore:
 
     def delete_all_sessions(self):
         self.db.execute("DELETE FROM parent_sessions"); self.db.commit()
+
+    def delete_usernames(self, usernames):
+        self.db.executemany("DELETE FROM parent_sessions WHERE username = ?", [(name,) for name in usernames])
+        self.db.commit()
 
     def set_csrf_hash(self, token_hash, csrf_hash):
         self.db.execute("UPDATE parent_sessions SET csrf_hash = ? WHERE token_hash = ?", (csrf_hash, token_hash)); self.db.commit()
@@ -261,6 +280,12 @@ class EventStore:
                 normalized_word TEXT NOT NULL,
                 PRIMARY KEY (tenant_id, child_id, normalized_word)
             );
+            CREATE TABLE IF NOT EXISTS child_settings (
+                tenant_id TEXT NOT NULL,
+                child_id TEXT NOT NULL,
+                schedule_json TEXT NOT NULL,
+                PRIMARY KEY (tenant_id, child_id)
+            );
             """
         )
 
@@ -268,11 +293,18 @@ class EventStore:
         source_at = parse_timestamp(event["source_timestamp"])
         latency_ms = max(0, int((received_at - source_at).total_seconds() * 1000))
         try:
-            self.db.execute(
+            cursor = self.db.execute(
                 """INSERT INTO events (
                     tenant_id, child_id, event_id, event_type, source,
                     source_timestamp, account_json, payload_json, received_at, latency_ms
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(tenant_id, event_id) DO UPDATE SET
+                    source_timestamp = excluded.source_timestamp,
+                    account_json = excluded.account_json,
+                    payload_json = excluded.payload_json,
+                    received_at = excluded.received_at,
+                    latency_ms = excluded.latency_ms
+                WHERE events.event_type = 'group.snapshot'""",
                 (
                     event["tenant_id"], event["child_id"], event["event_id"],
                     event["type"], event["source"], event["source_timestamp"],
@@ -282,7 +314,7 @@ class EventStore:
                 ),
             )
             self.db.commit()
-            return True
+            return cursor.rowcount == 1
         except sqlite3.IntegrityError:
             return False
 
@@ -292,17 +324,44 @@ class EventStore:
             (tenant_id, child_id, event_id),
         ).fetchone()
 
-    def list_recent(self, tenant_id: str, child_id: str, limit: int = 50):
+    def pairing_floor(self, tenant_id: str, child_id: str):
+        relink = self.db.execute(
+            """SELECT received_at FROM events
+                WHERE tenant_id = ? AND child_id = ? AND event_type = 'connection.status'
+                  AND json_extract(account_json, '$.status') = 'relink_required'
+                ORDER BY received_at DESC LIMIT 1""",
+            (tenant_id, child_id),
+        ).fetchone()
+        if not relink:
+            return None
+        connected = self.db.execute(
+            """SELECT received_at FROM events
+                WHERE tenant_id = ? AND child_id = ? AND event_type = 'connection.status'
+                  AND json_extract(account_json, '$.status') = 'connected'
+                  AND received_at >= ?
+                ORDER BY received_at ASC LIMIT 1""",
+            (tenant_id, child_id, relink[0]),
+        ).fetchone()
+        return connected[0] if connected else relink[0]
+
+    def list_recent(self, tenant_id: str, child_id: str, limit: int = 200):
+        # ponytail: newest 200 messages and connection events. Group snapshots
+        # refresh their own received_at and would otherwise push live messages
+        # out of this window. A busier day needs paging, not a larger blob.
+        floor = self.pairing_floor(tenant_id, child_id)
         rows = self.db.execute(
             """SELECT event_id, event_type, source_timestamp, account_json, payload_json,
                       received_at, latency_ms
                FROM events
               WHERE tenant_id = ? AND child_id = ?
+                AND event_type <> 'group.snapshot'
+                AND event_type <> 'connection.status'
+                AND (? IS NULL OR received_at >= ?)
               ORDER BY received_at DESC
               LIMIT ?""",
-            (tenant_id, child_id, limit),
+            (tenant_id, child_id, floor, floor, limit),
         ).fetchall()
-        return [
+        events = [
             {
                 "event_id": row[0], "type": row[1], "timestamp": row[2],
                 "account": json.loads(row[3]), "payload": json.loads(row[4]),
@@ -310,11 +369,41 @@ class EventStore:
             }
             for row in rows
         ]
+        since = jerusalem_day_start().isoformat()
+        extra_rows = self.db.execute(
+            """SELECT event_id, event_type, source_timestamp, account_json, payload_json,
+                      received_at, latency_ms
+               FROM events
+              WHERE tenant_id = ? AND child_id = ?
+                AND event_type <> 'group.snapshot'
+                AND event_type <> 'connection.status'
+                AND received_at >= ?
+                AND (? IS NULL OR received_at >= ?)
+              ORDER BY received_at DESC
+              LIMIT 500""",
+            (tenant_id, child_id, since, floor, floor),
+        ).fetchall()
+        extra = [
+            {
+                "event_id": row[0], "type": row[1], "timestamp": row[2],
+                "account": json.loads(row[3]), "payload": json.loads(row[4]),
+                "received_at": row[5], "latency_ms": row[6],
+            }
+            for row in extra_rows
+        ]
+        # ponytail: newest 200 plus Jerusalem-today rows, capped at 500. A louder day needs paging.
+        return merge_recent(events, extra)
 
     def list_latest_groups(self, tenant_id: str, child_id: str, limit: int = 100):
         rows = self.db.execute(
             """SELECT event_id, event_type, source_timestamp, account_json, payload_json,
-                      received_at, latency_ms
+                      received_at, latency_ms,
+                      (SELECT MIN(older.received_at) FROM events AS older
+                        WHERE older.tenant_id = ranked.tenant_id
+                          AND older.child_id = ranked.child_id
+                          AND older.event_type = 'group.snapshot'
+                          AND json_extract(older.account_json, '$.chat_jid')
+                              = json_extract(ranked.account_json, '$.chat_jid'))
                FROM (
                     SELECT *, ROW_NUMBER() OVER (
                         PARTITION BY json_extract(account_json, '$.chat_jid')
@@ -322,20 +411,43 @@ class EventStore:
                     ) AS newest
                     FROM events
                     WHERE tenant_id = ? AND child_id = ? AND event_type = 'group.snapshot'
-               )
+                      AND (? IS NULL OR received_at >= ?)
+               ) AS ranked
               WHERE newest = 1
               ORDER BY received_at DESC
               LIMIT ?""",
-            (tenant_id, child_id, limit),
+            (tenant_id, child_id, self.pairing_floor(tenant_id, child_id), self.pairing_floor(tenant_id, child_id), limit),
         ).fetchall()
         return [
             {
                 "event_id": row[0], "type": row[1], "timestamp": row[2],
                 "account": json.loads(row[3]), "payload": json.loads(row[4]),
-                "received_at": row[5], "latency_ms": row[6],
+                "received_at": row[5], "latency_ms": row[6], "first_seen": row[7],
             }
             for row in rows
         ]
+
+    def list_membership_changes(self, tenant_id: str, child_id: str):
+        floor = self.pairing_floor(tenant_id, child_id)
+        rows = self.db.execute(
+            """SELECT json_extract(account_json, '$.chat_jid'),
+                      json_extract(payload_json, '$.name'),
+                      json_extract(payload_json, '$.participants'),
+                      newest
+               FROM (
+                    SELECT account_json, payload_json,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY json_extract(account_json, '$.chat_jid')
+                               ORDER BY received_at DESC
+                           ) AS newest
+                      FROM events
+                     WHERE tenant_id = ? AND child_id = ? AND event_type = 'group.snapshot'
+                       AND (? IS NULL OR received_at >= ?)
+               )
+              WHERE newest <= 2""",
+            (tenant_id, child_id, floor, floor),
+        ).fetchall()
+        return changes_from_snapshot_rows(rows)
 
     def latest_connection_status(self, tenant_id: str, child_id: str):
         row = self.db.execute(
@@ -374,9 +486,31 @@ class EventStore:
                 [(tenant_id, child_id, index, word, word.casefold()) for index, word in enumerate(words)],
             )
 
+    def get_schedule(self, tenant_id: str, child_id: str):
+        row = self.db.execute(
+            "SELECT schedule_json FROM child_settings WHERE tenant_id = ? AND child_id = ?",
+            (tenant_id, child_id),
+        ).fetchone()
+        if not row:
+            return empty_schedule()
+        try:
+            return validate_schedule(json.loads(row[0]))
+        except (json.JSONDecodeError, ValueError):
+            return empty_schedule()
+
+    def set_schedule(self, tenant_id: str, child_id: str, schedule: dict):
+        payload = json.dumps(validate_schedule(schedule), ensure_ascii=False, separators=(",", ":"))
+        self.db.execute(
+            """INSERT INTO child_settings (tenant_id, child_id, schedule_json) VALUES (?, ?, ?)
+               ON CONFLICT(tenant_id, child_id) DO UPDATE SET schedule_json = excluded.schedule_json""",
+            (tenant_id, child_id, payload),
+        )
+        self.db.commit()
+
     def delete_family(self, tenant_id: str) -> int:
         cursor = self.db.execute("DELETE FROM events WHERE tenant_id = ?", (tenant_id,))
         self.db.execute("DELETE FROM tracking_words WHERE tenant_id = ?", (tenant_id,))
+        self.db.execute("DELETE FROM child_settings WHERE tenant_id = ?", (tenant_id,))
         self.db.execute("DELETE FROM parent_audit WHERE tenant_id = ?", (tenant_id,))
         self.db.commit()
         return cursor.rowcount
@@ -468,7 +602,13 @@ class PostgresEventStore:
                         tenant_id, child_id, event_id, event_type, source,
                         source_timestamp, account, payload, received_at, latency_ms
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (tenant_id, event_id) DO NOTHING""",
+                    ON CONFLICT (tenant_id, event_id) DO UPDATE SET
+                        source_timestamp = EXCLUDED.source_timestamp,
+                        account = EXCLUDED.account,
+                        payload = EXCLUDED.payload,
+                        received_at = EXCLUDED.received_at,
+                        latency_ms = EXCLUDED.latency_ms
+                    WHERE watchup.events.event_type = 'group.snapshot'""",
                     (
                         event["tenant_id"], event["child_id"], event["event_id"],
                         event["type"], event["source"], event["source_timestamp"],
@@ -489,53 +629,116 @@ class PostgresEventStore:
                 )
                 return cursor.fetchone()
 
-    def list_recent(self, tenant_id: str, child_id: str, limit: int = 50):
+    def pairing_floor(self, tenant_id: str, child_id: str):
         with self.connect_factory(**self.connection_kwargs) as connection:
             with connection.cursor() as cursor:
                 self._set_rls_context(cursor, tenant_id)
+                cursor.execute(
+                    """SELECT received_at FROM watchup.events
+                        WHERE tenant_id = %s AND child_id = %s AND event_type = 'connection.status'
+                          AND account->>'status' = 'relink_required'
+                        ORDER BY received_at DESC LIMIT 1""",
+                    (tenant_id, child_id),
+                )
+                relink = cursor.fetchone()
+                if not relink:
+                    return None
+                cursor.execute(
+                    """SELECT received_at FROM watchup.events
+                        WHERE tenant_id = %s AND child_id = %s AND event_type = 'connection.status'
+                          AND account->>'status' = 'connected' AND received_at >= %s
+                        ORDER BY received_at ASC LIMIT 1""",
+                    (tenant_id, child_id, relink[0]),
+                )
+                connected = cursor.fetchone()
+                return connected[0] if connected else relink[0]
+
+    def list_recent(self, tenant_id: str, child_id: str, limit: int = 200):
+        with self.connect_factory(**self.connection_kwargs) as connection:
+            with connection.cursor() as cursor:
+                self._set_rls_context(cursor, tenant_id)
+                floor = self.pairing_floor(tenant_id, child_id)
                 cursor.execute(
                     """SELECT event_id, event_type, source_timestamp, account, payload,
                               received_at, latency_ms
                        FROM watchup.events
                       WHERE tenant_id = %s AND child_id = %s
+                        AND event_type <> 'group.snapshot'
+                        AND event_type <> 'connection.status'
+                        AND (CAST(%s AS timestamptz) IS NULL OR received_at >= CAST(%s AS timestamptz))
                       ORDER BY received_at DESC
                       LIMIT %s""",
-                    (tenant_id, child_id, limit),
+                    (tenant_id, child_id, floor, floor, limit),
                 )
-                return [
-                    {
-                        "event_id": row[0], "type": row[1], "timestamp": row[2].isoformat(),
-                        "account": row[3], "payload": row[4],
-                        "received_at": row[5].isoformat(), "latency_ms": row[6],
-                    }
-                    for row in cursor.fetchall()
-                ]
+                events = [postgres_event(row) for row in cursor.fetchall()]
+                since = jerusalem_day_start()
+                cursor.execute(
+                    """SELECT event_id, event_type, source_timestamp, account, payload,
+                              received_at, latency_ms
+                       FROM watchup.events
+                      WHERE tenant_id = %s AND child_id = %s
+                        AND event_type <> 'group.snapshot'
+                        AND event_type <> 'connection.status'
+                        AND received_at >= %s
+                        AND (CAST(%s AS timestamptz) IS NULL OR received_at >= CAST(%s AS timestamptz))
+                      ORDER BY received_at DESC
+                      LIMIT 500""",
+                    (tenant_id, child_id, since, floor, floor),
+                )
+                # ponytail: newest 200 plus Jerusalem-today rows, capped at 500. A louder day needs paging.
+                return merge_recent(events, [postgres_event(row) for row in cursor.fetchall()])
 
     def list_latest_groups(self, tenant_id: str, child_id: str, limit: int = 100):
         with self.connect_factory(**self.connection_kwargs) as connection:
             with connection.cursor() as cursor:
                 self._set_rls_context(cursor, tenant_id)
                 cursor.execute(
-                    """SELECT event_id, event_type, source_timestamp, account, payload, received_at, latency_ms
+                    """SELECT event_id, event_type, source_timestamp, account, payload, received_at, latency_ms,
+                              (SELECT MIN(older.received_at) FROM watchup.events AS older
+                                WHERE older.tenant_id = latest_groups.tenant_id
+                                  AND older.child_id = latest_groups.child_id
+                                  AND older.event_type = 'group.snapshot'
+                                  AND older.account->>'chat_jid' = latest_groups.account->>'chat_jid')
                        FROM (
                             SELECT DISTINCT ON (account->>'chat_jid')
-                                   event_id, event_type, source_timestamp, account, payload, received_at, latency_ms
+                                   tenant_id, child_id, event_id, event_type, source_timestamp, account, payload, received_at, latency_ms
                             FROM watchup.events
                             WHERE tenant_id = %s AND child_id = %s AND event_type = 'group.snapshot'
+                              AND (CAST(%s AS timestamptz) IS NULL OR received_at >= CAST(%s AS timestamptz))
                             ORDER BY account->>'chat_jid', received_at DESC
                        ) AS latest_groups
                        ORDER BY received_at DESC
                        LIMIT %s""",
-                    (tenant_id, child_id, limit),
+                    (tenant_id, child_id, self.pairing_floor(tenant_id, child_id), self.pairing_floor(tenant_id, child_id), limit),
                 )
                 return [
-                    {
-                        "event_id": row[0], "type": row[1], "timestamp": row[2].isoformat(),
-                        "account": row[3], "payload": row[4],
-                        "received_at": row[5].isoformat(), "latency_ms": row[6],
-                    }
+                    postgres_event(row, first_seen=row[7] if len(row) > 7 else None)
                     for row in cursor.fetchall()
                 ]
+
+    def list_membership_changes(self, tenant_id: str, child_id: str):
+        with self.connect_factory(**self.connection_kwargs) as connection:
+            with connection.cursor() as cursor:
+                self._set_rls_context(cursor, tenant_id)
+                floor = self.pairing_floor(tenant_id, child_id)
+                cursor.execute(
+                    """SELECT chat_jid, name, participants, newest
+                       FROM (
+                            SELECT account->>'chat_jid' AS chat_jid,
+                                   payload->>'name' AS name,
+                                   payload->'participants' AS participants,
+                                   ROW_NUMBER() OVER (
+                                       PARTITION BY account->>'chat_jid'
+                                       ORDER BY received_at DESC
+                                   ) AS newest
+                              FROM watchup.events
+                             WHERE tenant_id = %s AND child_id = %s AND event_type = 'group.snapshot'
+                               AND (CAST(%s AS timestamptz) IS NULL OR received_at >= CAST(%s AS timestamptz))
+                       ) AS ranked
+                      WHERE newest <= 2""",
+                    (tenant_id, child_id, floor, floor),
+                )
+                return changes_from_snapshot_rows(cursor.fetchall())
 
     def latest_connection_status(self, tenant_id: str, child_id: str):
         with self.connect_factory(**self.connection_kwargs) as connection:
@@ -587,12 +790,44 @@ class PostgresEventStore:
                         (tenant_id, child_id, index, word, word.casefold()),
                     )
 
+    def get_schedule(self, tenant_id: str, child_id: str):
+        with self.connect_factory(**self.connection_kwargs) as connection:
+            with connection.cursor() as cursor:
+                self._set_rls_context(cursor, tenant_id)
+                cursor.execute(
+                    "SELECT schedule FROM watchup.child_settings WHERE tenant_id = %s AND child_id = %s",
+                    (tenant_id, child_id),
+                )
+                row = cursor.fetchone()
+                if not row:
+                    return empty_schedule()
+                raw = row[0]
+                if isinstance(raw, str):
+                    raw = json.loads(raw)
+                try:
+                    return validate_schedule(raw)
+                except (TypeError, ValueError):
+                    return empty_schedule()
+
+    def set_schedule(self, tenant_id: str, child_id: str, schedule: dict):
+        payload = validate_schedule(schedule)
+        with self.connect_factory(**self.connection_kwargs) as connection:
+            with connection.cursor() as cursor:
+                self._set_rls_context(cursor, tenant_id)
+                cursor.execute(
+                    """INSERT INTO watchup.child_settings (tenant_id, child_id, schedule)
+                       VALUES (%s, %s, %s)
+                       ON CONFLICT (tenant_id, child_id) DO UPDATE SET schedule = EXCLUDED.schedule""",
+                    (tenant_id, child_id, self.jsonb_factory(payload)),
+                )
+
     def delete_family(self, tenant_id: str) -> int:
         with self.connect_factory(**self.connection_kwargs) as connection:
             with connection.cursor() as cursor:
                 self._set_rls_context(cursor, tenant_id)
                 cursor.execute("DELETE FROM watchup.parent_audit WHERE tenant_id = %s", (tenant_id,))
                 cursor.execute("DELETE FROM watchup.tracking_words WHERE tenant_id = %s", (tenant_id,))
+                cursor.execute("DELETE FROM watchup.child_settings WHERE tenant_id = %s", (tenant_id,))
                 cursor.execute("DELETE FROM watchup.events WHERE tenant_id = %s", (tenant_id,))
                 return cursor.rowcount
 
@@ -657,6 +892,10 @@ class PostgresAuthStore:
     def delete_all_sessions(self):
         self._execute("DELETE FROM watchup.parent_sessions")
 
+    def delete_usernames(self, usernames):
+        for name in usernames:
+            self._execute("DELETE FROM watchup.parent_sessions WHERE username = %s", (name,))
+
     def set_csrf_hash(self, token_hash, csrf_hash):
         self._execute("UPDATE watchup.parent_sessions SET csrf_hash = %s WHERE token_hash = %s", (csrf_hash, token_hash))
 
@@ -704,6 +943,166 @@ def validate_event(event: object) -> dict:
     return event
 
 
+def parse_participants(value):
+    if isinstance(value, list):
+        return value
+    if isinstance(value, str) and value.strip():
+        try:
+            parsed = json.loads(value)
+        except json.JSONDecodeError:
+            return []
+        return parsed if isinstance(parsed, list) else []
+    return []
+
+
+def participant_labels(people):
+    labels = {}
+    for person in parse_participants(people):
+        if not isinstance(person, dict):
+            continue
+        phone = str(person.get("phone") or "").strip()
+        name = str(person.get("name") or "").strip()
+        key = phone or name
+        if key:
+            labels[key] = name or phone
+    return labels
+
+
+def membership_delta(previous, current):
+    before = participant_labels(previous)
+    after = participant_labels(current)
+    return (
+        [after[key] for key in after if key not in before],
+        [before[key] for key in before if key not in after],
+    )
+
+
+def changes_from_snapshot_rows(rows):
+    grouped = {}
+    for chat_jid, name, participants, newest in rows:
+        if not chat_jid:
+            continue
+        grouped.setdefault(chat_jid, {})[int(newest)] = (name or "", participants)
+    changes = []
+    for chat_jid, versions in grouped.items():
+        if 1 not in versions or 2 not in versions:
+            continue
+        added, left = membership_delta(versions[2][1], versions[1][1])
+        if not added and not left:
+            continue
+        changes.append({
+            "chat_jid": chat_jid,
+            "name": versions[1][0] or "קבוצה",
+            "added": added[:12],
+            "left": left[:12],
+        })
+    return changes
+
+
+def isoformat_value(value):
+    return value.isoformat() if hasattr(value, "isoformat") else value
+
+
+def postgres_event(row, first_seen=None):
+    event = {
+        "event_id": row[0], "type": row[1], "timestamp": isoformat_value(row[2]),
+        "account": row[3], "payload": row[4],
+        "received_at": isoformat_value(row[5]), "latency_ms": row[6],
+    }
+    if first_seen is not None or len(row) > 7:
+        event["first_seen"] = isoformat_value(row[7] if first_seen is None else first_seen)
+    return event
+
+
+def merge_recent(primary, extra, limit=500):
+    seen = set()
+    merged = []
+    for item in list(primary) + list(extra):
+        event_id = item.get("event_id")
+        if event_id in seen:
+            continue
+        seen.add(event_id)
+        merged.append(item)
+    merged.sort(key=lambda item: item.get("received_at") or "", reverse=True)
+    return merged[:limit]
+
+
+def jerusalem_day_start(now=None) -> datetime:
+    now = now or datetime.now(timezone.utc)
+    local = now.astimezone(JERUSALEM)
+    return local.replace(hour=0, minute=0, second=0, microsecond=0).astimezone(timezone.utc)
+
+
+def empty_schedule():
+    return {day: {"study": None, "evening": None} for day in DAY_KEYS}
+
+
+def clock_value(value):
+    if not isinstance(value, str) or len(value) != 5 or value[2] != ":":
+        raise ValueError("time must be HH:MM")
+    hour, minute = value.split(":")
+    if not hour.isdigit() or not minute.isdigit():
+        raise ValueError("time must be HH:MM")
+    hour_i, minute_i = int(hour), int(minute)
+    if hour_i > 23 or minute_i > 59:
+        raise ValueError("time must be HH:MM")
+    return f"{hour_i:02d}:{minute_i:02d}"
+
+
+def validate_schedule(value: object) -> dict:
+    if not isinstance(value, dict):
+        raise ValueError("schedule must be an object")
+    result = empty_schedule()
+    for day in DAY_KEYS:
+        raw = value.get(day) or {}
+        if not isinstance(raw, dict):
+            raise ValueError("each day must be an object")
+        for window in WINDOW_KEYS:
+            pair = raw.get(window)
+            if pair in (None, "", []):
+                result[day][window] = None
+                continue
+            if not isinstance(pair, list) or len(pair) != 2:
+                raise ValueError("a window is two times")
+            start, end = clock_value(pair[0]), clock_value(pair[1])
+            if start >= end:
+                raise ValueError("window start must be before end")
+            result[day][window] = [start, end]
+    return result
+
+
+def connection_is_live(status, now=None) -> bool:
+    if not status or (status.get("account") or {}).get("status") != "connected":
+        return False
+    try:
+        received = parse_timestamp(status["received_at"])
+    except (KeyError, TypeError, ValueError):
+        return False
+    now = now or datetime.now(timezone.utc)
+    return now - received < timedelta(minutes=6)
+
+
+def pairing_payload(status, qr_path: str) -> dict:
+    # Reading the existing code does not ask the bridge for a new one.
+    if connection_is_live(status):
+        return {"state": "connected", "svg": None}
+    path = Path(qr_path) if qr_path else None
+    if path is None:
+        return {"state": "unavailable", "svg": None}
+    try:
+        if not path.is_file():
+            return {"state": "unavailable", "svg": None}
+        age = time.time() - path.stat().st_mtime
+        code = path.read_text(encoding="utf-8").strip()
+    except OSError:
+        return {"state": "unavailable", "svg": None}
+    if not code or age > 3600 or len(code) > 512 or any(character in code for character in "\r\n"):
+        return {"state": "unavailable", "svg": None}
+    svg = segno.make(code, error="m").svg_inline().replace("\n", "")
+    encoded = base64.b64encode(svg.encode("utf-8")).decode("ascii")
+    return {"state": "waiting", "svg": f"data:image/svg+xml;base64,{encoded}"}
+
+
 def validate_tracking_words(value: object) -> list[str]:
     if not isinstance(value, list) or len(value) > 30:
         raise ValueError("words must be a list of at most 30 items")
@@ -737,10 +1136,41 @@ def cookie_value(raw_cookie: str, name: str) -> str:
 def make_handler(
     store, secret: str, tenant_id: str, child_id: str,
     max_body_bytes: int = MAX_BODY_BYTES, dashboard_token: str = "", parent_auth=None, trusted_proxy_ips=(),
+    qr_path: str = "",
 ):
+    def tenant_for(username: str) -> str:
+        record = parent_auth.parents.get(username) if parent_auth and username else None
+        if isinstance(record, dict) and record.get("tenant_id"):
+            return record["tenant_id"]
+        return tenant_id
+
+    def scope_for(token: str):
+        if parent_auth and token:
+            username = parent_auth.username_for_token(token)
+            record = parent_auth.parents.get(username) if username else None
+            if isinstance(record, dict):
+                return record.get("tenant_id") or tenant_id, record.get("child_id") or child_id
+        return tenant_id, child_id
+
     def persist_audit(action: str, username: str, path: str, client_ip: str):
-        if hasattr(store, "append_parent_audit"):
-            store.append_parent_audit(tenant_id, username, action, path, client_ip)
+        if not hasattr(store, "append_parent_audit"):
+            return
+        audit_tenant = tenant_for(username)
+        if action == "view_dashboard" and hasattr(store, "list_parent_audit"):
+            # ponytail: one dashboard line per 10 minutes. The 5s refresh would otherwise fill the log.
+            cutoff = datetime.now(timezone.utc) - timedelta(minutes=10)
+            for row in store.list_parent_audit(audit_tenant, limit=30):
+                if row.get("username") != username or row.get("action") != action:
+                    continue
+                created = row.get("created_at")
+                if isinstance(created, str):
+                    created = datetime.fromisoformat(created)
+                if getattr(created, "tzinfo", None) is None:
+                    created = created.replace(tzinfo=timezone.utc)
+                if created >= cutoff:
+                    return
+                break
+        store.append_parent_audit(audit_tenant, username, action, path, client_ip)
 
     if parent_auth:
         parent_auth.audit_sink = persist_audit
@@ -798,8 +1228,18 @@ def make_handler(
                     return
                 username = parent_auth.username_for_token(token)
                 persist_audit("view_audit", username, "/watchup/audit", self.client_ip())
-                entries = store.list_parent_audit(tenant_id) if hasattr(store, "list_parent_audit") else []
+                scoped_tenant, _scoped_child = scope_for(token)
+                entries = store.list_parent_audit(scoped_tenant) if hasattr(store, "list_parent_audit") else []
                 self.send_json(HTTPStatus.OK, {"entries": entries})
+                return
+            if self.path == "/watchup/pairing" and parent_auth:
+                token = self.parent_session()
+                if not token:
+                    self.send_error(HTTPStatus.UNAUTHORIZED)
+                    return
+                scoped_tenant, scoped_child = scope_for(token)
+                status = store.latest_connection_status(scoped_tenant, scoped_child) if hasattr(store, "latest_connection_status") else None
+                self.send_json(HTTPStatus.OK, pairing_payload(status, qr_path))
                 return
             if self.path != "/watchup/dashboard":
                 self.send_error(HTTPStatus.NOT_FOUND)
@@ -810,21 +1250,24 @@ def make_handler(
             if not bearer_ok and not token:
                 self.send_error(HTTPStatus.UNAUTHORIZED)
                 return
+            scoped_tenant, scoped_child = scope_for(token)
             if token and parent_auth:
                 persist_audit("view_dashboard", parent_auth.username_for_token(token), "/watchup/dashboard", self.client_ip())
             connection_status = (
-                store.latest_connection_status(tenant_id, child_id)
+                store.latest_connection_status(scoped_tenant, scoped_child)
                 if hasattr(store, "latest_connection_status")
                 else None
             )
             body = json.dumps(
                 {
-                    "child_id": child_id,
+                    "child_id": scoped_child,
                     "generated_at": datetime.now(timezone.utc).isoformat(),
                     "connection": connection_status,
-                    "tracking_words": store.list_tracking_words(tenant_id, child_id) if hasattr(store, "list_tracking_words") else [],
-                    "groups": store.list_latest_groups(tenant_id, child_id) if hasattr(store, "list_latest_groups") else [],
-                    "events": store.list_recent(tenant_id, child_id),
+                    "tracking_words": store.list_tracking_words(scoped_tenant, scoped_child) if hasattr(store, "list_tracking_words") else [],
+                    "schedule": store.get_schedule(scoped_tenant, scoped_child) if hasattr(store, "get_schedule") else empty_schedule(),
+                    "groups": store.list_latest_groups(scoped_tenant, scoped_child) if hasattr(store, "list_latest_groups") else [],
+                    "group_changes": store.list_membership_changes(scoped_tenant, scoped_child) if hasattr(store, "list_membership_changes") else [],
+                    "events": store.list_recent(scoped_tenant, scoped_child),
                 },
                 ensure_ascii=False,
                 separators=(",", ":"),
@@ -881,10 +1324,40 @@ def make_handler(
                 except (UnicodeDecodeError, json.JSONDecodeError, AttributeError, ValueError):
                     self.send_error(HTTPStatus.BAD_REQUEST)
                     return
-                store.set_tracking_words(tenant_id, child_id, words)
+                scoped_tenant, scoped_child = scope_for(cookie_value(self.headers.get("Cookie", ""), SESSION_COOKIE))
+                store.set_tracking_words(scoped_tenant, scoped_child, words)
                 token = cookie_value(self.headers.get("Cookie", ""), SESSION_COOKIE)
                 persist_audit("update_tracking_words", parent_auth.username_for_token(token), self.path, self.client_ip())
                 self.send_json(HTTPStatus.OK, {"words": words})
+                return
+            if self.path == "/watchup/schedule":
+                if not self.csrf_ok():
+                    self.send_error(HTTPStatus.FORBIDDEN)
+                    return
+                try:
+                    length = int(self.headers.get("Content-Length", "0"))
+                    if length < 1 or length > 8192:
+                        raise ValueError("invalid body length")
+                    payload = json.loads(self.rfile.read(length).decode("utf-8"))
+                    schedule = validate_schedule(payload.get("schedule"))
+                except (UnicodeDecodeError, json.JSONDecodeError, AttributeError, ValueError):
+                    self.send_error(HTTPStatus.BAD_REQUEST)
+                    return
+                token = cookie_value(self.headers.get("Cookie", ""), SESSION_COOKIE)
+                scoped_tenant, scoped_child = scope_for(token)
+                store.set_schedule(scoped_tenant, scoped_child, schedule)
+                persist_audit("update_schedule", parent_auth.username_for_token(token), self.path, self.client_ip())
+                self.send_json(HTTPStatus.OK, {"schedule": schedule})
+                return
+            if self.path == "/watchup/today":
+                if not self.csrf_ok():
+                    self.send_error(HTTPStatus.FORBIDDEN)
+                    return
+                token = cookie_value(self.headers.get("Cookie", ""), SESSION_COOKIE)
+                scoped_tenant, _scoped_child = scope_for(token)
+                deleted = store.purge_before(jerusalem_day_start(), scoped_tenant)
+                persist_audit("reset_today", parent_auth.username_for_token(token), self.path, self.client_ip())
+                self.send_json(HTTPStatus.OK, {"deleted_events": deleted})
                 return
             if self.path == "/watchup/family":
                 if not self.csrf_ok():
@@ -892,9 +1365,14 @@ def make_handler(
                     return
                 token = cookie_value(self.headers.get("Cookie", ""), SESSION_COOKIE)
                 username = parent_auth.username_for_token(token) if token else ""
+                scoped_tenant, _scoped_child = scope_for(token)
                 persist_audit("delete_family", username, "/watchup/family", self.client_ip())
-                deleted = store.delete_family(tenant_id)
-                parent_auth.revoke_all()
+                deleted = store.delete_family(scoped_tenant)
+                names = [
+                    name for name, record in parent_auth.parents.items()
+                    if isinstance(record, dict) and (record.get("tenant_id") or tenant_id) == scoped_tenant
+                ]
+                parent_auth.revoke_usernames(names)
                 self.send_json(HTTPStatus.OK, {"deleted_events": deleted})
                 return
             if self.path != "/watchup/events":
@@ -997,7 +1475,7 @@ def main():
                 parent_auth.session_store = PostgresAuthStore(store)
             else:
                 parent_auth.session_store = SQLiteAuthStore(os.environ.get("WATCHUP_AUTH_DB", "watchup-auth.db"))
-        retention_days = int(os.environ.get("WATCHUP_RETENTION_DAYS", "14"))
+        retention_days = int(os.environ.get("WATCHUP_RETENTION_DAYS", "3"))
         if retention_days < 1 or retention_days > 365:
             raise ValueError("WATCHUP_RETENTION_DAYS must be between 1 and 365")
         if os.environ.get("WATCHUP_RUN_RETENTION_ONCE") == "1":
@@ -1014,6 +1492,7 @@ def main():
         (host, port), make_handler(
             store, secret, tenant_id, child_id,
             dashboard_token=dashboard_token, parent_auth=parent_auth, trusted_proxy_ips=trusted_proxy_ips,
+            qr_path=os.environ.get("WATCHUP_QR_FILE", "").strip(),
         )
     ).serve_forever()
 

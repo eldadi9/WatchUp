@@ -1,0 +1,39 @@
+# Not started. A second family needs its own bridge process, session volume,
+# webhook secret, tenant, and child. Do not deploy this file or issue a QR
+# until the owner explicitly asks. Eldad's current bridge stays untouched.
+services:
+  whatsapp-bridge-family-b:
+    build: { context: . }
+    image: watchup/whatsapp-bridge:local
+    container_name: watchup-whatsapp-bridge-family-b
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m,mode=1777
+    user: "10001:10001"
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      WHATSAPP_BRIDGE_HOST: 0.0.0.0
+      WHATSAPP_BRIDGE_PORT: "8080"
+      WATCHUP_PRIVACY_MODE: "true"
+      WEBHOOK_URL: ""
+      WATCHUP_WEBHOOK_URL: http://watchup-api-family-b:8769/watchup/events
+      WATCHUP_TENANT_ID: ${WATCHUP_TENANT_ID_FAMILY_B:?set a different tenant from the current family}
+      WATCHUP_CHILD_ID: ${WATCHUP_CHILD_ID_FAMILY_B:?set this family's child}
+      WATCHUP_WEBHOOK_SECRET_FILE: /run/secrets/watchup_webhook_secret_family_b
+    volumes:
+      - type: bind
+        source: ${WATCHUP_BRIDGE_SESSION_DIR_FAMILY_B:?set a separate host directory}
+        target: /app/store
+      - type: bind
+        source: ${WATCHUP_WEBHOOK_SECRET_FILE_FAMILY_B:?set a separate secret file}
+        target: /run/secrets/watchup_webhook_secret_family_b
+        read_only: true
+    networks: [watchup-internal, watchup-bridge-egress]
+
+networks:
+  watchup-internal:
+    external: true
+  watchup-bridge-egress:
+    external: true

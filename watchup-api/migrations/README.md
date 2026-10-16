@@ -8,7 +8,9 @@ Run `003_parent_audit.sql` exactly once after `002`. It creates `watchup.parent_
 
 Run `004_tracking_words.sql` exactly once after `003`. It stores the family's bounded tracking-word list with the same tenant RLS model; words are removed by the authenticated family-deletion path.
 
-The retention job is the same API image with `WATCHUP_RUN_RETENTION_ONCE=1` and `WATCHUP_RETENTION_DAYS=14`; schedule it daily using the existing protected environment and network. It deletes expired `watchup.events` rows only. The authenticated `DELETE /watchup/family` path revokes all parent sessions and deletes all events for the configured tenant. Media, caches, and encrypted backups are not currently produced by this API and must not be introduced without adding their deletion implementation to that path.
+Run `005_child_settings.sql` exactly once after `004`. It stores the Sunday–Saturday study and evening windows for one child, with the same tenant RLS model.
+
+The retention job is the same API image with `WATCHUP_RUN_RETENTION_ONCE=1` and `WATCHUP_RETENTION_DAYS=3`; schedule it daily using the existing protected environment and network. It deletes expired `watchup.events` rows only. Encrypted backups stay on `WATCHUP_BACKUP_RETENTION_DAYS` (14). `POST /watchup/today` deletes events before the start of the current day in Asia/Jerusalem and keeps the WhatsApp session, tracking words, and parent login. `POST /watchup/family` revokes parent sessions for that tenant only and deletes that tenant's events, words, and schedule. Media, caches, and the bridge session directory are not deleted by either path.
 
 The migration fails before schema changes unless the database encoding is UTF8, and it writes the durable database setting `timezone = 'Asia/Jerusalem'`. Run `verify_watchup.sql` in a fresh connection afterwards; its encoding and both timezone booleans must be `true`.
 

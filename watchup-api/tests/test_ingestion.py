@@ -131,7 +131,8 @@ class IngestionTests(unittest.TestCase):
         payload = json.loads(raw)
         self.assertEqual(status, 200)
         self.assertEqual(payload["connection"]["account"]["status"], "connected")
-        self.assertEqual(len(payload["events"]), 50)
+        self.assertEqual(len(payload["events"]), 55)
+        self.assertNotIn("conn-connected", [event["event_id"] for event in payload["events"]])
 
     def test_dashboard_keeps_groups_outside_the_recent_event_window(self):
         group = self.event(event_id="group-old")
@@ -147,6 +148,59 @@ class IngestionTests(unittest.TestCase):
         self.assertNotIn("group-old", [event["event_id"] for event in payload["events"]])
         self.assertEqual([group["event_id"] for group in payload["groups"]], ["group-old"])
 
+    def test_dashboard_hides_previous_phone_after_relink(self):
+        old = self.event(event_id="old-phone")
+        self.store.insert(old, datetime(2026, 10, 6, 18, 0, tzinfo=timezone.utc))
+        old_group = self.event(event_id="old-group")
+        old_group["type"] = "group.snapshot"
+        old_group["account"] = {"chat_jid": "old@g.us"}
+        old_group["payload"] = {"name": "ישנה", "participants": []}
+        self.store.insert(old_group, datetime(2026, 10, 6, 18, 1, tzinfo=timezone.utc))
+        relink = self.event(event_id="relink")
+        relink["type"] = "connection.status"
+        relink["account"] = {"status": "relink_required"}
+        relink["payload"] = {}
+        self.store.insert(relink, datetime(2026, 10, 6, 18, 37, tzinfo=timezone.utc))
+        connected = self.event(event_id="paired")
+        connected["type"] = "connection.status"
+        connected["account"] = {"status": "connected"}
+        connected["payload"] = {}
+        self.store.insert(connected, datetime(2026, 10, 6, 21, 27, tzinfo=timezone.utc))
+        new_group = self.event(event_id="new-group")
+        new_group["type"] = "group.snapshot"
+        new_group["account"] = {"chat_jid": "new@g.us"}
+        new_group["payload"] = {"name": "חדשה", "participants": []}
+        self.store.insert(new_group, datetime(2026, 10, 6, 21, 28, tzinfo=timezone.utc))
+        payload = json.loads(self.get_dashboard(self.dashboard_token)[2])
+        ids = [event["event_id"] for event in payload["events"]]
+        self.assertNotIn("old-phone", ids)
+        self.assertNotIn("old-group", [group["event_id"] for group in payload["groups"]])
+        self.assertEqual([group["event_id"] for group in payload["groups"]], ["new-group"])
+
+    def test_resync_of_same_group_moves_it_into_the_current_pairing(self):
+        group = self.event(event_id="same-group")
+        group["type"] = "group.snapshot"
+        group["account"] = {"chat_jid": "family@g.us"}
+        group["payload"] = {"name": "משפחה", "participants": []}
+        self.store.insert(group, datetime(2026, 10, 6, 18, 1, tzinfo=timezone.utc))
+        relink = self.event(event_id="relink-again")
+        relink["type"] = "connection.status"
+        relink["account"] = {"status": "relink_required"}
+        relink["payload"] = {}
+        self.store.insert(relink, datetime(2026, 10, 6, 18, 37, tzinfo=timezone.utc))
+        connected = self.event(event_id="paired-again")
+        connected["type"] = "connection.status"
+        connected["account"] = {"status": "connected"}
+        connected["payload"] = {}
+        self.store.insert(connected, datetime(2026, 10, 6, 21, 27, tzinfo=timezone.utc))
+        self.assertTrue(self.store.insert(group, datetime(2026, 10, 6, 21, 45, tzinfo=timezone.utc)))
+        message = self.event(event_id="old-message")
+        self.store.insert(message, datetime(2026, 10, 6, 18, 2, tzinfo=timezone.utc))
+        self.assertFalse(self.store.insert(message, datetime(2026, 10, 6, 21, 46, tzinfo=timezone.utc)))
+        payload = json.loads(self.get_dashboard(self.dashboard_token)[2])
+        self.assertEqual([item["event_id"] for item in payload["groups"]], ["same-group"])
+        self.assertNotIn("old-message", [item["event_id"] for item in payload["events"]])
+
     def test_dashboard_requires_token_and_returns_only_current_child_events(self):
         self.assertEqual(self.post(self.event(event_id="visible")), 202)
         self.assertEqual(self.get_dashboard()[0], 401)
@@ -157,6 +211,39 @@ class IngestionTests(unittest.TestCase):
         self.assertEqual(cache_control, "no-store")
         self.assertEqual(payload["child_id"], "child-a")
         self.assertEqual([event["event_id"] for event in payload["events"]], ["visible"])
+
+    def test_refreshed_group_snapshots_do_not_hide_a_live_message(self):
+        self.store.insert(self.event(event_id="live-message"), datetime(2026, 10, 7, 12, 0, tzinfo=timezone.utc))
+        for index in range(40):
+            group = self.event(event_id=f"snap-{index}")
+            group["type"] = "group.snapshot"
+            group["account"] = {"chat_jid": f"g{index}@g.us"}
+            group["payload"] = {"name": "קבוצה", "participants": []}
+            self.store.insert(group, datetime(2026, 10, 7, 12, 5, tzinfo=timezone.utc))
+        ids = [event["event_id"] for event in self.store.list_recent("tenant-a", "child-a")]
+        self.assertIn("live-message", ids)
+        self.assertFalse(any(event_id.startswith("snap-") for event_id in ids))
+
+    def test_membership_changes_compare_the_two_latest_snapshots(self):
+        first = self.event(event_id="class-before")
+        first["type"] = "group.snapshot"
+        first["account"] = {"chat_jid": "class@g.us"}
+        first["payload"] = {"name": "כיתה", "participants": [
+            {"name": "אדם", "phone": "972501111111"},
+            {"name": "בר", "phone": "972502222222"},
+        ]}
+        second = self.event(event_id="class-after")
+        second["type"] = "group.snapshot"
+        second["account"] = {"chat_jid": "class@g.us"}
+        second["payload"] = {"name": "כיתה", "participants": [
+            {"name": "אדם", "phone": "972501111111"},
+            {"name": "גל", "phone": "972503333333"},
+        ]}
+        self.store.insert(first, datetime(2026, 10, 7, 9, 0, tzinfo=timezone.utc))
+        self.store.insert(second, datetime(2026, 10, 7, 10, 0, tzinfo=timezone.utc))
+        self.assertEqual(self.store.list_membership_changes("tenant-a", "child-a"), [
+            {"chat_jid": "class@g.us", "name": "כיתה", "added": ["גל"], "left": ["בר"]},
+        ])
 
 
 class ParentAuthenticationTests(unittest.TestCase):
@@ -330,12 +417,13 @@ class ParentAuthenticationTests(unittest.TestCase):
         session_cookie = cookie.split(";", 1)[0]
         csrf = json.loads(body)["csrf_token"]
         self.assertEqual(self.request("GET", "/watchup/dashboard", cookie=session_cookie)[0], 200)
+        self.assertEqual(self.request("GET", "/watchup/dashboard", cookie=session_cookie)[0], 200)
         status, _, audit_body = self.request("GET", "/watchup/audit", cookie=session_cookie)
         self.assertEqual(status, 200)
         entries = json.loads(audit_body)["entries"]
         actions = {entry["action"] for entry in entries}
         self.assertIn("login_succeeded", actions)
-        self.assertIn("view_dashboard", actions)
+        self.assertEqual(sum(1 for entry in entries if entry["action"] == "view_dashboard"), 1)
         self.assertIn("view_audit", actions)
         self.assertEqual(self.request("DELETE", "/watchup/session", cookie=session_cookie, csrf=csrf)[0], 200)
         stored = self.store.list_parent_audit("tenant-a")
@@ -369,6 +457,59 @@ class ParentAuthenticationTests(unittest.TestCase):
         self.assertEqual(self.store.purge_before(datetime(2026, 2, 1, tzinfo=timezone.utc), "tenant-a"), 1)
         store.close()
         restarted.session_store.close()
+
+    def test_schedule_today_reset_pairing_and_tenant_partition(self):
+        self.server.shutdown()
+        self.server.server_close()
+        qr = Path(self.tmp.name) / "qr.txt"
+        qr.write_text("2@synthetic-code", encoding="utf-8")
+        eldad = dict(self.auth.parents["eldad"])
+        other = dict(self.auth.parents["eldad"])
+        other["tenant_id"] = "tenant-b"
+        other["child_id"] = "child-b"
+        self.auth = app.ParentAuth({"eldad": eldad, "other": other}, "s" * 32, ttl_seconds=60)
+        self.server = ThreadingHTTPServer(("127.0.0.1", 0), app.make_handler(
+            self.store, "synthetic-test-secret", "tenant-a", "child-a",
+            parent_auth=self.auth, qr_path=str(qr),
+        ))
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        now = datetime.now(timezone.utc)
+        self.store.insert({"event_id": "mine", "type": "message.received", "source": "synthetic", "source_timestamp": now.isoformat(), "tenant_id": "tenant-a", "child_id": "child-a", "account": {}, "payload": {"content": "שלי"}}, now)
+        self.store.insert({"event_id": "theirs", "type": "message.received", "source": "synthetic", "source_timestamp": now.isoformat(), "tenant_id": "tenant-b", "child_id": "child-b", "account": {}, "payload": {"content": "שלהם"}}, now)
+        self.store.insert({"event_id": "old", "type": "message.received", "source": "synthetic", "source_timestamp": "2026-01-01T00:00:00+00:00", "tenant_id": "tenant-a", "child_id": "child-a", "account": {}, "payload": {}}, datetime(2026, 1, 1, tzinfo=timezone.utc))
+        first = self.request("POST", "/watchup/session", self.credentials("eldad"))
+        second = self.request("POST", "/watchup/session", self.credentials("other"))
+        first_cookie = first[1].split(";", 1)[0]
+        second_cookie = second[1].split(";", 1)[0]
+        csrf = json.loads(first[2])["csrf_token"]
+        mine = json.loads(self.request("GET", "/watchup/dashboard", cookie=first_cookie)[2])
+        theirs = json.loads(self.request("GET", "/watchup/dashboard", cookie=second_cookie)[2])
+        self.assertIn("mine", [item["event_id"] for item in mine["events"]])
+        self.assertNotIn("theirs", [item["event_id"] for item in mine["events"]])
+        self.assertEqual(theirs["child_id"], "child-b")
+        self.assertEqual([item["event_id"] for item in theirs["events"]], ["theirs"])
+        saved = self.request("POST", "/watchup/schedule", {"schedule": {"sun": {"study": ["08:00", "14:00"], "evening": None}}}, cookie=first_cookie, csrf=csrf)
+        self.assertEqual(saved[0], 200)
+        self.assertEqual(json.loads(saved[2])["schedule"]["sun"]["study"], ["08:00", "14:00"])
+        self.assertEqual(self.request("POST", "/watchup/schedule", {"schedule": {"sun": {"study": ["14:00", "08:00"]}}}, cookie=first_cookie, csrf=csrf)[0], 400)
+        self.store.set_tracking_words("tenant-a", "child-a", ["סתום"])
+        before = qr.read_bytes()
+        waiting = json.loads(self.request("GET", "/watchup/pairing", cookie=first_cookie)[2])
+        self.assertEqual(waiting["state"], "waiting")
+        self.assertIn("data:image/svg+xml;base64,", waiting["svg"])
+        self.assertEqual(qr.read_bytes(), before)
+        self.store.insert({"event_id": "live", "type": "connection.status", "source": "synthetic", "source_timestamp": now.isoformat(), "tenant_id": "tenant-a", "child_id": "child-a", "account": {"status": "connected"}, "payload": {}}, now)
+        connected = json.loads(self.request("GET", "/watchup/pairing", cookie=first_cookie)[2])
+        self.assertEqual(connected["state"], "connected")
+        self.assertIsNone(connected["svg"])
+        self.assertEqual(qr.read_bytes(), before)
+        reset = self.request("POST", "/watchup/today", cookie=first_cookie, csrf=csrf)
+        self.assertEqual(reset[0], 200)
+        remaining = {row[0] for row in self.store.db.execute("SELECT event_id FROM events WHERE tenant_id = 'tenant-a'").fetchall()}
+        self.assertNotIn("old", remaining)
+        self.assertIn("mine", remaining)
+        self.assertEqual(self.store.list_tracking_words("tenant-a", "child-a"), ["סתום"])
+        self.assertEqual([row[0] for row in self.store.db.execute("SELECT event_id FROM events WHERE tenant_id = 'tenant-b'").fetchall()], ["theirs"])
 
 
 if __name__ == "__main__":

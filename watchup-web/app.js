@@ -11,7 +11,13 @@ let alertsPrimed = false;
 let alertsEnabled = false;
 let dashboardRequest = 0;
 let alertsCategoryFilter = 'all';
+let groupSort = 'activity';
+let parentUsername = '';
+let scheduleStamp = '';
+let lastGroups = new Map();
+let lastOffHours = [];
 const heardAlertIds = new Set();
+try { parentUsername = localStorage.getItem('watchup-parent') || ''; } catch {}
 try { alertsEnabled = localStorage.getItem('watchup-alerts') === 'on'; } catch {}
 const API_TIMEOUT_MS = 20000;
 
@@ -129,11 +135,43 @@ function messageText(event) {
   return [payload.content, payload.Content, payload.quotedContent].map((item) => safeText(item)).filter(Boolean).join('\n');
 }
 
+function wordForms(word) {
+  const base = matchText(word).replace(/[^\u0590-\u05FF]/g, '');
+  const forms = new Set();
+  if (!base) return forms;
+  const finals = { 'ם': 'מ', 'ן': 'נ', 'ץ': 'צ', 'ף': 'פ', 'ך': 'כ' };
+  const withSuffix = (core, suffix) => {
+    const letters = [...core];
+    if (finals[letters[letters.length - 1]]) letters[letters.length - 1] = finals[letters[letters.length - 1]];
+    return letters.join('') + suffix;
+  };
+  const cores = new Set([base]);
+  ['ה', 'ים', 'ות'].forEach((suffix) => {
+    if (!base.endsWith(suffix)) cores.add(withSuffix(base, suffix));
+  });
+  const chars = [...base];
+  const vavAt = chars.findIndex((character, index) => character === 'ו' && index > 0 && index < chars.length - 1);
+  if (vavAt > 0) {
+    const dropped = chars.filter((_, index) => index !== vavAt).join('');
+    cores.add(`נ${dropped}`);
+    cores.add(withSuffix(`נ${dropped}`, 'ה'));
+  }
+  cores.forEach((core) => {
+    forms.add(core);
+    ['ו', 'ה', 'ב', 'ל', 'מ', 'ש'].forEach((prefix) => forms.add(prefix + core));
+    ['ה', 'ב', 'ל', 'מ', 'ש'].forEach((prefix) => forms.add(`ו${prefix}${core}`));
+  });
+  return forms;
+}
+
 function matchedWord(event, words) {
   const content = matchText(messageText(event));
+  const tokens = new Set(content.split(/[^\u0590-\u05FFa-z0-9]+/).filter(Boolean));
   return words.find((word) => {
     const needle = matchText(word);
-    return needle && content.includes(needle);
+    if (!needle) return false;
+    if (/\s/.test(needle)) return content.includes(needle);
+    return [...wordForms(needle)].some((form) => tokens.has(form));
   }) || '';
 }
 
@@ -181,21 +219,96 @@ function messageBody(event) {
   return contentTypeLabel(event);
 }
 
+function seenKey() {
+  return parentUsername || 'parent';
+}
+
+function seenMap() {
+  try { return JSON.parse(localStorage.getItem('watchup-seen-alerts') || '{}'); } catch { return {}; }
+}
+
+function isAlertSeen(eventId) {
+  if (!eventId) return false;
+  return Boolean(seenMap()[seenKey()]?.[eventId]);
+}
+
+function markAlertSeen(eventId) {
+  if (!eventId) return;
+  const map = seenMap();
+  map[seenKey()] = map[seenKey()] || {};
+  map[seenKey()][eventId] = 1;
+  try { localStorage.setItem('watchup-seen-alerts', JSON.stringify(map)); } catch {}
+}
+
+function linkState(connectionEvent) {
+  const health = connectionHealth(connectionEvent);
+  const detail = 'זה מצב הקישור לטלפון, לא איש קשר חדש ולא קבוצה חדשה.';
+  if (health.verified) return { label: 'מחובר', detail };
+  const status = safeText(connectionEvent?.account?.status);
+  if (!connectionEvent || status === 'relink_required') return { label: 'ממתין לסריקה', detail };
+  return { label: 'מנותק', detail: `הניטור נעצר. ${detail}` };
+}
+
+function schedule() {
+  return lastDashboardData?.schedule && typeof lastDashboardData.schedule === 'object' ? lastDashboardData.schedule : {};
+}
+
+function minutesInJerusalem(date) {
+  const parts = jerusalemParts(date, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+  const value = (type) => Number(parts.find((part) => part.type === type).value);
+  return value('hour') * 60 + value('minute');
+}
+
+function outsideHours(event, hours) {
+  const date = eventMoment(event);
+  if (!date) return false;
+  const day = hours?.[jerusalemWeekday(date)] || {};
+  const windows = [day.study, day.evening].filter((pair) => Array.isArray(pair) && pair[0] && pair[1]);
+  if (!windows.length) return false;
+  const minute = minutesInJerusalem(date);
+  return windows.every(([start, end]) => {
+    const [startHour, startMinute] = start.split(':').map(Number);
+    const [endHour, endMinute] = end.split(':').map(Number);
+    return minute < startHour * 60 + startMinute || minute >= endHour * 60 + endMinute;
+  });
+}
+
+function isActivity(event) {
+  if (event.type === 'group.snapshot' || event.type === 'connection.status' || event.account?.is_from_me) return false;
+  return event.type === 'message.received' || event.type === 'reaction.received';
+}
+
+function offHoursEvents(events, hours) {
+  return events.filter((event) => isActivity(event) && outsideHours(event, hours));
+}
+
+function joinedToday(groups) {
+  return [...groups.values()].filter((group) => isJerusalemToday({ timestamp: group.first_seen || group.received_at }));
+}
+
 function eventPresentation(event, groups, words) {
   if (event.type === 'connection.status') {
     const health = connectionHealth(event);
-    return { category: 'connection', title: `מצב החיבור: ${health.label}`, details: 'חשבון WhatsApp המחובר', body: '', art: 'connection', severity: 'קריטי', tone: 'critical' };
+    return { category: 'connection', categories: ['connection'], title: `מצב החיבור: ${health.label}`, details: 'חשבון WhatsApp המחובר', body: '', art: 'connection', severity: 'קריטי', tone: 'critical' };
   }
   const source = chatSource(event, groups);
   const word = matchedWord(event, words);
   const body = messageBody(event);
   if (word) {
     const phone = senderPhone(event);
+    const categories = isRecognizedSender(event) ? ['keyword'] : ['stranger', 'keyword'];
+    const keywordTitle = `מילת מעקב: ${word}`;
+    const title = categories.includes('stranger')
+      ? `התקבלה הודעה ממספר טלפון לא מזוהה: ${phone || 'המספר לא זמין'} · ${keywordTitle}`
+      : keywordTitle;
     const details = isRecognizedSender(event) ? source : `${source} · מספר לא מזוהה: ${phone || 'המספר לא זמין'}`;
-    return { category: 'keyword', title: `מילת מעקב: ${word}`, details, body, art: 'messages', severity: 'קריטי', tone: 'critical' };
+    return { category: 'keyword', categories, title, details, body, art: 'messages', severity: 'קריטי', tone: 'critical' };
+  }
+  if (isRecognizedSender(event)) {
+    return { category: 'hours', categories: [], title: 'פעילות מחוץ לשעות', details: source, body: '', art: 'messages', severity: 'מידע', tone: 'info' };
   }
   const phone = senderPhone(event) || 'המספר לא זמין';
-  return { category: 'stranger', title: `התקבלה הודעה ממספר טלפון לא מזוהה: ${phone}`, details: source, body, art: 'unresolved', severity: 'דחוף', critical: true };
+  return { category: 'stranger', categories: ['stranger'], title: `התקבלה הודעה ממספר טלפון לא מזוהה: ${phone}`, details: source, body, art: 'unresolved', severity: 'דחוף', critical: true };
 }
 
 function createArtwork(name, className) {
@@ -212,8 +325,17 @@ function createArtwork(name, className) {
 function createEventCard(event, groups, words, index = 0) {
   const view = eventPresentation(event, groups, words);
   const article = document.createElement('article');
+  const categories = view.categories || [view.category];
   article.className = `feed-item${index === 0 ? ' selected' : ''}`;
   article.dataset.category = view.category;
+  article.dataset.categories = categories.join(' ');
+  article.dataset.today = isJerusalemToday(event) ? '1' : '0';
+  if (categories.includes('stranger') && !isAlertSeen(event.event_id)) article.classList.add('unseen');
+  article.addEventListener('click', () => {
+    if (!categories.includes('stranger')) return;
+    markAlertSeen(event.event_id);
+    article.classList.remove('unseen');
+  });
   const icon = createArtwork(view.art, 'feed-artwork');
   const content = document.createElement('div');
   const meta = document.createElement('div');
@@ -250,22 +372,93 @@ function renderEvents(events, groups, words) {
     empty.textContent = 'אין חריגים חדשים. שיחות מזוהות לא מוצגות כאן.';
     feed.append(empty);
   }
-  const count = (category) => events.filter((event) => eventPresentation(event, groups, words).category === category).length;
+  const categoriesOf = (event) => eventPresentation(event, groups, words).categories || [];
+  const count = (category) => events.filter((event) => categoriesOf(event).includes(category)).length;
   document.querySelector('#alerts-count').textContent = String(events.length);
   document.querySelector('[data-filter-count="all"]').textContent = String(events.length);
+  document.querySelector('[data-filter-count="today"]').textContent = String(events.filter((event) => isJerusalemToday(event)).length);
   document.querySelector('[data-filter-count="stranger"]').textContent = String(count('stranger'));
   document.querySelector('[data-filter-count="keyword"]').textContent = String(count('keyword'));
-  document.querySelector('[data-filter-count="connection"]').textContent = String(count('connection'));
+  document.querySelector('[data-filter-count="joined"]').textContent = String(joinedToday(groups).length);
+  document.querySelector('[data-filter-count="hours"]').textContent = String(lastOffHours.length);
   applyAlertsCategoryFilter();
+}
+
+function renderAlertsExtra() {
+  const extra = document.querySelector('#alerts-extra');
+  if (!extra) return;
+  extra.replaceChildren();
+  const special = alertsCategoryFilter === 'joined' || alertsCategoryFilter === 'hours';
+  extra.hidden = !special;
+  const feed = document.querySelector('#alerts-feed');
+  if (feed) feed.hidden = special;
+  if (alertsCategoryFilter === 'joined') {
+    const groups = joinedToday(lastGroups);
+    if (!groups.length) {
+      const empty = document.createElement('p');
+      empty.className = 'empty-live-state';
+      empty.textContent = 'היום לא נוספו קבוצות.';
+      extra.append(empty);
+      return;
+    }
+    groups.forEach((group) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'directory-live-row';
+      const name = document.createElement('b');
+      name.textContent = safeText(group.payload?.name, 'קבוצה ללא שם');
+      button.append(name);
+      button.addEventListener('click', () => {
+        selectedGroupJid = safeText(group.account?.chat_jid);
+        showView('people');
+        renderGroups(lastGroups, activeEvents);
+      });
+      extra.append(button);
+    });
+    return;
+  }
+  if (alertsCategoryFilter !== 'hours') return;
+  if (!lastOffHours.length) {
+    const empty = document.createElement('p');
+    empty.className = 'empty-live-state';
+    empty.textContent = 'אין פעילות מחוץ לשעות שהוגדרו.';
+    extra.append(empty);
+    return;
+  }
+  lastOffHours.forEach((event) => {
+    const view = eventPresentation(event, lastGroups, trackingWords());
+    const showBody = view.categories?.includes('stranger') || view.categories?.includes('keyword');
+    const article = document.createElement('article');
+    article.className = 'feed-item';
+    const title = document.createElement('h2');
+    title.textContent = 'פעילות מחוץ לשעות';
+    const details = document.createElement('p');
+    details.textContent = `${eventTime(event)} · ${chatSource(event, lastGroups)}`;
+    article.append(title, details);
+    if (showBody && view.body) {
+      const body = document.createElement('p');
+      body.className = 'feed-message';
+      body.dir = 'auto';
+      body.textContent = view.body;
+      article.append(body);
+    }
+    extra.append(article);
+  });
 }
 
 function applyAlertsCategoryFilter() {
   document.querySelectorAll('[data-filter]').forEach((item) => {
     item.classList.toggle('active', item.dataset.filter === alertsCategoryFilter);
   });
-  document.querySelectorAll('#alerts-feed [data-category]').forEach((item) => {
-    item.classList.toggle('filtered', alertsCategoryFilter !== 'all' && item.dataset.category !== alertsCategoryFilter);
+  const special = alertsCategoryFilter === 'joined' || alertsCategoryFilter === 'hours';
+  document.querySelectorAll('#alerts-feed [data-categories]').forEach((item) => {
+    const categories = item.dataset.categories.split(' ');
+    let show = !special;
+    if (alertsCategoryFilter === 'today') show = item.dataset.today === '1';
+    else if (alertsCategoryFilter !== 'all' && !special) show = categories.includes(alertsCategoryFilter);
+    item.classList.toggle('filtered', !show);
   });
+  renderAlertsExtra();
 }
 
 function playCriticalTone() {
@@ -326,9 +519,24 @@ function eventMoment(event) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-function isSameLocalDay(event, now = new Date()) {
+function jerusalemParts(date, options) {
+  return new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jerusalem', ...options }).formatToParts(date);
+}
+
+function jerusalemDayKey(date) {
+  const parts = jerusalemParts(date, { year: 'numeric', month: '2-digit', day: '2-digit' });
+  const value = (type) => parts.find((part) => part.type === type).value;
+  return `${value('year')}-${value('month')}-${value('day')}`;
+}
+
+function isJerusalemToday(event, now = new Date()) {
   const date = eventMoment(event);
-  return Boolean(date) && date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+  return Boolean(date) && jerusalemDayKey(date) === jerusalemDayKey(now);
+}
+
+function jerusalemWeekday(date) {
+  const name = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jerusalem', weekday: 'short' }).format(date);
+  return ({ Sun: 'sun', Mon: 'mon', Tue: 'tue', Wed: 'wed', Thu: 'thu', Fri: 'fri', Sat: 'sat' })[name] || 'sun';
 }
 
 function isGroupMessage(event) {
@@ -342,12 +550,12 @@ function groupMessageCount(jid, events) {
 }
 
 function messagesToday(events, jid) {
-  return events.filter((event) => isGroupMessage(event) && isSameLocalDay(event) && safeText(event.account?.chat_jid) === jid).length;
+  return events.filter((event) => isGroupMessage(event) && isJerusalemToday(event) && safeText(event.account?.chat_jid) === jid).length;
 }
 
 function busiestHour(events) {
   const counts = new Map();
-  events.filter((event) => isGroupMessage(event) && isSameLocalDay(event)).forEach((event) => {
+  events.filter((event) => isGroupMessage(event) && isJerusalemToday(event)).forEach((event) => {
     const hour = eventMoment(event).getHours();
     counts.set(hour, (counts.get(hour) || 0) + 1);
   });
@@ -435,8 +643,17 @@ function renderGroups(groups, events) {
   list.replaceChildren();
   let imageCount = 0;
   let openRow = null;
+  const unrecognizedCount = (group) => {
+    const people = Array.isArray(group.payload?.participants) ? group.payload.participants : [];
+    return people.filter((person) => person?.isRecognized !== true).length;
+  };
   const ranked = [...groups.values()].sort((left, right) => {
-    const activity = groupMessageCount(safeText(right.account?.chat_jid), events) - groupMessageCount(safeText(left.account?.chat_jid), events);
+    const leftJid = safeText(left.account?.chat_jid);
+    const rightJid = safeText(right.account?.chat_jid);
+    if (groupSort === 'today') return messagesToday(events, rightJid) - messagesToday(events, leftJid);
+    if (groupSort === 'strangers') return unrecognizedCount(right) - unrecognizedCount(left);
+    if (groupSort === 'newest') return new Date(right.first_seen || 0) - new Date(left.first_seen || 0);
+    const activity = groupMessageCount(rightJid, events) - groupMessageCount(leftJid, events);
     return activity || (Number(right.payload?.participantCount) || 0) - (Number(left.payload?.participantCount) || 0);
   });
   ranked.forEach((event) => {
@@ -487,7 +704,8 @@ function renderGroups(groups, events) {
   renderGroupDetail(openRow ? ranked.find((event) => safeText(event.account?.chat_jid) === selectedGroupJid) : null, events, openRow);
   setCount('group', groups.size);
   setCount('image', imageCount);
-  document.querySelector('#groups-kicker').textContent = `${groups.size} קבוצות · לפי פעילות`;
+  const sortLabel = ({ activity: 'לפי פעילות', today: 'הכי הרבה הודעות היום', strangers: 'הכי הרבה משתתפים לא מזוהים', newest: 'הקבוצה החדשה ביותר', sender: 'לפי שולח היום' })[groupSort] || 'לפי פעילות';
+  document.querySelector('#groups-kicker').textContent = `${groups.size} קבוצות · ${sortLabel}`;
 }
 
 function renderContacts(events, groups) {
@@ -498,7 +716,12 @@ function renderContacts(events, groups) {
     const phone = senderPhone(event) || 'שולח שטרם זוהה';
     if (!strangers.has(phone)) strangers.set(phone, event);
   });
-  strangers.forEach((event, phone) => {
+  const rankedStrangers = [...strangers.entries()].sort((left, right) => {
+    if (groupSort !== 'sender') return 0;
+    const countFor = (phone) => events.filter((event) => isActivity(event) && isJerusalemToday(event) && (senderPhone(event) || 'שולח שטרם זוהה') === phone).length;
+    return countFor(right[0]) - countFor(left[0]);
+  });
+  rankedStrangers.forEach(([phone, event]) => {
     const row = document.createElement('article');
     row.className = 'directory-live-row';
     const avatar = createArtwork('unresolved', 'directory-avatar generated-artwork');
@@ -507,7 +730,10 @@ function renderContacts(events, groups) {
     name.textContent = `התקבלה הודעה ממספר טלפון לא מזוהה: ${phone}`;
     const detail = document.createElement('small');
     detail.dir = 'auto';
-    detail.textContent = `${eventTime(event)} · ${chatSource(event, groups)} · ${messageBody(event)}`;
+    const todayCount = events.filter((item) => isActivity(item) && isJerusalemToday(item) && (senderPhone(item) || 'שולח שטרם זוהה') === phone).length;
+    detail.textContent = groupSort === 'sender'
+      ? `${todayCount === 1 ? 'הודעה אחת היום' : `${todayCount} הודעות היום`} · ${eventTime(event)} · ${chatSource(event, groups)}`
+      : `${eventTime(event)} · ${chatSource(event, groups)} · ${messageBody(event)}`;
     text.append(name, detail);
     row.append(avatar, text);
     list.append(row);
@@ -572,7 +798,7 @@ function renderGroupBoard(events, groups, changes) {
 }
 
 function renderInsights(events, groups, words) {
-  const strangers = events.filter((event) => eventPresentation(event, groups, words).category === 'stranger');
+  const strangers = events.filter((event) => (eventPresentation(event, groups, words).categories || []).includes('stranger'));
   const ranked = [...groups.values()].sort((left, right) => messagesToday(events, safeText(right.account?.chat_jid)) - messagesToday(events, safeText(left.account?.chat_jid)));
   const busiest = ranked.find((group) => messagesToday(events, safeText(group.account?.chat_jid)) > 0);
   const latest = events.find((event) => isException(event, words));
@@ -586,7 +812,7 @@ function renderInsights(events, groups, words) {
 function renderDailyReport(events, groups, words, connectionEvent) {
   const list = document.querySelector('#daily-report');
   const exceptions = events.filter((event) => isException(event, words));
-  const strangers = new Set(exceptions.filter((event) => eventPresentation(event, groups, words).category === 'stranger').map((event) => senderPhone(event) || 'שולח שטרם זוהה'));
+  const strangers = new Set(exceptions.filter((event) => (eventPresentation(event, groups, words).categories || []).includes('stranger')).map((event) => senderPhone(event) || 'שולח שטרם זוהה'));
   const ranked = [...groups.values()].sort((left, right) => messagesToday(events, safeText(right.account?.chat_jid)) - messagesToday(events, safeText(left.account?.chat_jid)));
   const busiest = ranked.find((group) => messagesToday(events, safeText(group.account?.chat_jid)) > 0);
   const stamps = events.map((event) => new Date(event.received_at || event.timestamp || event.source_timestamp)).filter((date) => !Number.isNaN(date.getTime()));
@@ -616,6 +842,9 @@ const AUDIT_LABELS = {
   view_session: 'בדיקת חיבור לחשבון',
   view_audit: 'צפייה ביומן',
   delete_family: 'מחיקת נתוני משפחה',
+  reset_today: 'השארת היום בלבד',
+  update_schedule: 'עדכון שעות',
+  update_tracking_words: 'עדכון מילות מעקב',
 };
 
 async function loadAuditLog() {
@@ -714,23 +943,73 @@ function renderHome(events, groups, words, connectionEvent) {
     empty.textContent = 'אין חריגים להצגה.';
     timeline.append(empty);
   }
-  const { status, verified: connected, label: connectionState } = connectionHealth(connectionEvent);
-  document.querySelector('#home-title').textContent = connected ? 'הטלפון מחובר' : connectionState;
+  const { status, verified: connected } = connectionHealth(connectionEvent);
+  const link = linkState(connectionEvent);
+  document.querySelector('#home-title').textContent = connected ? 'הטלפון מחובר' : link.label;
   document.querySelector('#home-status-detail').textContent = connected ? 'מוצגים רק חריגים: מספר לא מזוהה, מילת מעקב, או ניתוק. הקריאה בלבד.' : 'האור וההתראה מראים את אותו מצב. הנתונים לא אמינים עד שהחיבור חוזר.';
-  document.querySelector('#api-state-title').textContent = connectionState;
-  document.querySelector('#connection-summary').textContent = connectionState;
-  document.querySelector('#settings-connection-state').textContent = connectionState;
+  document.querySelector('#api-state-title').textContent = link.label;
+  document.querySelector('#connection-summary').textContent = link.detail;
+  document.querySelector('#settings-connection-state').textContent = link.label;
   document.querySelector('#settings-connection-detail').textContent = connected ? 'החיבור אומת בדקות האחרונות' : status === 'connected' ? `האישור האחרון היה ב־${eventTime(connectionEvent)}` : 'יש לבדוק את חיבור WhatsApp';
   const childLabel = document.querySelector('#child-connection-label');
-  if (childLabel) childLabel.textContent = connected ? 'חשבון מחובר' : connectionState;
-  setCount('connection', connected ? 1 : 0);
+  if (childLabel) childLabel.textContent = connected ? 'חשבון מחובר' : link.label;
+  setCount('connection', link.label);
+  const connectionCount = document.querySelector('[data-filter-count="connection"]');
+  if (connectionCount) connectionCount.textContent = link.label;
+}
+
+function renderSchedule() {
+  const grid = document.querySelector('#schedule-grid');
+  if (!grid) return;
+  const next = JSON.stringify(schedule());
+  if (next === scheduleStamp && grid.childElementCount) return;
+  scheduleStamp = next;
+  const hours = schedule();
+  const days = [['sun', 'ראשון'], ['mon', 'שני'], ['tue', 'שלישי'], ['wed', 'רביעי'], ['thu', 'חמישי'], ['fri', 'שישי'], ['sat', 'שבת']];
+  grid.replaceChildren();
+  days.forEach(([key, label]) => {
+    const row = document.createElement('label');
+    const name = document.createElement('span');
+    name.textContent = label;
+    row.append(name);
+    ['study', 'evening'].forEach((windowName) => {
+      const pair = Array.isArray(hours[key]?.[windowName]) ? hours[key][windowName] : [];
+      [0, 1].forEach((index) => {
+        const input = document.createElement('input');
+        input.type = 'time';
+        input.dataset.day = key;
+        input.dataset.window = windowName;
+        input.dataset.edge = index ? 'end' : 'start';
+        input.value = pair[index] || '';
+        input.setAttribute('aria-label', `${label} ${windowName === 'study' ? 'לימודים' : 'ערב'} ${index ? 'סיום' : 'התחלה'}`);
+        row.append(input);
+      });
+    });
+    grid.append(row);
+  });
+}
+
+function scheduleFromForm() {
+  const result = {};
+  ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'].forEach((day) => {
+    result[day] = {};
+    ['study', 'evening'].forEach((windowName) => {
+      const start = (document.querySelector(`#schedule-grid input[data-day="${day}"][data-window="${windowName}"][data-edge="start"]`)?.value || '').slice(0, 5);
+      const end = (document.querySelector(`#schedule-grid input[data-day="${day}"][data-window="${windowName}"][data-edge="end"]`)?.value || '').slice(0, 5);
+      if ((start && !end) || (!start && end)) throw new Error('partial window');
+      result[day][windowName] = start && end ? [start, end] : null;
+    });
+  });
+  return result;
 }
 
 function renderDashboard(data) {
   lastDashboardData = data;
   const allEvents = Array.isArray(data.events) ? data.events : [];
   const groups = latestGroups([...(Array.isArray(data.groups) ? data.groups : []), ...allEvents]);
+  lastGroups = groups;
   activeEvents = allEvents.filter((event) => event.type !== 'group.snapshot');
+  lastOffHours = offHoursEvents(activeEvents, schedule());
   const words = trackingWords();
   const connectionFromApi = data.connection && data.connection.type === 'connection.status' ? data.connection : null;
   const connectionEvent = connectionFromApi || activeEvents
@@ -750,7 +1029,7 @@ function renderDashboard(data) {
   document.querySelector('#environment-status').textContent = health.verified ? 'סביבת POC · נתונים חיים מהטלפון המחובר' : `סביבת POC · ${health.label}`;
   renderSyncStatus(connectionEvent);
   document.querySelector('#api-state-detail').textContent = `${groups.size} קבוצות · ${exceptionCount} חריגים · קריאה בלבד`;
-  notifyNewCritical(exceptions);
+  notifyNewCritical([...exceptions, ...lastOffHours]);
   renderEvents(exceptions, groups, words);
   renderGroups(groups, activeEvents);
   renderContacts(activeEvents, groups);
@@ -758,6 +1037,7 @@ function renderDashboard(data) {
   renderInsights(activeEvents, groups, words);
   renderDailyReport(activeEvents, groups, words, connectionEvent);
   renderWords();
+  renderSchedule();
   document.body.classList.remove('auth-pending', 'auth-required');
   authGate.hidden = true;
   appShell.inert = false;
@@ -847,6 +1127,12 @@ document.querySelectorAll('[data-filter]').forEach((button) => button.addEventLi
   alertsCategoryFilter = button.dataset.filter;
   applyAlertsCategoryFilter();
 }));
+document.querySelector('#group-sort')?.addEventListener('change', (event) => {
+  groupSort = event.target.value;
+  if (groupSort === 'sender') document.querySelector('[data-people-tab="contacts"]')?.click();
+  else document.querySelector('[data-people-tab="groups"]')?.click();
+  if (lastDashboardData) renderDashboard(lastDashboardData);
+});
 document.querySelectorAll('[data-people-tab]').forEach((button) => button.addEventListener('click', () => {
   document.querySelectorAll('[data-people-tab]').forEach((tab) => {
     const active = tab === button;
@@ -940,13 +1226,16 @@ apiForm.addEventListener('submit', async (event) => {
   }
   loginSubmit.disabled = true;
   loginSubmit.textContent = 'מתחבר…';
+  const username = document.querySelector('#parent-username').value.trim();
   try {
     const response = await fetchWithTimeout('/api/watchup/session', {
       method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: document.querySelector('#parent-username').value.trim(), password: passwordInput.value }),
+      body: JSON.stringify({ username, password: passwordInput.value }),
     });
     const result = response.ok ? await response.json() : null;
     if (result?.authenticated) {
+      parentUsername = username;
+      try { localStorage.setItem('watchup-parent', username); } catch {}
       csrfToken = result.csrf_token;
       apiForm.reset();
       document.querySelector('#parent-username').value = 'eldad';
@@ -978,6 +1267,66 @@ document.querySelector('#api-disconnect').addEventListener('click', async () => 
     requireAuthentication('יצאתם מהמערכת בבטחה.');
     announce('יצאתם מהמערכת');
   } catch { announce('היציאה לא בוצעה'); }
+});
+
+document.querySelector('#schedule-form')?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const status = document.querySelector('#schedule-status');
+  try {
+    const next = scheduleFromForm();
+    const response = await fetch('/api/watchup/schedule', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'X-WatchUp-CSRF': csrfToken },
+      body: JSON.stringify({ schedule: next }),
+    });
+    if (!response.ok) throw new Error('schedule failed');
+    const result = await response.json();
+    lastDashboardData.schedule = result.schedule;
+    scheduleStamp = '';
+    renderDashboard(lastDashboardData);
+    status.textContent = 'השעות נשמרו.';
+  } catch {
+    status.textContent = 'כל חלון צריך שעת התחלה ושעת סיום, או להישאר ריק.';
+  }
+});
+
+document.querySelector('#open-pairing')?.addEventListener('click', async () => {
+  const dialog = document.querySelector('#pairing-dialog');
+  const status = document.querySelector('#pairing-status');
+  const image = document.querySelector('#pairing-qr');
+  status.textContent = 'בודקים את החיבור…';
+  image.hidden = true;
+  image.removeAttribute('src');
+  dialog.showModal();
+  try {
+    const response = await fetch('/api/watchup/pairing', { credentials: 'same-origin', cache: 'no-store' });
+    if (!response.ok) throw new Error('pairing unavailable');
+    const payload = await response.json();
+    if (payload.state === 'connected') {
+      status.textContent = 'מחובר. לא נוצר קוד חדש.';
+      return;
+    }
+    if (payload.state === 'waiting' && payload.svg) {
+      status.textContent = 'סרקו את הקוד בטלפון הילד. זה הקוד שכבר קיים, בלי ליצור קוד חדש.';
+      image.src = payload.svg;
+      image.hidden = false;
+      return;
+    }
+    status.textContent = 'אין קוד פעיל. יצירת קוד חדש דורשת אישור, כדי לא לנתק את הטלפון המחובר.';
+  } catch {
+    status.textContent = 'לא ניתן להציג את מצב החיבור כרגע.';
+  }
+});
+document.querySelector('#pairing-close')?.addEventListener('click', () => document.querySelector('#pairing-dialog')?.close());
+
+document.querySelector('#reset-today')?.addEventListener('click', async () => {
+  if (!confirm('למחוק אירועים שלפני היום? היום, מילות המעקב וחיבור WhatsApp נשארים.')) return;
+  try {
+    const response = await fetch('/api/watchup/today', { method: 'POST', credentials: 'same-origin', headers: { 'X-WatchUp-CSRF': csrfToken } });
+    if (!response.ok) throw new Error('reset failed');
+    await loadDashboard(false);
+    announce('נשארו אירועי היום');
+  } catch { announce('האיפוס לא בוצע'); }
 });
 
 document.querySelector('#delete-family-data').addEventListener('click', async () => {

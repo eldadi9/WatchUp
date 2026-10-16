@@ -100,6 +100,12 @@ class PostgresIsolationMigrationTests(unittest.TestCase):
         self.assertEqual(sql.count("current_setting('watchup.tenant_id', true)"), 2)
         self.assertIn("REVOKE ALL ON TABLE watchup.tracking_words FROM PUBLIC;", sql)
 
+    def test_child_settings_are_tenant_isolated(self):
+        sql = (Path(__file__).parents[1] / "migrations" / "005_child_settings.sql").read_text(encoding="utf-8")
+        self.assertIn("ALTER TABLE watchup.child_settings FORCE ROW LEVEL SECURITY;", sql)
+        self.assertEqual(sql.count("current_setting('watchup.tenant_id', true)"), 2)
+        self.assertIn("REVOKE ALL ON TABLE watchup.child_settings FROM PUBLIC;", sql)
+
 
 if __name__ == "__main__":
     unittest.main()
