@@ -1,6 +1,12 @@
 const toast = document.querySelector('#toast');
 const authGate = document.querySelector('#auth-gate');
 const appShell = document.querySelector('#app-shell');
+const BUILD_ID = 'wp80-words';
+function setEnvironmentStatus(message) {
+  const el = document.querySelector('#environment-status');
+  if (!el) return;
+  el.textContent = `${message} · ${BUILD_ID}`;
+}
 let toastTimer;
 let csrfToken = '';
 let liveRefreshTimer;
@@ -16,6 +22,42 @@ let parentUsername = '';
 let scheduleStamp = '';
 let lastGroups = new Map();
 let lastOffHours = [];
+let selectedChildId = '';
+let pairingTimer;
+
+// Every child-scoped call names the selected child; the server checks it belongs to this parent's family.
+function childQuery() {
+  return selectedChildId ? `?child_id=${encodeURIComponent(selectedChildId)}` : '';
+}
+
+function selectedChildName() {
+  const children = Array.isArray(lastDashboardData?.children) ? lastDashboardData.children : [];
+  return safeText(children.find((child) => child.child_id === selectedChildId)?.name);
+}
+
+function pickerLabel(child) {
+  const name = safeText(child.name) || child.child_id;
+  if (typeof child.connected !== 'boolean') return name;
+  return `${name} · ${child.connected ? 'מחובר' : 'לא מחובר'}`;
+}
+
+function renderChildPicker(data) {
+  const children = Array.isArray(data.children) ? data.children : [];
+  selectedChildId = safeText(data.child_id);
+  const picker = document.querySelector('#child-picker');
+  const select = document.querySelector('#child-select');
+  const name = selectedChildName();
+  document.querySelector('.child-switch b').textContent = name || 'הטלפון המחובר';
+  document.querySelector('.child-avatars i').textContent = (name || 'טלפון').charAt(0);
+  if (!picker || !select) return;
+  picker.hidden = children.length < 2;
+  const stamp = children.map((child) => `${child.child_id}:${child.name}:${child.connected}`).join('|');
+  if (select.dataset.stamp !== stamp) {
+    select.replaceChildren(...children.map((child) => new Option(pickerLabel(child), child.child_id)));
+    select.dataset.stamp = stamp;
+  }
+  select.value = selectedChildId;
+}
 const heardAlertIds = new Set();
 try { parentUsername = localStorage.getItem('watchup-parent') || ''; } catch {}
 try { alertsEnabled = localStorage.getItem('watchup-alerts') === 'on'; } catch {}
@@ -105,7 +147,7 @@ function trackingWords() {
 }
 
 async function saveTrackingWords(words) {
-  const response = await fetch('/api/watchup/tracking-words', {
+  const response = await fetch(`/api/watchup/tracking-words${childQuery()}`, {
     method: 'POST', credentials: 'same-origin',
     headers: { 'Content-Type': 'application/json', 'X-WatchUp-CSRF': csrfToken },
     body: JSON.stringify({ words }),
@@ -344,13 +386,9 @@ function createEventCard(event, groups, words, index = 0) {
   article.dataset.categories = categories.join(' ');
   article.dataset.today = isJerusalemToday(event) ? '1' : '0';
   if (categories.includes('stranger') && !isAlertSeen(event.event_id)) article.classList.add('unseen');
-  article.addEventListener('click', () => {
-    if (!categories.includes('stranger')) return;
-    markAlertSeen(event.event_id);
-    article.classList.remove('unseen');
-  });
   const icon = createArtwork(view.art, 'feed-artwork');
   const content = document.createElement('div');
+  content.className = 'feed-content';
   const meta = document.createElement('div');
   meta.className = 'feed-meta';
   const severity = document.createElement('span');
@@ -361,16 +399,30 @@ function createEventCard(event, groups, words, index = 0) {
   const title = document.createElement('h2');
   title.textContent = view.title;
   const details = document.createElement('p');
+  details.className = 'feed-details';
   details.textContent = view.details;
   meta.append(severity, time);
   content.append(meta, title, details);
+  let body = null;
   if (view.body) {
-    const body = document.createElement('p');
+    body = document.createElement('p');
     body.className = 'feed-message';
     body.dir = 'auto';
     body.textContent = view.body;
     content.append(body);
   }
+  article.addEventListener('click', (clickEvent) => {
+    if (categories.includes('stranger')) {
+      markAlertSeen(event.event_id);
+      article.classList.remove('unseen');
+    }
+    if (!body) return;
+    // Click message (or card) toggles full text; default is 3-line clamp.
+    const onMessage = clickEvent.target === body || body.contains(clickEvent.target);
+    if (onMessage || !clickEvent.target.closest('a,button')) {
+      body.classList.toggle('expanded');
+    }
+  });
   article.append(icon, content);
   return article;
 }
@@ -450,18 +502,23 @@ function renderAlertsExtra() {
     const showBody = view.categories?.includes('stranger') || view.categories?.includes('keyword');
     const article = document.createElement('article');
     article.className = 'feed-item';
+    const content = document.createElement('div');
+    content.className = 'feed-content';
     const title = document.createElement('h2');
     title.textContent = 'פעילות מחוץ לשעות';
     const details = document.createElement('p');
+    details.className = 'feed-details';
     details.textContent = `${eventTime(event)} · ${chatSource(event, lastGroups)}`;
-    article.append(title, details);
+    content.append(title, details);
     if (showBody && view.body) {
       const body = document.createElement('p');
       body.className = 'feed-message';
       body.dir = 'auto';
       body.textContent = view.body;
-      article.append(body);
+      body.addEventListener('click', () => body.classList.toggle('expanded'));
+      content.append(body);
     }
+    article.append(content);
     extra.append(article);
   });
 }
@@ -925,8 +982,14 @@ async function loadAuditLog() {
 
 function renderWords() {
   const list = document.querySelector('#tracking-words');
+  const words = trackingWords();
+  const countEl = document.querySelector('#tracking-words-count');
+  if (countEl) {
+    const n = words.length;
+    countEl.textContent = n === 0 ? 'אין מילים · לחצו לפתיחה' : n === 1 ? 'מילה אחת · לחצו לפתיחה' : `${n} מילים · לחצו לפתיחה`;
+  }
   list.replaceChildren();
-  trackingWords().forEach((word) => {
+  words.forEach((word) => {
     const item = document.createElement('li');
     const label = document.createElement('b');
     label.textContent = word;
@@ -945,7 +1008,8 @@ function renderWords() {
   });
   if (!list.childElementCount) {
     const empty = document.createElement('li');
-    empty.textContent = 'עדיין אין מילות מעקב. שיחה מזוהה לא תתריע בלי מילה מהרשימה.';
+    empty.className = 'words-empty';
+    empty.textContent = 'עדיין אין מילות מעקב.';
     list.append(empty);
   }
 }
@@ -1010,13 +1074,22 @@ function renderSchedule() {
   const hours = schedule();
   const days = [['sun', 'ראשון'], ['mon', 'שני'], ['tue', 'שלישי'], ['wed', 'רביעי'], ['thu', 'חמישי'], ['fri', 'שישי'], ['sat', 'שבת']];
   grid.replaceChildren();
+  const head = document.createElement('div');
+  head.className = 'schedule-head';
+  head.setAttribute('aria-hidden', 'true');
+  head.innerHTML = '<span></span><span class="schedule-head-study">לימודים</span><span class="schedule-head-evening">ערב</span>';
+  grid.append(head);
   days.forEach(([key, label]) => {
     const row = document.createElement('label');
+    row.className = 'schedule-row';
     const name = document.createElement('span');
+    name.className = 'schedule-day';
     name.textContent = label;
     row.append(name);
     ['study', 'evening'].forEach((windowName) => {
       const pair = Array.isArray(hours[key]?.[windowName]) ? hours[key][windowName] : [];
+      const slot = document.createElement('span');
+      slot.className = `schedule-slot schedule-${windowName}`;
       [0, 1].forEach((index) => {
         const input = document.createElement('input');
         input.type = 'time';
@@ -1025,8 +1098,9 @@ function renderSchedule() {
         input.dataset.edge = index ? 'end' : 'start';
         input.value = pair[index] || '';
         input.setAttribute('aria-label', `${label} ${windowName === 'study' ? 'לימודים' : 'ערב'} ${index ? 'סיום' : 'התחלה'}`);
-        row.append(input);
+        slot.append(input);
       });
+      row.append(slot);
     });
     grid.append(row);
   });
@@ -1067,6 +1141,8 @@ function dashboardFingerprint(data, health, exceptionCount) {
 
 function renderDashboard(data, force = false) {
   lastDashboardData = data;
+  renderChildPicker(data);
+  window.maybeStartOnboarding?.(data);
   const allEvents = Array.isArray(data.events) ? data.events : [];
   const groups = latestGroups([...(Array.isArray(data.groups) ? data.groups : []), ...allEvents]);
   lastGroups = groups;
@@ -1086,12 +1162,12 @@ function renderDashboard(data, force = false) {
   }
   document.body.classList.toggle('connection-down', !health.verified);
   const exceptionCount = exceptions.length;
-  const fingerprint = `${dashboardFingerprint(data, health, exceptionCount)}|${groupSort}|${alertsCategoryFilter}`;
+  const fingerprint = `${selectedChildId}|${dashboardFingerprint(data, health, exceptionCount)}|${groupSort}|${alertsCategoryFilter}`;
   // Overlay off first — never leave a transparent login layer blocking taps.
   revealAuthenticatedShell();
   setCount('message', exceptionCount);
   setCount('unresolved', exceptions.filter((event) => matchedWord(event, words)).length);
-  document.querySelector('#environment-status').textContent = health.verified ? 'סביבת POC · נתונים חיים מהטלפון המחובר' : `סביבת POC · ${health.label}`;
+  setEnvironmentStatus(health.verified ? 'סביבת POC · נתונים חיים מהטלפון המחובר' : `סביבת POC · ${health.label}`);
   renderSyncStatus(connectionEvent);
   document.querySelector('#api-state-detail').textContent = `${groups.size} קבוצות · ${exceptionCount} חריגים · קריאה בלבד`;
   // ponytail: heartbeat polls must not rebuild home/events/groups DOM every 15s.
@@ -1128,15 +1204,20 @@ function requireAuthentication(message = 'יש להתחבר כדי לצפות ב
 async function loadDashboard(notify = false) {
   const request = ++dashboardRequest;
   try {
-    const response = await fetchWithTimeout('/api/watchup/dashboard', { credentials: 'same-origin', cache: 'no-store' });
+    const response = await fetchWithTimeout(`/api/watchup/dashboard${childQuery()}`, { credentials: 'same-origin', cache: 'no-store' });
     if (request !== dashboardRequest) return true;
     if (response.status === 401) {
       requireAuthentication();
       return false;
     }
+    if (response.status === 403 && selectedChildId) {
+      // The selected child is not in this family (or no longer exists): fall back to the family's first child.
+      selectedChildId = '';
+      return loadDashboard(notify);
+    }
     if (response.status === 502 || response.status === 503 || response.status === 504) {
       if (csrfToken || lastDashboardData) {
-        document.querySelector('#environment-status').textContent = 'סביבת POC · השרת לא ענה, המסך נשאר פתוח';
+        setEnvironmentStatus('סביבת POC · השרת לא ענה, המסך נשאר פתוח');
         revealAuthenticatedShell();
         return false;
       }
@@ -1155,9 +1236,9 @@ async function loadDashboard(notify = false) {
     return true;
   } catch {
     if (csrfToken) {
-      document.querySelector('#environment-status').textContent = lastDashboardData
+      setEnvironmentStatus(lastDashboardData
         ? 'סביבת POC · הרענון נכשל, הנתונים הקודמים נשארו על המסך'
-        : 'סביבת POC · השרת לא ענה, נסו שוב בעוד רגע';
+        : 'סביבת POC · השרת לא ענה, נסו שוב בעוד רגע');
       revealAuthenticatedShell();
       return false;
     }
@@ -1197,11 +1278,38 @@ document.querySelectorAll('[data-filter]').forEach((button) => button.addEventLi
   alertsCategoryFilter = button.dataset.filter;
   applyAlertsCategoryFilter();
 }));
-document.querySelector('#group-sort')?.addEventListener('change', (event) => {
-  groupSort = event.target.value;
-  if (groupSort === 'sender') document.querySelector('[data-people-tab="contacts"]')?.click();
-  else document.querySelector('[data-people-tab="groups"]')?.click();
-  if (lastDashboardData) renderDashboard(lastDashboardData, true);
+const sortTrigger = document.querySelector('#group-sort-trigger');
+const sortMenu = document.querySelector('#group-sort-menu');
+const sortValue = document.querySelector('#group-sort-value');
+function closeGroupSort() {
+  if (!sortMenu || !sortTrigger) return;
+  sortMenu.hidden = true;
+  sortTrigger.setAttribute('aria-expanded', 'false');
+}
+sortTrigger?.addEventListener('click', (event) => {
+  event.stopPropagation();
+  const open = sortMenu.hidden;
+  sortMenu.hidden = !open;
+  sortTrigger.setAttribute('aria-expanded', String(open));
+});
+sortMenu?.querySelectorAll('[role="option"]').forEach((option) => {
+  option.addEventListener('click', () => {
+    groupSort = option.dataset.value;
+    sortMenu.querySelectorAll('[role="option"]').forEach((item) => {
+      item.setAttribute('aria-selected', String(item === option));
+    });
+    if (sortValue) sortValue.textContent = option.textContent;
+    closeGroupSort();
+    if (groupSort === 'sender') document.querySelector('[data-people-tab="contacts"]')?.click();
+    else document.querySelector('[data-people-tab="groups"]')?.click();
+    if (lastDashboardData) renderDashboard(lastDashboardData, true);
+  });
+});
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('[data-group-sort]')) closeGroupSort();
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') closeGroupSort();
 });
 document.querySelectorAll('[data-people-tab]').forEach((button) => button.addEventListener('click', () => {
   document.querySelectorAll('[data-people-tab]').forEach((tab) => {
@@ -1311,7 +1419,7 @@ apiForm.addEventListener('submit', async (event) => {
       document.querySelector('#parent-username').value = 'eldad';
       // Drop the login overlay before the heavy dashboard fetch/render.
       revealAuthenticatedShell();
-      document.querySelector('#environment-status').textContent = 'סביבת POC · טוען נתונים…';
+      setEnvironmentStatus('סביבת POC · טוען נתונים…');
       if ((await loadDashboard(true)) || csrfToken) startPolling();
     } else if (response.status === 429) showLoginError('בוצעו יותר מדי ניסיונות. המתינו כמה דקות ונסו שוב.');
     else if (response.status === 502 || response.status === 503 || response.status === 504) showLoginError('השרת לא ענה. הסיסמה לא נבדקה. נסו שוב בעוד רגע.');
@@ -1348,7 +1456,7 @@ document.querySelector('#schedule-form')?.addEventListener('submit', async (even
   const status = document.querySelector('#schedule-status');
   try {
     const next = scheduleFromForm();
-    const response = await fetch('/api/watchup/schedule', {
+    const response = await fetch(`/api/watchup/schedule${childQuery()}`, {
       method: 'POST', credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json', 'X-WatchUp-CSRF': csrfToken },
       body: JSON.stringify({ schedule: next }),
@@ -1364,39 +1472,73 @@ document.querySelector('#schedule-form')?.addEventListener('submit', async (even
   }
 });
 
+const PAIRING_TEXT = {
+  connected: () => 'מחובר. לא נוצר קוד חדש.',
+  waiting: (name) => `סרקו את הקוד ב־WhatsApp בטלפון של ${name}: מכשירים מקושרים ← קישור מכשיר.`,
+  requested: (name) => `מבקשים קוד חיבור לטלפון של ${name}…`,
+  bridge_unavailable: (name) => `שירות החיבור של ${name} לא זמין כרגע. אפשר לבטל ולנסות שוב מאוחר יותר.`,
+  timeout: () => 'הקוד פג תוקף לפני הסריקה. אפשר לבקש קוד חדש.',
+  not_connected: (name) => `הטלפון של ${name} עדיין לא מחובר. אפשר ליצור קוד חיבור.`,
+  no_bridge: (name) => `ל־${name} עדיין לא הוגדר חיבור WhatsApp. אפשר לחבר כשיהיה צורך.`,
+  unavailable: () => 'אין קוד פעיל. יצירת קוד חדש דורשת אישור, כדי לא לנתק את הטלפון המחובר.',
+};
+
+function renderPairing(payload) {
+  const state = PAIRING_TEXT[payload.state] ? payload.state : 'unavailable';
+  const image = document.querySelector('#pairing-qr');
+  document.querySelector('#pairing-status').textContent = PAIRING_TEXT[state](selectedChildName() || 'הילד');
+  image.hidden = !(state === 'waiting' && payload.svg);
+  if (image.hidden) image.removeAttribute('src'); else image.src = payload.svg;
+  // Request and cancel exist only in Multi-Family; the legacy server answers "unavailable".
+  document.querySelector('#pairing-request').hidden = !['not_connected', 'timeout'].includes(state);
+  document.querySelector('#pairing-cancel').hidden = !['requested', 'waiting', 'bridge_unavailable'].includes(state);
+}
+
+async function pairingCall(method = 'GET') {
+  const options = { method, credentials: 'same-origin', cache: 'no-store' };
+  if (method !== 'GET') options.headers = { 'X-WatchUp-CSRF': csrfToken };
+  const response = await fetch(`/api/watchup/pairing${childQuery()}`, options);
+  if (!response.ok && response.status !== 409) throw new Error('pairing unavailable');
+  renderPairing(await response.json());
+}
+
+async function refreshPairing(method) {
+  try { await pairingCall(method); } catch { document.querySelector('#pairing-status').textContent = 'לא ניתן להציג את מצב החיבור כרגע.'; }
+}
+
 document.querySelector('#open-pairing')?.addEventListener('click', async () => {
   const dialog = document.querySelector('#pairing-dialog');
-  const status = document.querySelector('#pairing-status');
-  const image = document.querySelector('#pairing-qr');
-  status.textContent = 'בודקים את החיבור…';
-  image.hidden = true;
-  image.removeAttribute('src');
+  document.querySelector('#pairing-status').textContent = 'בודקים את החיבור…';
+  document.querySelector('#pairing-qr').hidden = true;
+  document.querySelector('#pairing-request').hidden = true;
+  document.querySelector('#pairing-cancel').hidden = true;
   dialog.showModal();
-  try {
-    const response = await fetch('/api/watchup/pairing', { credentials: 'same-origin', cache: 'no-store' });
-    if (!response.ok) throw new Error('pairing unavailable');
-    const payload = await response.json();
-    if (payload.state === 'connected') {
-      status.textContent = 'מחובר. לא נוצר קוד חדש.';
-      return;
-    }
-    if (payload.state === 'waiting' && payload.svg) {
-      status.textContent = 'סרקו את הקוד בטלפון הילד. זה הקוד שכבר קיים, בלי ליצור קוד חדש.';
-      image.src = payload.svg;
-      image.hidden = false;
-      return;
-    }
-    status.textContent = 'אין קוד פעיל. יצירת קוד חדש דורשת אישור, כדי לא לנתק את הטלפון המחובר.';
-  } catch {
-    status.textContent = 'לא ניתן להציג את מצב החיבור כרגע.';
-  }
+  await refreshPairing('GET');
+  clearInterval(pairingTimer);
+  // QR codes rotate every ~20s on the bridge; poll only while the window is open.
+  pairingTimer = setInterval(() => refreshPairing('GET'), 3000);
 });
+document.querySelector('#pairing-request')?.addEventListener('click', () => refreshPairing('POST'));
+document.querySelector('#pairing-cancel')?.addEventListener('click', () => refreshPairing('DELETE'));
+document.querySelector('#pairing-dialog')?.addEventListener('close', () => clearInterval(pairingTimer));
 document.querySelector('#pairing-close')?.addEventListener('click', () => document.querySelector('#pairing-dialog')?.close());
+
+document.querySelector('#child-select')?.addEventListener('change', (event) => {
+  selectedChildId = event.target.value;
+  const name = event.target.selectedOptions[0]?.text || '';
+  document.querySelector('.child-switch b').textContent = name;
+  document.querySelector('.child-avatars i').textContent = name.charAt(0);
+  selectedGroupJid = '';
+  scheduleStamp = '';
+  lastRenderFingerprint = '';
+  alertsPrimed = false;
+  loadDashboard(true);
+});
 
 document.querySelector('#reset-today')?.addEventListener('click', async () => {
   if (!confirm('למחוק אירועים שלפני היום? היום, מילות המעקב וחיבור WhatsApp נשארים.')) return;
   try {
-    const response = await fetch('/api/watchup/today', { method: 'POST', credentials: 'same-origin', headers: { 'X-WatchUp-CSRF': csrfToken } });
+    const response = await fetch(`/api/watchup/today${childQuery()}`, { method: 'POST', credentials: 'same-origin', headers: { 'X-WatchUp-CSRF': csrfToken } });
     if (!response.ok) throw new Error('reset failed');
     await loadDashboard(false);
     announce('נשארו אירועי היום');
@@ -1411,6 +1553,13 @@ document.querySelector('#delete-family-data').addEventListener('click', async ()
     requireAuthentication('אירועי WatchUp נמחקו וכניסות ההורים בוטלו.');
     announce('אירועי WatchUp נמחקו');
   } catch { announce('המחיקה לא בוצעה'); }
+});
+
+document.querySelector('#privacy-fab')?.addEventListener('click', () => {
+  document.querySelector('#privacy-sheet')?.showModal();
+});
+document.querySelector('#privacy-sheet-close')?.addEventListener('click', () => {
+  document.querySelector('#privacy-sheet')?.close();
 });
 
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -1431,7 +1580,7 @@ async function restoreSession() {
     if (!session.authenticated || !session.csrf_token) throw new Error('invalid session');
     csrfToken = session.csrf_token;
     revealAuthenticatedShell();
-    document.querySelector('#environment-status').textContent = 'סביבת POC · טוען נתונים…';
+    setEnvironmentStatus('סביבת POC · טוען נתונים…');
     if ((await loadDashboard()) || csrfToken) startPolling();
   } catch {
     requireAuthentication('המערכת אינה זמינה כרגע. הנתונים לא הוצגו.');

@@ -312,6 +312,17 @@ class ParentAuthenticationTests(unittest.TestCase):
         self.assertEqual(self.request("GET", "/watchup/dashboard", cookie=session_cookie)[0], 401)
         self.assertEqual(self.request("GET", "/watchup/session", cookie=session_cookie)[0], 401)
 
+    def test_legacy_mode_has_no_onboarding_or_children_endpoints(self):
+        _, cookie, body = self.request("POST", "/watchup/session", self.credentials())
+        session_cookie = cookie.split(";", 1)[0]
+        csrf = json.loads(body)["csrf_token"]
+        self.assertEqual(self.request("GET", "/watchup/onboarding", cookie=session_cookie)[0], 404)
+        self.assertEqual(self.request("POST", "/watchup/children", {"display_name": "x", "age": 7, "has_whatsapp": True},
+                                      cookie=session_cookie, csrf=csrf)[0], 404)
+        status, _, body = self.request("GET", "/watchup/dashboard", cookie=session_cookie)
+        self.assertEqual(status, 200)
+        self.assertTrue(json.loads(body)["onboarding_completed"])
+
     def test_failed_logins_are_rate_limited_without_logging_passwords(self):
         for _ in range(5):
             self.assertEqual(

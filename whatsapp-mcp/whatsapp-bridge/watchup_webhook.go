@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"go.mau.fi/whatsmeow"
@@ -82,11 +83,8 @@ func watchUpGroupPeople(group *types.GroupInfo, contacts map[types.JID]types.Con
 		if !contact.Found {
 			contact = contacts[person.JID.ToNonAD()]
 		}
-		name := strings.TrimSpace(contact.FullName)
-		if name == "" {
-			name = strings.TrimSpace(contact.FirstName)
-		}
-		recognized := contact.Found
+		name := watchUpLocalContactName(contact)
+		recognized := contact.Found && name != ""
 		if name == "" {
 			name = strings.TrimSpace(person.DisplayName)
 		}
@@ -154,7 +152,11 @@ func buildWatchUpEvent(payload WebhookPayload, sourceTimestamp time.Time, tenant
 	if payload.EventType == "reaction" {
 		eventType = "reaction.received"
 	}
-	return json.Marshal(watchUpEvent{EventID: payload.MessageID, Type: eventType, Source: "whatsapp-bridge", SourceTimestamp: sourceTimestamp.UTC(), TenantID: tenantID, ChildID: childID, Account: map[string]any{"chat_jid": payload.ChatJID, "chat_type": payload.ChatType, "sender": payload.Sender, "display_name": payload.DisplayName, "is_recognized": payload.IsRecognized, "is_from_me": payload.IsFromMe}, Payload: payload})
+	chatType := strings.TrimSpace(payload.ChatType)
+	if chatType == "" {
+		chatType = watchUpChatTypeFromJID(payload.ChatJID)
+	}
+	return json.Marshal(watchUpEvent{EventID: payload.MessageID, Type: eventType, Source: "whatsapp-bridge", SourceTimestamp: sourceTimestamp.UTC(), TenantID: tenantID, ChildID: childID, Account: map[string]any{"chat_jid": payload.ChatJID, "chat_type": chatType, "sender": payload.Sender, "display_name": payload.DisplayName, "is_recognized": payload.IsRecognized, "is_from_me": payload.IsFromMe}, Payload: payload})
 }
 
 func buildWatchUpStatusEvent(status string, sourceTimestamp time.Time, tenantID, childID, secret string) ([]byte, error) {
@@ -213,6 +215,23 @@ func downloadWatchUpGroupImage(ctx context.Context, rawURL string) (string, stri
 		return "", "", errors.New("unsupported group image type")
 	}
 	return mimeType, base64.StdEncoding.EncodeToString(data), nil
+}
+
+var watchUpGroupSyncOnce sync.Once
+
+func startWatchUpGroupSync(client *whatsmeow.Client) {
+	if !watchUpEnabled() || client == nil {
+		return
+	}
+	watchUpGroupSyncOnce.Do(func() {
+		go func() {
+			count, err := syncWatchUpGroups(client)
+			if err != nil {
+				fmt.Printf("WatchUp group sync completed with errors: %v\n", err)
+			}
+			fmt.Printf("WatchUp group sync delivered %d groups\n", count)
+		}()
+	})
 }
 
 func syncWatchUpGroups(client *whatsmeow.Client) (int, error) {

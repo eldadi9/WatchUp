@@ -85,7 +85,7 @@ class PostgresEventStoreTests(unittest.TestCase):
         self.assertEqual(commands[1], ("SELECT set_config('watchup.tenant_id', %s, true)", ("tenant-a",)))
         sql, params = commands[2]
         self.assertIn("INSERT INTO watchup.events", sql)
-        self.assertIn("ON CONFLICT (tenant_id, event_id) DO UPDATE SET", sql)
+        self.assertIn("ON CONFLICT (tenant_id, child_id, event_id) DO UPDATE SET", sql)
         self.assertIn("WHERE watchup.events.event_type = 'group.snapshot'", sql)
         self.assertIn("%s", sql)
         self.assertEqual(params[6], ("jsonb", self.event["account"]))
@@ -122,8 +122,14 @@ class PostgresEventStoreTests(unittest.TestCase):
         self.assertEqual(self.cursors[0].commands, [
             ("SET LOCAL ROLE watchup_app", None),
             ("SELECT set_config('watchup.tenant_id', %s, true)", ("tenant-a",)),
-            ("DELETE FROM watchup.events WHERE received_at < %s AND tenant_id = %s", (cutoff, "tenant-a")),
+            ("DELETE FROM watchup.events WHERE received_at < %s AND tenant_id = %s AND (CAST(%s AS text) IS NULL OR child_id = %s)",
+             (cutoff, "tenant-a", None, None)),
         ])
+
+    def test_purge_before_can_scope_one_child(self):
+        cutoff = datetime(2026, 10, 1, tzinfo=timezone.utc)
+        self.store.purge_before(cutoff, "tenant-a", "child-b")
+        self.assertEqual(self.cursors[0].commands[2][1], (cutoff, "tenant-a", "child-b", "child-b"))
 
     def test_tracking_words_use_rls_and_parameterized_queries(self):
         self.store.set_tracking_words("tenant-a", "child-a", ["בדיקה"])
@@ -223,6 +229,17 @@ class PostgresEventStoreTests(unittest.TestCase):
             with patch.dict(os.environ, environment, clear=True):
                 store = app.PostgresEventStore.from_environment()
         self.assertEqual(store.connection_kwargs["sslmode"], "require")
+
+
+class DeleteFamilyLegacyTests(unittest.TestCase):
+    def test_skips_007_tables_when_missing(self):
+        cursor = FakeCursor(row=(False,))
+        store = app.PostgresEventStore({"host": "db"}, connect_factory=lambda **_k: FakeConnection(cursor))
+        store.delete_family("tenant-a")
+        sql = " ".join(command for command, _ in cursor.commands)
+        self.assertNotIn("DELETE FROM watchup.child_profiles", sql)
+        self.assertNotIn("DELETE FROM watchup.family_onboarding", sql)
+        self.assertIn("DELETE FROM watchup.events", sql)
 
 
 if __name__ == "__main__":

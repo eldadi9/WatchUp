@@ -44,3 +44,6 @@ watchup-web/screenshots/wp35-live-mobile.png
 # Secrets written by New Project Tool - do not commit
 .env.local
 .mcp.json
+
+# Local Multi-Family runtime (private Postgres cluster, synthetic secrets)
+watchup-local/.runtime/

@@ -2,7 +2,7 @@
 
 ## ⁧סטטוס החלטה⁩
 
-⁧ארכיטקטורה מוצעת לאישור. אין לפרוס או לחבר QR לפני Security Gate ו־Deployment GO. עודכן 06/10/2026: המימוש המקומי כבר החל לפי GO של אלדד. הפערים והשלבים הבאים נמצאים ב־`ROADMAP.md`. גוף המסמך לא שונה.⁩
+⁧עודכן 08/10/2026: זהו מסמך יעד לצד מצב קיים. ה־QR הקיים עובד; pairing חדש נשאר כפוף ל־Security Gate. ממשק ה־POC הקיים הוא HTML/JavaScript סטטי, וה־API הקיים הוא Python HTTP server — React/Next ו־FastAPI הם כיוון עתידי, לא תיאור המימוש הנוכחי. הפערים והשלבים הבאים נמצאים ב־`ROADMAP.md`.⁩
 
 ## ⁧עקרונות⁩
 
@@ -16,11 +16,11 @@
 
 ### ⁧WhatsApp Bridge⁩
 
-⁧קוד Go הקיים, לאחר הוספת מצב WatchUp Read Only. שומר session והיסטוריה גולמית ב־SQLite ומעביר אירועים ל־Backend.⁩
+⁧קוד Go הקיים במצב WatchUp Read Only. בסביבת ה־VPS הפעילה Privacy Mode אינו שומר מסד bridge, מדיה או היסטוריה מתמשכת; כל שינוי בזה חייב לעבור מדיניות שמירה ומחיקה.⁩
 
 ### ⁧WatchUp Backend⁩
 
-⁧שירות Python/FastAPI מומלץ ל־POC. אחראי לקליטת Webhook, אימות HMAC, תור אירועים, deduplication, מנוע כללים, התראות, דוחות ו־API לממשק.⁩
+⁧המימוש הקיים הוא שירות Python HTTP; FastAPI הוא אפשרות עתידית בלבד. השירות אחראי לקליטת Webhook, אימות, deduplication, מנוע כללים, התראות ו־API לממשק.⁩
 
 ### ⁧PostgreSQL⁩
 
@@ -28,7 +28,7 @@
 
 ### ⁧Web App / PWA⁩
 
-⁧יישום React/Next.js בעברית וב־RTL, מותאם תחילה לטלפון. מקבל עדכונים חיים מה־Backend באמצעות SSE או WebSocket.⁩
+⁧המימוש הקיים הוא ממשק HTML/JavaScript סטטי בעברית וב־RTL, מותאם תחילה לטלפון ומרענן את נתוני ה־API. React/Next.js ו־SSE/WebSocket הם אפשרות עתידית, לא מצב קיים.⁩
 
 ### ⁧Read-only MCP⁩
 

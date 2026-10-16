@@ -1,0 +1,43 @@
+# One bridge per child, all sending to the one shared watchup-api.
+# Run with its own project name so it can never recreate another child's bridge:
+#   docker compose -p watchup-bridge-<child> --env-file <protected child env> -f compose.child-bridge.yml up -d
+# The child env sets a session directory, secret file, tenant and child that no
+# other bridge uses. Do not run for an existing paired child (e.g. Yuli).
+services:
+  whatsapp-bridge:
+    build: { context: . }
+    # Own tag per child: a build must never retag the image another bridge recreates from (Yuli uses :local).
+    image: watchup/whatsapp-bridge:child-${WATCHUP_CHILD_ID:?set this child's id}
+    container_name: watchup-bridge-${WATCHUP_CHILD_ID:?set this child's id}
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m,mode=1777
+    user: "10001:10001"
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      WHATSAPP_BRIDGE_HOST: 0.0.0.0
+      WHATSAPP_BRIDGE_PORT: "8080"
+      WATCHUP_PRIVACY_MODE: "true"
+      WATCHUP_PAIRING_MODE: on-demand
+      WEBHOOK_URL: ""
+      WATCHUP_WEBHOOK_URL: http://watchup-api:8769/watchup/events
+      WATCHUP_TENANT_ID: ${WATCHUP_TENANT_ID:?set this child's family}
+      WATCHUP_CHILD_ID: ${WATCHUP_CHILD_ID:?set this child's id}
+      WATCHUP_WEBHOOK_SECRET_FILE: /run/secrets/watchup_webhook_secret
+    volumes:
+      - type: bind
+        source: ${WATCHUP_BRIDGE_SESSION_DIR_HOST:?set a new empty session directory for this child}
+        target: /app/store
+      - type: bind
+        source: ${WATCHUP_WEBHOOK_SECRET_FILE_HOST:?set this child's own bridge secret file}
+        target: /run/secrets/watchup_webhook_secret
+        read_only: true
+    networks: [watchup-internal, watchup-bridge-egress]
+
+networks:
+  watchup-internal:
+    external: true
+  watchup-bridge-egress:
+    external: true

@@ -22,6 +22,13 @@ test -r "$WATCHUP_DB_SSLROOTCERT_HOST"
 test -r "$WATCHUP_WEBHOOK_SECRET_FILE_HOST"
 test -r "$WATCHUP_PARENTS_FILE_HOST"
 test -r "$WATCHUP_SESSION_SECRET_FILE_HOST"
+# Multi-Family is opt-in: mount the families file only when its host path is set.
+families_mount=()
+if [ -n "${WATCHUP_FAMILIES_FILE_HOST:-}" ]; then
+  : "${WATCHUP_FAMILIES_FILE:?set its in-container path}"
+  test -r "$WATCHUP_FAMILIES_FILE_HOST"
+  families_mount=(--mount "type=bind,src=$WATCHUP_FAMILIES_FILE_HOST,dst=$WATCHUP_FAMILIES_FILE,readonly")
+fi
 docker rm -f "$WATCHUP_API_CONTAINER" 2>/dev/null || true
 docker run --detach --name "$WATCHUP_API_CONTAINER" --restart unless-stopped \
   --network "$WATCHUP_INTERNAL_NETWORK" \
@@ -31,5 +38,6 @@ docker run --detach --name "$WATCHUP_API_CONTAINER" --restart unless-stopped \
   --mount "type=bind,src=$WATCHUP_WEBHOOK_SECRET_FILE_HOST,dst=$WATCHUP_WEBHOOK_SECRET_FILE,readonly" \
   --mount "type=bind,src=$WATCHUP_PARENTS_FILE_HOST,dst=$WATCHUP_PARENTS_FILE,readonly" \
   --mount "type=bind,src=$WATCHUP_SESSION_SECRET_FILE_HOST,dst=$WATCHUP_SESSION_SECRET_FILE,readonly" \
+  ${families_mount[@]+"${families_mount[@]}"} \
   --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges \
   "$WATCHUP_API_IMAGE"

@@ -22,6 +22,17 @@ class DashboardTests(unittest.TestCase):
         self.assertIn('class="skip-link"', self.html)
         self.assertIn('href="accessibility.html"', self.html)
 
+    def test_child_scoped_calls_name_the_selected_child(self):
+        import re
+        for path in ("dashboard", "tracking-words", "schedule", "today", "pairing"):
+            calls = re.findall(rf"/api/watchup/{path}[^'`]*", self.js)
+            self.assertTrue(calls, path)
+            for call in calls:
+                self.assertIn("${childQuery()}", call, path)
+        self.assertIn('id="child-select"', self.html)
+        self.assertIn("picker.hidden = children.length < 2;", self.js)
+        self.assertNotRegex(self.js, r"child_id=(rotem|son-test|child-1)")
+
     def test_live_data_disclosure_and_read_only_copy(self):
         self.assertIn("נתונים חיים מהטלפון המחובר", self.js)
         self.assertIn("קריאה בלבד", self.html)
@@ -43,6 +54,18 @@ class DashboardTests(unittest.TestCase):
     def test_settings_has_contact_mailto(self):
         self.assertIn('id="contact-link" href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=eldadi9@gmail.com&amp;', self.html)
         self.assertIn('id="contact-mailto" href="mailto:eldadi9@gmail.com?', self.html)
+
+    def test_onboarding_ui_is_wired(self):
+        ob = (ROOT / "onboarding.js").read_text(encoding="utf-8")
+        for token in ("onboarding-dialog", "open-onboarding", "onboarding.js"):
+            self.assertIn(token, self.html)
+        for token in ("/api/watchup/onboarding", "/api/watchup/children", "X-WatchUp-CSRF"):
+            self.assertIn(token, ob)
+        self.assertNotIn("innerHTML", ob)
+        self.assertIn("lastDashboardData", ob)
+        self.assertIn("disabled", ob)
+        self.assertIn("no_bridge", self.js)
+        self.assertIn("maybeStartOnboarding", self.js)
 
     def test_no_whatsapp_write_actions(self):
         combined = (self.html + self.js).lower()
@@ -195,7 +218,7 @@ class DashboardTests(unittest.TestCase):
         self.assertIn(".filter-bar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))", self.css)
 
     def test_alert_tabs_word_forms_hours_and_retention_controls(self):
-        for hook in ('data-filter="today"', 'data-filter="joined"', 'data-filter="hours"', 'id="schedule-form"', 'id="open-pairing"', 'id="reset-today"', 'id="group-sort"'):
+        for hook in ('data-filter="today"', 'data-filter="joined"', 'data-filter="hours"', 'id="schedule-form"', 'id="open-pairing"', 'id="reset-today"', 'id="group-sort-trigger"'):
             self.assertIn(hook, self.html)
         self.assertIn("function wordForms(word)", self.js)
         self.assertIn("character === 'ו'", self.js)

@@ -10,6 +10,8 @@ Run `004_tracking_words.sql` exactly once after `003`. It stores the family's bo
 
 Run `005_child_settings.sql` exactly once after `004`. It stores the Sunday–Saturday study and evening windows for one child, with the same tenant RLS model.
 
+Run `006_child_event_key.sql` exactly once after `005`, before enabling Multi-Family. It widens the `watchup.events` key to `(tenant_id, child_id, event_id)` so two children in the same group keep separate copies of a shared message. It changes no rows. Roll back only while every family has one child: drop `events_pkey` and re-add it on `(tenant_id, event_id)`.
+
 The retention job is the same API image with `WATCHUP_RUN_RETENTION_ONCE=1` and `WATCHUP_RETENTION_DAYS=3`; schedule it daily using the existing protected environment and network. It deletes expired `watchup.events` rows only. Encrypted backups stay on `WATCHUP_BACKUP_RETENTION_DAYS` (14). `POST /watchup/today` deletes events before the start of the current day in Asia/Jerusalem and keeps the WhatsApp session, tracking words, and parent login. `POST /watchup/family` revokes parent sessions for that tenant only and deletes that tenant's events, words, and schedule. Media, caches, and the bridge session directory are not deleted by either path.
 
 The migration fails before schema changes unless the database encoding is UTF8, and it writes the durable database setting `timezone = 'Asia/Jerusalem'`. Run `verify_watchup.sql` in a fresh connection afterwards; its encoding and both timezone booleans must be `true`.
@@ -28,3 +30,5 @@ COMMIT;
 ```
 
 The policy fails closed when the setting is absent, empty, or does not equal a row's `tenant_id`; it governs both reads and writes. A custom session setting is not an identity provider: anyone with arbitrary SQL access as `watchup_app` can set it. Keep that role's credential server-side and never expose a direct database connection to clients.
+
+Run `007_child_profiles.sql` exactly once after `006`. It adds `child_profiles` (display name, age, WhatsApp flag per child) and `family_onboarding` (one completion row per family), both with the same tenant RLS model; rows are removed by the authenticated family-deletion path.

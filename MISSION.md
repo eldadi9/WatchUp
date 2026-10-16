@@ -1,6 +1,6 @@
 # WatchUp POC Mission
 
-Status 06/10/2026, version `0.3.6`: Yuli runs the program. The active slice is phase 1 in `ROADMAP.md`. This mission text is unchanged.
+Status 08/10/2026, release `0.3.6`: Phase 2 (POC closure) is active. This document is the mission and vision source of truth; the operational plan, work items, and current delivery status live in the WatchUp Google Sheet. QR pairing is operational; any new pairing still requires the security gate.
 
 ## Owner-approved mission
 
@@ -26,7 +26,7 @@ WP-1 is the read-only safety foundation:
 2. Enforce read-only behavior at both the Python MCP layer and Go bridge boundary.
 3. Keep read/query/group/contact/media ingestion capabilities working.
 4. Add deterministic tests proving outbound actions are unavailable or refused.
-5. Do not deploy, pair a WhatsApp account, use real family data, or touch the VPS.
+5. Do not send, edit, delete, react to, or type in WhatsApp. Use real family data only within the approved, read-only WatchUp boundary.
 
 ## Stop condition
 

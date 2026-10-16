@@ -1,5 +1,6 @@
 # Project Instructions
 
+- Whenever Hebrew appears, render the containing screen or text block right-to-left (`dir="rtl"`), including numbering and punctuation; isolate embedded Latin text, numbers, paths, and code when needed.
 - Keep all product-facing text in Hebrew with correct RTL behavior.
 - Do not begin implementation without explicit Owner GO.
 - Treat EG-SKILLS as the source of truth for DREAM TEAM.

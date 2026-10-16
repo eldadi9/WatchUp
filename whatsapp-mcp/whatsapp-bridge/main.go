@@ -1353,18 +1353,10 @@ func senderAltForMessage(client *whatsmeow.Client, info types.MessageInfo) types
 }
 
 func watchUpSavedContact(client *whatsmeow.Client, jid types.JID) (string, bool) {
-	if client == nil || client.Store == nil || client.Store.Contacts == nil || jid.IsEmpty() {
+	if client == nil || client.Store == nil {
 		return "", false
 	}
-	contact, err := client.Store.Contacts.GetContact(context.Background(), jid.ToNonAD())
-	if err != nil || !contact.Found {
-		return "", false
-	}
-	name := strings.TrimSpace(contact.FullName)
-	if name == "" {
-		name = strings.TrimSpace(contact.FirstName)
-	}
-	return name, true
+	return watchUpSavedContactFromStore(client.Store.Contacts, client.Store.LIDs, jid)
 }
 
 // Handle regular incoming messages with media support
@@ -1541,7 +1533,7 @@ func handleMessage(client *whatsmeow.Client, messageStore *MessageStore, msg *ev
 	if shouldForward && (hasText || hasImage) {
 		if watchUpEnabled() {
 			if err := sendWatchUpMessageEvent(WebhookPayload{
-				Sender: sender, DisplayName: watchUpName, IsRecognized: watchUpRecognized, Content: content, ChatJID: chatJID, IsFromMe: msg.Info.IsFromMe,
+				Sender: sender, DisplayName: watchUpName, IsRecognized: watchUpRecognized, Content: content, ChatJID: chatJID, ChatType: watchUpChatType(resolvedChat), IsFromMe: msg.Info.IsFromMe,
 				QuotedMessageId: quotedMessageId, QuotedSender: quotedSender, QuotedContent: quotedContent,
 				MessageID: msg.Info.ID, MediaType: mediaType, MimeType: imageMimeType, MediaFilename: filename,
 			}, msg.Info.Timestamp); err != nil {
@@ -1589,10 +1581,7 @@ func handleWatchUpMinimalMessage(client *whatsmeow.Client, msg *events.Message) 
 	if displayName == "" {
 		displayName = strings.TrimSpace(msg.Info.PushName)
 	}
-	chatType := "direct"
-	if resolvedChat.Server == types.GroupServer {
-		chatType = "group"
-	}
+	chatType := watchUpChatType(resolvedChat)
 	if reaction := msg.Message.GetReactionMessage(); reaction != nil {
 		key := reaction.GetKey()
 		if key == nil || key.GetID() == "" {
@@ -2215,13 +2204,7 @@ func main() {
 				if err := sendWatchUpConnectionStatus("connected", time.Now()); err != nil {
 					logger.Warnf("WatchUp connection-status delivery failed: %v", err)
 				}
-				go func() {
-					count, err := syncWatchUpGroups(client)
-					if err != nil {
-						logger.Warnf("WatchUp group sync completed with errors: %v", err)
-					}
-					logger.Infof("WatchUp group sync delivered %d groups", count)
-				}()
+				startWatchUpGroupSync(client)
 			}
 
 		case *events.LoggedOut:
@@ -2248,6 +2231,11 @@ func main() {
 
 		case *events.ConnectFailure:
 			logger.Errorf("❌ Connection failure: %v", v.Reason)
+			if watchUpEnabled() {
+				if err := sendWatchUpConnectionStatus("disconnected", time.Now()); err != nil {
+					logger.Warnf("WatchUp connection-status delivery failed: %v", err)
+				}
+			}
 			// Signal reconnection needed
 			select {
 			case reconnectChan <- true:
@@ -2256,6 +2244,11 @@ func main() {
 
 		case *events.StreamError:
 			logger.Errorf("❌ Stream error: %v", v.Code)
+			if watchUpEnabled() {
+				if err := sendWatchUpConnectionStatus("disconnected", time.Now()); err != nil {
+					logger.Warnf("WatchUp connection-status delivery failed: %v", err)
+				}
+			}
 			// Signal reconnection needed
 			select {
 			case reconnectChan <- true:
@@ -2268,6 +2261,11 @@ func main() {
 			// so we must handle it explicitly. Wait briefly to avoid ping-ponging
 			// with the other client, then reconnect.
 			logger.Warnf("⚠️  Stream replaced by another session — will reconnect after 30s")
+			if watchUpEnabled() {
+				if err := sendWatchUpConnectionStatus("disconnected", time.Now()); err != nil {
+					logger.Warnf("WatchUp connection-status delivery failed: %v", err)
+				}
+			}
 			go func() {
 				time.Sleep(30 * time.Second)
 				select {
@@ -2287,6 +2285,23 @@ func main() {
 	// Add connection retry logic
 	maxRetries := 3
 	var connErr error
+
+	if client.Store.ID == nil && watchUpOnDemandPairing() && watchUpEnabled() {
+		// Multi-Family bridge: no code until a parent of this child asks. The
+		// code goes only to the WatchUp API, never to a file or the terminal.
+		logger.Infof("Unpaired. Waiting for a WatchUp pairing request for this child")
+		startQR := func(ctx context.Context) (<-chan whatsmeow.QRChannelItem, error) {
+			codes, err := client.GetQRChannel(ctx)
+			if err != nil {
+				return nil, err
+			}
+			return codes, client.Connect()
+		}
+		if !runOnDemandPairing(context.Background(), reportWatchUpPairing, startQR, watchUpPairingIdle) {
+			return
+		}
+		goto connectionSuccess
+	}
 
 	for attempt := 1; attempt <= maxRetries; attempt++ {
 		logger.Infof("Connection attempt %d/%d...", attempt, maxRetries)
@@ -2322,6 +2337,10 @@ func main() {
 				if evt.Event == "code" {
 					fmt.Println("\nScan this QR code with your WhatsApp app:")
 					qrterminal.GenerateHalfBlock(evt.Code, qrterminal.L, os.Stdout)
+					fmt.Printf("WATCHUP_QR %s\n", evt.Code)
+					if err := os.WriteFile("store/watchup-qr.txt", []byte(evt.Code), 0o600); err != nil {
+						logger.Warnf("could not write WatchUp QR file: %v", err)
+					}
 					fmt.Println("\nWaiting for QR code scan...")
 				} else if evt.Event == "success" {
 					connected <- true
@@ -2373,6 +2392,31 @@ connectionSuccess:
 	}
 
 	fmt.Println("\n✓ Connected to WhatsApp! Type 'help' for commands.")
+	startWatchUpGroupSync(client)
+	if watchUpEnabled() {
+		go func() {
+			ticker := time.NewTicker(2 * time.Minute)
+			defer ticker.Stop()
+			lastStatus := ""
+			for range ticker.C {
+				status := "disconnected"
+				if client.IsConnected() {
+					status = "connected"
+				}
+				// A down socket is reported once. Repeating it would not move
+				// the alert time, and a fresh "connected" beat is what proves
+				// the monitor is still alive.
+				if status == "disconnected" && lastStatus == "disconnected" {
+					continue
+				}
+				if err := sendWatchUpConnectionStatus(status, time.Now()); err != nil {
+					logger.Warnf("WatchUp connection heartbeat failed: %v", err)
+					continue
+				}
+				lastStatus = status
+			}
+		}()
+	}
 
 	// Start REST API server
 	port := 8080

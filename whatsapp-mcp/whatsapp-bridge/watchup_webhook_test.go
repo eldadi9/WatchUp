@@ -15,7 +15,7 @@ import (
 
 func TestBuildWatchUpEventContractAndSignature(t *testing.T) {
 	timestamp := time.Date(2026, 10, 4, 10, 0, 0, 0, time.FixedZone("IDT", 3*60*60))
-	payload := WebhookPayload{MessageID: "synthetic-event-1", Sender: "synthetic-sender", DisplayName: "שם פרופיל בלבד", IsRecognized: false, ChatJID: "synthetic-chat", Content: "בדיקה"}
+	payload := WebhookPayload{MessageID: "synthetic-event-1", Sender: "synthetic-sender", DisplayName: "שם פרופיל בלבד", IsRecognized: false, ChatJID: "status@broadcast", Content: "בדיקה"}
 	body, err := buildWatchUpEvent(payload, timestamp, "tenant-test", "child-test", "synthetic-secret")
 	if err != nil {
 		t.Fatal(err)
@@ -30,8 +30,15 @@ func TestBuildWatchUpEventContractAndSignature(t *testing.T) {
 	if event["tenant_id"] != "tenant-test" || event["child_id"] != "child-test" {
 		t.Fatalf("tenant/child missing: %#v", event)
 	}
-	if event["account"].(map[string]any)["is_recognized"] != false {
-		t.Fatalf("push name must not mark an unsaved sender as recognized: %#v", event["account"])
+	account := event["account"].(map[string]any)
+	if account["is_recognized"] != false {
+		t.Fatalf("push name must not mark an unsaved sender as recognized: %#v", account)
+	}
+	if account["chat_type"] != "status" {
+		t.Fatalf("status chat_type = %#v", account["chat_type"])
+	}
+	if event["payload"].(map[string]any)["content"] != "בדיקה" {
+		t.Fatalf("message content missing: %#v", event["payload"])
 	}
 	if event["source_timestamp"] != "2026-10-04T07:00:00Z" {
 		t.Fatalf("timestamp = %q", event["source_timestamp"])
@@ -87,8 +94,12 @@ func TestWatchUpGroupPeopleRecognizesOnlySavedContacts(t *testing.T) {
 	jid := types.NewJID("972501234567", types.DefaultUserServer)
 	group := &types.GroupInfo{Participants: []types.GroupParticipant{{JID: jid, PhoneNumber: jid, DisplayName: "שם פרופיל"}}}
 	people := watchUpGroupPeople(group, map[types.JID]types.ContactInfo{jid: {Found: true}})
-	if len(people) != 1 || !people[0].IsRecognized {
-		t.Fatalf("saved contact must be recognized even without a stored name: %#v", people)
+	if len(people) != 1 || people[0].IsRecognized {
+		t.Fatalf("a contact row without a local name must not be recognized: %#v", people)
+	}
+	people = watchUpGroupPeople(group, map[types.JID]types.ContactInfo{jid: {Found: true, FullName: "איש קשר שמור"}})
+	if len(people) != 1 || !people[0].IsRecognized || people[0].Name != "איש קשר שמור" {
+		t.Fatalf("address-book name must be recognized: %#v", people)
 	}
 	people = watchUpGroupPeople(group, map[types.JID]types.ContactInfo{})
 	if len(people) != 1 || people[0].IsRecognized {
