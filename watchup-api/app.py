@@ -791,23 +791,28 @@ class PostgresEventStore:
                     )
 
     def get_schedule(self, tenant_id: str, child_id: str):
-        with self.connect_factory(**self.connection_kwargs) as connection:
-            with connection.cursor() as cursor:
-                self._set_rls_context(cursor, tenant_id)
-                cursor.execute(
-                    "SELECT schedule FROM watchup.child_settings WHERE tenant_id = %s AND child_id = %s",
-                    (tenant_id, child_id),
-                )
-                row = cursor.fetchone()
-                if not row:
-                    return empty_schedule()
-                raw = row[0]
-                if isinstance(raw, str):
-                    raw = json.loads(raw)
-                try:
-                    return validate_schedule(raw)
-                except (TypeError, ValueError):
-                    return empty_schedule()
+        try:
+            with self.connect_factory(**self.connection_kwargs) as connection:
+                with connection.cursor() as cursor:
+                    self._set_rls_context(cursor, tenant_id)
+                    cursor.execute(
+                        "SELECT schedule FROM watchup.child_settings WHERE tenant_id = %s AND child_id = %s",
+                        (tenant_id, child_id),
+                    )
+                    row = cursor.fetchone()
+        except Exception as error:
+            if getattr(error, "sqlstate", None) != "42P01":
+                raise
+            return empty_schedule()
+        if not row:
+            return empty_schedule()
+        raw = row[0]
+        if isinstance(raw, str):
+            raw = json.loads(raw)
+        try:
+            return validate_schedule(raw)
+        except (TypeError, ValueError):
+            return empty_schedule()
 
     def set_schedule(self, tenant_id: str, child_id: str, schedule: dict):
         payload = validate_schedule(schedule)
