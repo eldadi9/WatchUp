@@ -7,8 +7,20 @@
   <title>WatchUp — מרכז הבקרה ההורי</title>
   <link rel="icon" type="image/jpeg" href="assets/watchup-eye-icon-owner.jpg">
   <link rel="apple-touch-icon" href="assets/watchup-eye-icon-owner.jpg">
-  <link rel="stylesheet" href="styles.css?v=wp73-alerts">
-  <style>body.auth-pending .auth-gate,body.auth-pending .app-shell,body.auth-pending .mobile-nav{display:none !important}</style>
+  <link rel="stylesheet" href="styles.css?v=wp77-type">
+  <!-- Never blank the parent: while session is checked, keep the login gate visible. -->
+  <style>
+    body.auth-pending .app-shell,
+    body.auth-pending .mobile-nav,
+    body.auth-required .app-shell,
+    body.auth-required .mobile-nav { display: none !important; }
+    body.auth-pending .auth-gate,
+    body.auth-required .auth-gate { display: grid !important; pointer-events: auto; }
+    body:not(.auth-pending):not(.auth-required) .auth-gate {
+      display: none !important;
+      pointer-events: none !important;
+    }
+  </style>
 </head>
 <body class="auth-pending">
   <a class="skip-link" href="#main">דלג לתוכן הראשי</a>
@@ -105,6 +117,6 @@
   <nav class="mobile-nav" id="mobile-nav" aria-label="ניווט ראשי במובייל" hidden><a href="#home" data-view-link="home" class="active"><span aria-hidden="true"><img src="assets/feature-home.jpg" alt=""></span>בית</a><a href="#alerts" data-view-link="alerts"><span aria-hidden="true"><img src="assets/feature-messages.jpg" alt=""></span>אירועים<i data-event-count="message">0</i></a><a href="#people" data-view-link="people"><span aria-hidden="true"><img src="assets/feature-groups.jpg" alt=""></span>קבוצות ואנשי קשר</a><a href="#rules" data-view-link="rules"><span aria-hidden="true"><img src="assets/feature-settings.jpg" alt=""></span>הגדרות</a></nav>
   <dialog id="pairing-dialog" aria-labelledby="pairing-title"><h2 id="pairing-title">חיבור טלפון הילד</h2><p id="pairing-status"></p><img id="pairing-qr" alt="קוד QR לחיבור הטלפון" hidden><button class="secondary" id="pairing-close" type="button">סגירה</button></dialog>
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
-  <script src="app.js?v=wp73-alerts"></script>
+  <script src="app.js?v=wp77-type"></script>
 </body>
 </html>

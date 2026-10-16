@@ -194,12 +194,25 @@ function connectionLabel(status) {
 function connectionHealth(connectionEvent) {
   const status = safeText(connectionEvent?.account?.status);
   const stamp = new Date(connectionEvent?.received_at || connectionEvent?.timestamp || 0);
-  // ponytail: the bridge repeats "connected" every 2 minutes. Three missed
-  // beats means the monitor itself stopped. A shorter window flaps on one late tick.
-  const fresh = !Number.isNaN(stamp.getTime()) && Date.now() - stamp.getTime() < 6 * 60 * 1000;
+  // ponytail: bridge heartbeats every ~2 minutes. Allow clock skew and late ticks.
+  const ageMs = Number.isNaN(stamp.getTime()) ? Number.POSITIVE_INFINITY : Date.now() - stamp.getTime();
+  const fresh = ageMs < 15 * 60 * 1000 || (ageMs < 0 && ageMs > -15 * 60 * 1000);
   if (status === 'disconnected' || status === 'relink_required') return { status, verified: false, label: connectionLabel(status), tone: 'critical' };
   if (status === 'connected' && fresh) return { status, verified: true, label: 'מחובר', tone: 'ok' };
   return { status: status || 'disconnected', verified: false, label: 'הניטור נעצר', tone: 'critical' };
+}
+
+function groupActivityMaps(events) {
+  const messageCounts = new Map();
+  const todayCounts = new Map();
+  events.forEach((event) => {
+    if (!isGroupMessage(event)) return;
+    const jid = safeText(event.account?.chat_jid);
+    if (!jid) return;
+    messageCounts.set(jid, (messageCounts.get(jid) || 0) + 1);
+    if (isJerusalemToday(event)) todayCounts.set(jid, (todayCounts.get(jid) || 0) + 1);
+  });
+  return { messageCounts, todayCounts };
 }
 
 function chatSource(event, groups) {
@@ -372,13 +385,20 @@ function renderEvents(events, groups, words) {
     empty.textContent = 'אין חריגים חדשים. שיחות מזוהות לא מוצגות כאן.';
     feed.append(empty);
   }
-  const categoriesOf = (event) => eventPresentation(event, groups, words).categories || [];
-  const count = (category) => events.filter((event) => categoriesOf(event).includes(category)).length;
+  let strangerCount = 0;
+  let keywordCount = 0;
+  let todayCount = 0;
+  events.forEach((event) => {
+    const categories = eventPresentation(event, groups, words).categories || [];
+    if (categories.includes('stranger')) strangerCount += 1;
+    if (categories.includes('keyword')) keywordCount += 1;
+    if (isJerusalemToday(event)) todayCount += 1;
+  });
   document.querySelector('#alerts-count').textContent = String(events.length);
   document.querySelector('[data-filter-count="all"]').textContent = String(events.length);
-  document.querySelector('[data-filter-count="today"]').textContent = String(events.filter((event) => isJerusalemToday(event)).length);
-  document.querySelector('[data-filter-count="stranger"]').textContent = String(count('stranger'));
-  document.querySelector('[data-filter-count="keyword"]').textContent = String(count('keyword'));
+  document.querySelector('[data-filter-count="today"]').textContent = String(todayCount);
+  document.querySelector('[data-filter-count="stranger"]').textContent = String(strangerCount);
+  document.querySelector('[data-filter-count="keyword"]').textContent = String(keywordCount);
   document.querySelector('[data-filter-count="joined"]').textContent = String(joinedToday(groups).length);
   document.querySelector('[data-filter-count="hours"]').textContent = String(lastOffHours.length);
   applyAlertsCategoryFilter();
@@ -505,8 +525,11 @@ function notifyNewCritical(events) {
 function validGroupImage(payload) {
   const mimeType = safeText(payload?.imageMimeType);
   const imageBase64 = safeText(payload?.imageBase64);
-  return ['image/jpeg', 'image/png', 'image/webp'].includes(mimeType) && imageBase64.length <= 140000 && /^[A-Za-z0-9+/]+={0,2}$/.test(imageBase64)
-    ? `data:${mimeType};base64,${imageBase64}` : '';
+  // Skip full-string regex on large base64 — it froze the parent UI on refresh.
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(mimeType)) return '';
+  if (!imageBase64 || imageBase64.length > 140000) return '';
+  if (imageBase64.length % 4 === 1) return '';
+  return `data:${mimeType};base64,${imageBase64}`;
 }
 
 function messageCountLabel(count) {
@@ -643,17 +666,19 @@ function renderGroups(groups, events) {
   list.replaceChildren();
   let imageCount = 0;
   let openRow = null;
+  const { messageCounts, todayCounts } = groupActivityMaps(events);
   const unrecognizedCount = (group) => {
+    if (Number.isFinite(Number(group.payload?.unrecognized_count))) return Number(group.payload.unrecognized_count);
     const people = Array.isArray(group.payload?.participants) ? group.payload.participants : [];
     return people.filter((person) => person?.isRecognized !== true).length;
   };
   const ranked = [...groups.values()].sort((left, right) => {
     const leftJid = safeText(left.account?.chat_jid);
     const rightJid = safeText(right.account?.chat_jid);
-    if (groupSort === 'today') return messagesToday(events, rightJid) - messagesToday(events, leftJid);
+    if (groupSort === 'today') return (todayCounts.get(rightJid) || 0) - (todayCounts.get(leftJid) || 0);
     if (groupSort === 'strangers') return unrecognizedCount(right) - unrecognizedCount(left);
     if (groupSort === 'newest') return new Date(right.first_seen || 0) - new Date(left.first_seen || 0);
-    const activity = groupMessageCount(rightJid, events) - groupMessageCount(leftJid, events);
+    const activity = (messageCounts.get(rightJid) || 0) - (messageCounts.get(leftJid) || 0);
     return activity || (Number(right.payload?.participantCount) || 0) - (Number(left.payload?.participantCount) || 0);
   });
   ranked.forEach((event) => {
@@ -663,22 +688,25 @@ function renderGroups(groups, events) {
     const open = jid === selectedGroupJid;
     row.className = `directory-live-row${open ? ' selected' : ''}`;
     row.setAttribute('aria-expanded', String(open));
+    // Dashboard no longer ships base64 avatars; keep placeholder artwork.
     const imageSource = validGroupImage(event.payload);
     if (imageSource) {
       const image = document.createElement('img');
       image.className = 'directory-avatar live-image';
+      image.loading = 'lazy';
       image.src = imageSource;
       image.alt = '';
       row.append(image);
       imageCount += 1;
     } else {
       row.append(createArtwork('groups', 'directory-avatar generated-artwork'));
+      if (event.payload?.has_image) imageCount += 1;
     }
     const text = document.createElement('span');
     const name = document.createElement('b');
     name.textContent = safeText(event.payload?.name, 'קבוצה ללא שם');
     const detail = document.createElement('small');
-    const messages = groupMessageCount(jid, events);
+    const messages = messageCounts.get(jid) || 0;
     const members = Number(event.payload?.participantCount) || 0;
     detail.textContent = `${messageCountLabel(messages)}${members ? ` · ${members} משתתפים` : ''}`;
     text.append(name, detail);
@@ -751,7 +779,9 @@ function renderGroupBoard(events, groups, changes) {
   const root = document.querySelector('#group-dashboard');
   if (!root) return;
   root.replaceChildren();
-  const todayCount = [...groups.values()].reduce((sum, group) => sum + messagesToday(events, safeText(group.account?.chat_jid)), 0);
+  const { todayCounts } = groupActivityMaps(events);
+  let todayCount = 0;
+  todayCounts.forEach((count) => { todayCount += count; });
   const summary = document.createElement('p');
   const hour = busiestHour(events);
   summary.textContent = hour
@@ -759,8 +789,8 @@ function renderGroupBoard(events, groups, changes) {
     : 'עדיין אין הודעות קבוצה מהיום.';
   root.append(summary);
   [...groups.values()]
-    .filter((group) => messagesToday(events, safeText(group.account?.chat_jid)) > 0)
-    .sort((left, right) => messagesToday(events, safeText(right.account?.chat_jid)) - messagesToday(events, safeText(left.account?.chat_jid)))
+    .filter((group) => (todayCounts.get(safeText(group.account?.chat_jid)) || 0) > 0)
+    .sort((left, right) => (todayCounts.get(safeText(right.account?.chat_jid)) || 0) - (todayCounts.get(safeText(left.account?.chat_jid)) || 0))
     .slice(0, 6)
     .forEach((group) => {
       const jid = safeText(group.account?.chat_jid);
@@ -769,7 +799,7 @@ function renderGroupBoard(events, groups, changes) {
       const name = document.createElement('b');
       name.textContent = safeText(group.payload?.name, 'קבוצה ללא שם');
       const count = document.createElement('span');
-      count.textContent = messageCountLabel(messagesToday(events, jid));
+      count.textContent = messageCountLabel(todayCounts.get(jid) || 0);
       button.append(name, count);
       button.addEventListener('click', () => {
         selectedGroupJid = jid;
@@ -797,14 +827,27 @@ function renderGroupBoard(events, groups, changes) {
   root.append(list);
 }
 
+function busiestGroupToday(groups, todayCounts) {
+  let best = null;
+  let bestCount = 0;
+  groups.forEach((group) => {
+    const count = todayCounts.get(safeText(group.account?.chat_jid)) || 0;
+    if (count > bestCount) {
+      best = group;
+      bestCount = count;
+    }
+  });
+  return best ? { group: best, count: bestCount } : null;
+}
+
 function renderInsights(events, groups, words) {
   const strangers = events.filter((event) => (eventPresentation(event, groups, words).categories || []).includes('stranger'));
-  const ranked = [...groups.values()].sort((left, right) => messagesToday(events, safeText(right.account?.chat_jid)) - messagesToday(events, safeText(left.account?.chat_jid)));
-  const busiest = ranked.find((group) => messagesToday(events, safeText(group.account?.chat_jid)) > 0);
+  const { todayCounts } = groupActivityMaps(events);
+  const busiest = busiestGroupToday(groups, todayCounts);
   const latest = events.find((event) => isException(event, words));
   const latestView = latest ? eventPresentation(latest, groups, words) : null;
   document.querySelector('#insight-unrecognized').textContent = `${new Set(strangers.map((event) => senderPhone(event) || 'שולח שטרם זוהה')).size} מספרים לא מזוהים`;
-  document.querySelector('#insight-active-group').textContent = busiest ? `הכי הרבה הודעות היום: ${safeText(busiest.payload?.name, 'קבוצה ללא שם')} · ${messageCountLabel(messagesToday(events, safeText(busiest.account?.chat_jid)))}` : 'עדיין אין קבוצה פעילה היום';
+  document.querySelector('#insight-active-group').textContent = busiest ? `הכי הרבה הודעות היום: ${safeText(busiest.group.payload?.name, 'קבוצה ללא שם')} · ${messageCountLabel(busiest.count)}` : 'עדיין אין קבוצה פעילה היום';
   document.querySelector('#insight-critical').textContent = latestView ? `ההתראה האחרונה: ${latestView.title}` : 'אין התראה דחופה כרגע';
   renderGroupBoard(events, groups, lastDashboardData?.group_changes);
 }
@@ -813,15 +856,15 @@ function renderDailyReport(events, groups, words, connectionEvent) {
   const list = document.querySelector('#daily-report');
   const exceptions = events.filter((event) => isException(event, words));
   const strangers = new Set(exceptions.filter((event) => (eventPresentation(event, groups, words).categories || []).includes('stranger')).map((event) => senderPhone(event) || 'שולח שטרם זוהה'));
-  const ranked = [...groups.values()].sort((left, right) => messagesToday(events, safeText(right.account?.chat_jid)) - messagesToday(events, safeText(left.account?.chat_jid)));
-  const busiest = ranked.find((group) => messagesToday(events, safeText(group.account?.chat_jid)) > 0);
+  const { todayCounts } = groupActivityMaps(events);
+  const busiest = busiestGroupToday(groups, todayCounts);
   const stamps = events.map((event) => new Date(event.received_at || event.timestamp || event.source_timestamp)).filter((date) => !Number.isNaN(date.getTime()));
   const latest = stamps.sort((left, right) => right - left)[0];
   const lines = [
     `חריגים בחלון החי: ${exceptions.length}`,
     `מספרים לא מזוהים: ${strangers.size}`,
     `קבוצות מחוברות: ${groups.size}`,
-    busiest ? `הכי הרבה הודעות היום: ${safeText(busiest.payload?.name, 'קבוצה ללא שם')} · ${messageCountLabel(messagesToday(events, safeText(busiest.account?.chat_jid)))}` : 'עדיין אין קבוצה פעילה היום',
+    busiest ? `הכי הרבה הודעות היום: ${safeText(busiest.group.payload?.name, 'קבוצה ללא שם')} · ${messageCountLabel(busiest.count)}` : 'עדיין אין קבוצה פעילה היום',
     `מצב החיבור: ${connectionHealth(connectionEvent).label}`,
     latest ? `האירוע האחרון שנשמר: ${formatDateTime(latest)}` : 'עדיין אין אירוע שמור',
   ];
@@ -1003,7 +1046,26 @@ function scheduleFromForm() {
   return result;
 }
 
-function renderDashboard(data) {
+let lastRenderFingerprint = '';
+
+function revealAuthenticatedShell() {
+  document.body.classList.remove('auth-pending', 'auth-required');
+  authGate.hidden = true;
+  authGate.setAttribute('inert', '');
+  authGate.style.pointerEvents = 'none';
+  appShell.inert = false;
+  syncMobileNav();
+}
+
+function dashboardFingerprint(data, health, exceptionCount) {
+  const events = Array.isArray(data?.events) ? data.events : [];
+  const newest = events[0]?.event_id || '';
+  // ponytail: ignore connection.received_at — heartbeats every 2m must not rebuild the whole DOM.
+  const connection = safeText(data?.connection?.account?.status) || (health?.verified ? 'ok' : 'down');
+  return `${connection}|${health?.verified ? 1 : 0}|${exceptionCount}|${events.length}|${newest}|${Array.isArray(data?.groups) ? data.groups.length : 0}`;
+}
+
+function renderDashboard(data, force = false) {
   lastDashboardData = data;
   const allEvents = Array.isArray(data.events) ? data.events : [];
   const groups = latestGroups([...(Array.isArray(data.groups) ? data.groups : []), ...allEvents]);
@@ -1024,33 +1086,41 @@ function renderDashboard(data) {
   }
   document.body.classList.toggle('connection-down', !health.verified);
   const exceptionCount = exceptions.length;
+  const fingerprint = `${dashboardFingerprint(data, health, exceptionCount)}|${groupSort}|${alertsCategoryFilter}`;
+  // Overlay off first — never leave a transparent login layer blocking taps.
+  revealAuthenticatedShell();
   setCount('message', exceptionCount);
   setCount('unresolved', exceptions.filter((event) => matchedWord(event, words)).length);
   document.querySelector('#environment-status').textContent = health.verified ? 'סביבת POC · נתונים חיים מהטלפון המחובר' : `סביבת POC · ${health.label}`;
   renderSyncStatus(connectionEvent);
   document.querySelector('#api-state-detail').textContent = `${groups.size} קבוצות · ${exceptionCount} חריגים · קריאה בלבד`;
+  // ponytail: heartbeat polls must not rebuild home/events/groups DOM every 15s.
+  if (!force && fingerprint === lastRenderFingerprint) {
+    notifyNewCritical([...exceptions, ...lastOffHours]);
+    return;
+  }
+  lastRenderFingerprint = fingerprint;
   notifyNewCritical([...exceptions, ...lastOffHours]);
+  renderHome(exceptions, groups, words, connectionEvent);
   renderEvents(exceptions, groups, words);
   renderGroups(groups, activeEvents);
   renderContacts(activeEvents, groups);
-  renderHome(exceptions, groups, words, connectionEvent);
   renderInsights(activeEvents, groups, words);
   renderDailyReport(activeEvents, groups, words, connectionEvent);
   renderWords();
   renderSchedule();
-  document.body.classList.remove('auth-pending', 'auth-required');
-  authGate.hidden = true;
-  appShell.inert = false;
-  syncMobileNav();
 }
 
 function requireAuthentication(message = 'יש להתחבר כדי לצפות בנתונים.') {
   clearInterval(liveRefreshTimer);
   csrfToken = '';
+  lastRenderFingerprint = '';
   document.body.classList.remove('auth-pending');
   document.body.classList.add('auth-required');
   document.querySelector('#auth-gate-message').textContent = message;
   authGate.hidden = false;
+  authGate.removeAttribute('inert');
+  authGate.style.pointerEvents = '';
   appShell.inert = true;
   syncMobileNav();
 }
@@ -1067,17 +1137,20 @@ async function loadDashboard(notify = false) {
     if (response.status === 502 || response.status === 503 || response.status === 504) {
       if (csrfToken || lastDashboardData) {
         document.querySelector('#environment-status').textContent = 'סביבת POC · השרת לא ענה, המסך נשאר פתוח';
-        document.body.classList.remove('auth-pending', 'auth-required');
-        authGate.hidden = true;
-        appShell.inert = false;
-        syncMobileNav();
+        revealAuthenticatedShell();
         return false;
       }
     }
     if (!response.ok) throw new Error('dashboard unavailable');
     const data = await response.json();
     if (request !== dashboardRequest) return true;
-    renderDashboard(data);
+    try {
+      renderDashboard(data);
+    } catch {
+      revealAuthenticatedShell();
+      if (notify) announce('המסך נפתח, אבל חלק מהתצוגה נכשל');
+      return Boolean(csrfToken);
+    }
     if (notify) announce('החיבור לנתונים החיים הצליח');
     return true;
   } catch {
@@ -1085,10 +1158,7 @@ async function loadDashboard(notify = false) {
       document.querySelector('#environment-status').textContent = lastDashboardData
         ? 'סביבת POC · הרענון נכשל, הנתונים הקודמים נשארו על המסך'
         : 'סביבת POC · השרת לא ענה, נסו שוב בעוד רגע';
-      document.body.classList.remove('auth-pending', 'auth-required');
-      authGate.hidden = true;
-      appShell.inert = false;
-      syncMobileNav();
+      revealAuthenticatedShell();
       return false;
     }
     requireAuthentication('המערכת אינה זמינה כרגע. הנתונים לא הוצגו.');
@@ -1131,7 +1201,7 @@ document.querySelector('#group-sort')?.addEventListener('change', (event) => {
   groupSort = event.target.value;
   if (groupSort === 'sender') document.querySelector('[data-people-tab="contacts"]')?.click();
   else document.querySelector('[data-people-tab="groups"]')?.click();
-  if (lastDashboardData) renderDashboard(lastDashboardData);
+  if (lastDashboardData) renderDashboard(lastDashboardData, true);
 });
 document.querySelectorAll('[data-people-tab]').forEach((button) => button.addEventListener('click', () => {
   document.querySelectorAll('[data-people-tab]').forEach((tab) => {
@@ -1239,6 +1309,9 @@ apiForm.addEventListener('submit', async (event) => {
       csrfToken = result.csrf_token;
       apiForm.reset();
       document.querySelector('#parent-username').value = 'eldad';
+      // Drop the login overlay before the heavy dashboard fetch/render.
+      revealAuthenticatedShell();
+      document.querySelector('#environment-status').textContent = 'סביבת POC · טוען נתונים…';
       if ((await loadDashboard(true)) || csrfToken) startPolling();
     } else if (response.status === 429) showLoginError('בוצעו יותר מדי ניסיונות. המתינו כמה דקות ונסו שוב.');
     else if (response.status === 502 || response.status === 503 || response.status === 504) showLoginError('השרת לא ענה. הסיסמה לא נבדקה. נסו שוב בעוד רגע.');
@@ -1254,7 +1327,8 @@ apiForm.addEventListener('submit', async (event) => {
 
 function startPolling() {
   clearInterval(liveRefreshTimer);
-  liveRefreshTimer = setInterval(() => loadDashboard(false), 5000);
+  // ponytail: 5s full rebuild froze taps on mid-range phones. 15s is enough for live POC.
+  liveRefreshTimer = setInterval(() => loadDashboard(false), 15000);
 }
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && csrfToken) loadDashboard(false);
@@ -1341,6 +1415,11 @@ document.querySelector('#delete-family-data').addEventListener('click', async ()
 
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 showView('home', true);
+const bootWatchdog = setTimeout(() => {
+  if (document.body.classList.contains('auth-pending')) {
+    requireAuthentication('ההתחברות ארכה יותר מדי. נסו שוב.');
+  }
+}, 8000);
 async function restoreSession() {
   try {
     const response = await fetchWithTimeout('/api/watchup/session', { credentials: 'same-origin', cache: 'no-store' });
@@ -1351,7 +1430,14 @@ async function restoreSession() {
     const session = await response.json();
     if (!session.authenticated || !session.csrf_token) throw new Error('invalid session');
     csrfToken = session.csrf_token;
+    revealAuthenticatedShell();
+    document.querySelector('#environment-status').textContent = 'סביבת POC · טוען נתונים…';
     if ((await loadDashboard()) || csrfToken) startPolling();
-  } catch { requireAuthentication('המערכת אינה זמינה כרגע. הנתונים לא הוצגו.'); }
+  } catch {
+    requireAuthentication('המערכת אינה זמינה כרגע. הנתונים לא הוצגו.');
+  } finally {
+    clearTimeout(bootWatchdog);
+    if (document.body.classList.contains('auth-pending')) requireAuthentication();
+  }
 }
 restoreSession();
