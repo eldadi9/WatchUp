@@ -19,11 +19,12 @@ case "$code" in 200|401) say OK "site/API via Traefik HTTP $code" ;; *) say FAIL
 $PSQL -c 'select 1' >/dev/null 2>&1 && say OK "database reachable" || say FAIL "database unreachable"
 
 $PSQL -F ' ' -c "
-select tenant_id||'/'||child_id,
-  coalesce(extract(epoch from now()-max(received_at) filter (where event_type='connection.status'))::int, 999999),
-  coalesce(extract(epoch from now()-max(received_at) filter (where event_type<>'connection.status'))::int, 999999)
-from watchup.events group by tenant_id, child_id order by 1" | while read child hb ev; do
-  status=$($PSQL -c "select coalesce(account->>'status','?') from watchup.events where event_type='connection.status' and tenant_id||'/'||child_id='$child' order by received_at desc limit 1" </dev/null)
+select e.tenant_id||'/'||e.child_id,
+  coalesce(extract(epoch from now()-max(e.received_at) filter (where e.event_type='connection.status'))::int, 999999),
+  coalesce(extract(epoch from now()-max(e.received_at) filter (where e.event_type<>'connection.status'))::int, 999999),
+  coalesce((select s.account->>'status' from watchup.events s where s.tenant_id=e.tenant_id and s.child_id=e.child_id
+            and s.event_type='connection.status' order by s.received_at desc limit 1), '?')
+from watchup.events e group by e.tenant_id, e.child_id order by 1" | while read child hb ev status; do
   if [ "$status" = connected ] && [ "$hb" -le 360 ]; then say OK "$child connected, heartbeat ${hb}s ago, last event ${ev}s ago (quiet is normal)"
   else say FAIL "$child status=$status heartbeat ${hb}s ago"; fi
 done
