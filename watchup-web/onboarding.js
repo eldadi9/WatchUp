@@ -250,7 +250,8 @@
   dlg.addEventListener('cancel', (e) => { if (!completed) e.preventDefault(); });
   el('onboarding-next').addEventListener('click', next);
   el('onboarding-back').addEventListener('click', () => { if (step > 1) { step -= 1; render(); } });
-  el('onboarding-close').addEventListener('click', () => dlg.close());
+  // Mandatory: an unfinished family cannot dismiss onboarding.
+  el('onboarding-close').addEventListener('click', () => { if (completed) dlg.close(); });
   el('open-onboarding')?.addEventListener('click', openOnboarding);
   window.maybeStartOnboarding = maybeStartOnboarding;
   window.openOnboarding = openOnboarding;

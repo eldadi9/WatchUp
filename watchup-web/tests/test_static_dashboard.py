@@ -59,6 +59,8 @@ class DashboardTests(unittest.TestCase):
         ob = (ROOT / "onboarding.js").read_text(encoding="utf-8")
         for token in ("onboarding-dialog", "open-onboarding", "onboarding.js"):
             self.assertIn(token, self.html)
+        for token in ("if (!completed) e.preventDefault()", "if (completed) dlg.close()", "close.hidden = !completed"):
+            self.assertIn(token, ob)
         for token in ("/api/watchup/onboarding", "/api/watchup/children", "X-WatchUp-CSRF"):
             self.assertIn(token, ob)
         self.assertNotIn("innerHTML", ob)
